@@ -37,3 +37,11 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Archivos de configuración
+.oxlintrc.json
+.prettierrc.json
+.lintstagedrc.json
+commitlint.config.js
+next.config.*
+postcss.config.*
