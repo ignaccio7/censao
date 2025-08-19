@@ -1,0 +1,39 @@
+# Archivos de configuración
+.oxlintrc.json
+.prettierrc.json
+next.config.js
+next.config.mjs
+
+# Build y cache
+.next/
+out/
+dist/
+build/
+
+# Dependencias
+node_modules/
+
+# Coverage y tests  
+coverage/
+*.lcov
+
+# Archivos minificados
+*.min.js
+*.min.css
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Deploy
+.vercel/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

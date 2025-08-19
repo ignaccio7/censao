@@ -1,0 +1,11 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "none",
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "jsxSingleQuote": true,
+  "bracketSameLine": false,
+  "plugins": ["@prettier/plugin-oxc"]
+}

@@ -1,0 +1,127 @@
+{
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn", 
+    "pedantic": "off",
+    "perf": "warn",
+    "style": "warn",
+    "restriction": "off"
+  },
+
+  "plugins": [
+    "react",
+    "nextjs", 
+    "jsx-a11y",
+    "unicorn",
+    "oxc",
+    "import",
+    "typescript"
+  ],
+
+  "env": {
+    "browser": true,
+    "es6": true,
+    "es2022": true,
+    "node": true
+  },
+
+  "rules": {
+    // === Deshabilitar reglas conflictivas ===
+    "unicorn/filename-case": "off",
+    "sort-imports": "off",
+    "import/order": "off",
+
+    // === Variables y declaraciones ===
+    "no-unused-vars": "error",
+    "no-undef": "error",
+    "no-console": "warn",
+    "no-debugger": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+
+    // === Estilo de código ===
+    "no-extra-semi": "error",
+    "no-multiple-empty-lines": ["error", { "max": 2 }],
+    "no-trailing-spaces": "error",
+    "quotes": ["error", "single"],
+    "semi": ["error", "never"],
+    "comma-dangle": ["error", "never"],
+    "object-curly-spacing": ["error", "always"],
+    "array-bracket-spacing": ["error", "never"],
+    "key-spacing": ["error", { "beforeColon": false, "afterColon": true }],
+    "space-before-blocks": "error",
+    "space-in-parens": ["error", "never"],
+    "space-infix-ops": "error",
+    "keyword-spacing": "error",
+    "eol-last": "error",
+
+    // === React específicas ===
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-uses-react": "off",
+    "react/jsx-uses-vars": "error",
+    "react/prop-types": "off",
+    "react/no-unescaped-entities": "error",
+
+    // === Next.js específicas ===
+    "nextjs/no-img-element": "off",
+    "nextjs/no-html-link-for-pages": "error",
+    "nextjs/no-page-custom-font": "warn",
+    "nextjs/no-sync-scripts": "error",
+
+    // === Accesibilidad básica ===
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/anchor-has-content": "error",
+    "jsx-a11y/anchor-is-valid": "error",
+
+    // === Import/Export ===
+    "import/no-duplicates": "error",
+    "import/named": "error",
+
+    // === Unicorn (buenas prácticas) ===
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/no-array-for-each": "off",
+    "unicorn/prevent-abbreviations": "off",
+    "unicorn/no-null": "off",
+
+    // === Seguridad ===
+    "no-eval": "error",
+    "no-implied-eval": "error",
+
+    // === Pedantic que queremos ===
+    "eqeqeq": "error",
+    "no-else-return": "error",
+    "prefer-arrow-callback": "error",
+
+    "no-unassigned-import": "off"
+  },
+
+  "ignorePatterns": [
+    "node_modules/**",
+    ".next/**",
+    "out/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "*.min.js",
+    "public/**",
+    ".vercel/**"
+  ],
+
+  "overrides": [
+    {
+      "files": ["next.config.js", "next.config.mjs", "next.config.ts", "commitlint.config.js"],
+      "rules": {
+        "no-console": "off",
+        "import/no-default-export": "off",
+        "sort-keys": "off",
+        "no-magic-numbers": "off"
+      }
+    },
+    {
+      "files": ["src/app/**/*.tsx", "src/app/**/*.jsx", "pages/**/*.tsx", "pages/**/*.jsx"],
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    }
+  ]
+}
