@@ -3,9 +3,35 @@
 :root {
   /* --background: #ffffff;
   --foreground: #171717; */
+
+  /* Header */
+  --height-header: 60px;
+  --height-window: calc(100dvh - var(--height-header));
+  /* Fonts Sizes */
+  --step--2: clamp(0.78rem, calc(0.77rem + 0.03vw), 0.8rem);
+  --step--1: clamp(0.94rem, calc(0.92rem + 0.11vw), 1rem);
+  --step-0: clamp(1.13rem, calc(1.08rem + 0.22vw), 1.25rem);
+  --step-1: clamp(1.35rem, calc(1.28rem + 0.37vw), 1.56rem);
+  --step-2: clamp(1.62rem, calc(1.5rem + 0.58vw), 1.95rem);
+  --step-3: clamp(1.94rem, calc(1.77rem + 0.87vw), 2.44rem);
+  --step-4: clamp(2.33rem, calc(2.08rem + 1.25vw), 3.05rem);
+  --step-5: clamp(2.8rem, calc(2.45rem + 1.77vw), 3.82rem);
 }
 
 @theme inline {
+  /* Sizes */
+  /* Header */
+  --size-header: var(--height-header);
+  --size-window: var(--height-window);
+  /* Fonts Sizes */
+  --text-step-0: var(--step--2);
+  --text-step-1: var(--step--1);
+  --text-step-2: var(--step-0);
+  --text-step-3: var(--step-1);
+  --text-step-4: var(--step-2);
+  --text-step-5: var(--step-3);
+  --text-step-6: var(--step-4);
+  --text-step-7: var(--step-5);
   /* Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -111,4 +137,8 @@ body {
   background: var(--color-white-50);
   color: var(--foreground);
   /* font-family: Arial, Helvetica, sans-serif; */
+}
+
+.container {
+  @apply w-full max-w-7xl mx-auto px-4;
 }

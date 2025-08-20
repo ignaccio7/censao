@@ -16,9 +16,13 @@
     "commit": "cz"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.1",
     "next": "15.4.6",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-hook-form": "^7.62.0",
+    "zod": "^4.0.17",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",

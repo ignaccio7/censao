@@ -92,7 +92,8 @@
     "no-else-return": "error",
     "prefer-arrow-callback": "error",
 
-    "no-unassigned-import": "off"
+    "no-unassigned-import": "off",
+    "no-ternary": "off"
   },
 
   "ignorePatterns": [
