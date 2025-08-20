@@ -3,15 +3,15 @@ import {
   Montserrat_Alternates as fontMontserrat
 } from 'next/font/google'
 
-const publicFont = fontMontserrat({
+export const primaryFont = fontMontserrat({
   subsets: ['latin'],
   variable: '--font-montserrat',
-  weight: ['400', '700', '900']
+  weight: ['400', '700', '900'],
+  display: 'swap'
 })
 
-const systemFont = fontRaleway({
+export const secondaryFont = fontRaleway({
   subsets: ['latin'],
-  variable: '--font-raleway'
+  variable: '--font-raleway',
+  display: 'swap'
 })
-
-export { publicFont, systemFont }

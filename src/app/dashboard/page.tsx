@@ -1,5 +1,7 @@
 export default function Dashboard() {
   return (
-    <h2 className='font-system'>Whereas recognition of the inherent dignity</h2>
+    <h2 className='font-secondary text-3xl'>
+      Whereas recognition of the inherent dignity
+    </h2>
   )
 }
