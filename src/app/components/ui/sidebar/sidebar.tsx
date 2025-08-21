@@ -1,129 +1,167 @@
 'use client'
 
-import { useState } from 'react'
 import useSidebar from '@/hooks/useSidebar'
 import ToggleLink from './toggleLink'
+import NavLink from './navLink'
 
 export default function Sidebar() {
   const { sidebarMenu } = useSidebar()
 
-  // Estado local para controlar los submenús
-  const [openMenu, setOpenMenu] = useState<string | null>(null)
-
-  const toggleMenu = (menu: string) => {
-    setOpenMenu(openMenu === menu ? null : menu)
-  }
-
-  const optionsMenu = [
+  const permissions = [
     {
-      icon: 'settings',
-      link: 'algo',
-      name: 'Configuración1'
+      icon: 'home',
+      label: 'Inicio',
+      link: '/dashboard'
     },
     {
-      icon: 'settings',
-      link: 'algo',
-      name: 'Configuración2'
+      icon: 'user',
+      label: 'Perfil',
+      link: '/perfil'
     },
     {
-      icon: 'settings',
-      link: 'algo',
-      name: 'Configuración3'
+      icon: 'bell',
+      label: 'Notificaciones',
+      link: '/notificaciones'
     },
-
+    // Módulo para Doctor de Fichas
     {
-      icon: 'settings',
-      link: 'algo',
-      name: 'Configuración4'
+      icon: 'clipboard',
+      label: 'Gestión de Fichas',
+      options: [
+        {
+          icon: 'plus',
+          label: 'Registrar Nueva Ficha',
+          link: '/fichas/registrar'
+        },
+        {
+          icon: 'list',
+          label: 'Listado de Fichas',
+          link: '/fichas/listado'
+        },
+        {
+          icon: 'calendar',
+          label: 'Reorganizar Fichas',
+          link: '/fichas/reorganizar'
+        },
+        {
+          icon: 'message',
+          label: 'Chat con Pacientes',
+          link: '/fichas/chat'
+        }
+      ]
     },
+    // Módulo para Doctores (Médico General, Odontólogo, etc.)
     {
-      icon: 'settings',
-      link: 'algo',
-      name: 'Configuración5'
+      icon: 'stethoscope',
+      label: 'Atención Médica',
+      options: [
+        {
+          icon: 'list',
+          label: 'Pacientes Atendidos',
+          link: '/atencion/pacientes'
+        },
+        {
+          icon: 'vaccine',
+          label: 'Esquemas de Vacunación',
+          link: '/atencion/vacunacion'
+        },
+        {
+          icon: 'monitor',
+          label: 'Seguimiento Tratamientos',
+          link: '/atencion/seguimiento'
+        },
+        {
+          icon: 'send',
+          label: 'Reenviar Notificaciones',
+          link: '/atencion/notificaciones'
+        }
+      ]
+    },
+    // Módulo para Administrador
+    {
+      icon: 'setting',
+      label: 'Administración',
+      options: [
+        {
+          icon: 'userPlus',
+          label: 'Registrar Doctores',
+          link: '/admin/doctores'
+        },
+        {
+          icon: 'calendar',
+          label: 'Gestión de Turnos',
+          link: '/admin/turnos'
+        },
+        {
+          icon: 'schedule',
+          label: 'Disponibilidades',
+          link: '/admin/disponibilidades'
+        },
+        {
+          icon: 'medicineBox',
+          label: 'Gestión de Vacunas',
+          link: '/admin/vacunas'
+        },
+        {
+          icon: 'team',
+          label: 'Gestión de Usuarios',
+          link: '/admin/usuarios'
+        },
+        {
+          icon: 'security',
+          label: 'Roles y Permisos',
+          link: '/admin/roles'
+        }
+      ]
+    },
+    // Módulo para Pacientes
+    {
+      icon: 'heart',
+      label: 'Mi Salud',
+      options: [
+        {
+          icon: 'history',
+          label: 'Mis Tratamientos',
+          link: '/paciente/tratamientos'
+        },
+        {
+          icon: 'calendar',
+          label: 'Mis Citas',
+          link: '/paciente/citas'
+        },
+        {
+          icon: 'message',
+          label: 'Chat con Doctora',
+          link: '/paciente/chat'
+        }
+      ]
     }
   ]
-
-  const submenuProf = {
-    optionMenu: 'Perfil',
-    options: optionsMenu
-  }
 
   return (
     <aside
       className={`
         size-window font-secondary font-semibold py-4
-        transition-all shadow-xs shadow-gray-700 bg-tertiary-800 text-white
+        transition-all shadow-xs shadow-gray-700 bg-primary-700 text-white
+        fixed top-[var(--size-header)] z-50 overflow-y-auto
+        no-scrollbar
         ${
           sidebarMenu
-            ? 'translate-x-0 w-[220px] px-4 pointer-events-auto opacity-100'
+            ? 'translate-x-0 w-[300px] px-2 pointer-events-auto opacity-100'
             : '-translate-x-full w-0 px-0 pointer-events-none opacity-0'
         }
       `}
     >
       {/* Menú principal */}
       <nav className='flex flex-col gap-2 text-step-0'>
-        {/* Link normal */}
-        <button className='text-left px-2 py-2 rounded hover:bg-secondary-500 transition'>
-          Inicio
-        </button>
-
-        <ToggleLink {...submenuProf} />
-
-        {/* Link con submenú */}
-        <div>
-          <button
-            onClick={() => toggleMenu('form')}
-            className='w-full text-left px-2 py-2 rounded flex justify-between items-center hover:bg-secondary-500 transition'
-          >
-            Formularios
-            <span className='ml-2'>{openMenu === 'form' ? '▲' : '▼'}</span>
-          </button>
-
-          <div
-            className={`
-              overflow-hidden transition-all duration-300 
-              ${openMenu === 'form' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}
-            `}
-          >
-            <button className='block w-full text-left px-6 py-2 hover:bg-secondary-600 rounded'>
-              Crear nuevo
-            </button>
-            <button className='block w-full text-left px-6 py-2 hover:bg-secondary-600 rounded'>
-              Ver registros
-            </button>
-            <button className='block w-full text-left px-6 py-2 hover:bg-secondary-600 rounded'>
-              Crear nuevo
-            </button>
-            <button className='block w-full text-left px-6 py-2 hover:bg-secondary-600 rounded'>
-              Ver registros
-            </button>
-          </div>
-        </div>
-
-        {/* Otro con submenú */}
-        <div>
-          <button
-            onClick={() => toggleMenu('settings')}
-            className='w-full text-left px-2 py-2 rounded flex justify-between items-center hover:bg-secondary-500 transition'
-          >
-            Configuración
-            <span className='ml-2'>{openMenu === 'settings' ? '▲' : '▼'}</span>
-          </button>
-
-          <div
-            className={`
-              overflow-hidden transition-all duration-300 
-              ${openMenu === 'settings' ? 'max-h-10 opacity-100' : 'max-h-0 opacity-0'}
-            `}
-          >
-            <button className='block w-full text-left px-6 py-2 hover:bg-secondary-600 rounded'>
-              Perfil
-            </button>
-            <button className='block w-full text-left px-6 py-2 hover:bg-secondary-600 rounded'>
-              Seguridad
-            </button>
-          </div>
-        </div>
+        {permissions?.map(permission => {
+          const isSubmenu = permission.options
+          return isSubmenu ? (
+            <ToggleLink key={permission.label} {...permission} />
+          ) : (
+            <NavLink key={permission.label} {...permission} />
+          )
+        })}
       </nav>
     </aside>
   )

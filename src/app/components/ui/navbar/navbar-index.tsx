@@ -1,19 +1,13 @@
 import Link from 'next/link'
-import { IconHeart, IconSearch } from '../icons'
+import { IconSearch } from '../../icons/icons'
+import Logo from '../logo'
 
 export default function NavbarIndex() {
   return (
-    <header className='size-header w-full bg-primary-700 text-white font-primary'>
+    <header className='size-header w-full shadow-md text-black font-primary z-50 backdrop-blur-md sticky to-0'>
       <nav className='container h-full flex justify-between items-center gap-2'>
-        <Link
-          href='/'
-          className='logo primary-font font-semibold flex gap-0 items-center text-step-1'
-        >
-          CENSA
-          <IconHeart
-            size='20'
-            className='p-1 border border-white rounded-full text-white'
-          />
+        <Link href='/'>
+          <Logo />
         </Link>
         <search className='text-step-1'>
           <form className='max-w-md mx-auto'>

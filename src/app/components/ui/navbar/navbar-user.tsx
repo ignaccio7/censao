@@ -1,14 +1,13 @@
 'use client'
 import Link from 'next/link'
-import { IconCloseSidebar, IconHeart, IconOpenSidebar } from '../icons'
+import { IconCloseSidebar, IconOpenSidebar } from '../../icons/icons'
 import useSidebar from '@/hooks/useSidebar'
+import Logo from '../logo'
 
 export default function NavbarUser() {
   const { sidebarMenu, openSidebar, closeSidebar } = useSidebar()
 
   const handleSidebar = () => {
-    console.log(sidebarMenu)
-
     if (sidebarMenu) {
       closeSidebar()
     } else {
@@ -17,20 +16,14 @@ export default function NavbarUser() {
   }
 
   return (
-    <header className='size-header w-full bg-primary-700 text-white font-primary'>
+    <header className='size-header w-full text-black font-primary fixed top-0 z-50 backdrop-blur-md shadow-md'>
       <nav className='h-full flex justify-between items-center gap-2 px-4'>
-        <button
-          onClick={handleSidebar}
-          className='logo primary-font font-semibold flex gap-0 items-center text-step-1 cursor-pointer'
-        >
-          {sidebarMenu ? <IconCloseSidebar /> : <IconOpenSidebar />}
-          CENSA
-          <IconHeart
-            size='20'
-            className='p-1 border border-white rounded-full text-white'
-          />
+        <button onClick={handleSidebar}>
+          <Logo>
+            {sidebarMenu ? <IconCloseSidebar /> : <IconOpenSidebar />}
+          </Logo>
         </button>
-        <div className={`user secondary-font`}>
+        <div className='user secondary-font'>
           <Link href='/auth/ingresar'>Salir</Link>
         </div>
       </nav>
