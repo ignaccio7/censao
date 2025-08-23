@@ -127,17 +127,17 @@ export default function Sidebar() {
         {
           icon: 'history',
           label: 'Mis Tratamientos',
-          link: '/paciente/tratamientos'
+          link: '/dashboard/paciente/tratamientos'
         },
         {
           icon: 'calendar',
           label: 'Mis Citas',
-          link: '/paciente/citas'
+          link: '/dashboard/paciente/citas'
         },
         {
           icon: 'message',
           label: 'Chat con Doctora',
-          link: '/paciente/chat'
+          link: '/dashboard/paciente/chat'
         }
       ]
     }

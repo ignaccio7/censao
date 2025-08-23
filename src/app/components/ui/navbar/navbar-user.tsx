@@ -3,6 +3,7 @@ import { IconCloseSidebar, IconOpenSidebar } from '../../icons/icons'
 import useSidebar from '@/hooks/useSidebar'
 import Logo from '../logo'
 import DropdownMenu from './dropdownMenu'
+import Notifications from './notifications'
 
 export default function NavbarUser() {
   const { sidebarMenu, openSidebar, closeSidebar } = useSidebar()
@@ -23,7 +24,8 @@ export default function NavbarUser() {
             {sidebarMenu ? <IconCloseSidebar /> : <IconOpenSidebar />}
           </Logo>
         </button>
-        <div className='user secondary-font relative'>
+        <div className='user secondary-font relative flex flex-row gap-1'>
+          <Notifications />
           <DropdownMenu />
         </div>
       </nav>

@@ -17,7 +17,10 @@ import {
   IconMedicineBox,
   IconTeam,
   IconSecurity,
-  IconSend
+  IconSend,
+  IconSystem,
+  IconEmail,
+  IconNotification
 } from '@/app/components/icons/icons'
 
 const Icons: Record<string, React.FC<{ className?: string; size?: string }>> = {
@@ -38,7 +41,10 @@ const Icons: Record<string, React.FC<{ className?: string; size?: string }>> = {
   team: IconTeam,
   security: IconSecurity,
   history: IconHistory,
-  send: IconSend
+  send: IconSend,
+  system: IconSystem,
+  email: IconEmail,
+  notification: IconNotification
 }
 
 export default Icons
