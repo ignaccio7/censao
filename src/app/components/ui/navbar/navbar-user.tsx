@@ -1,8 +1,8 @@
 'use client'
-import Link from 'next/link'
 import { IconCloseSidebar, IconOpenSidebar } from '../../icons/icons'
 import useSidebar from '@/hooks/useSidebar'
 import Logo from '../logo'
+import DropdownMenu from './dropdownMenu'
 
 export default function NavbarUser() {
   const { sidebarMenu, openSidebar, closeSidebar } = useSidebar()
@@ -23,8 +23,8 @@ export default function NavbarUser() {
             {sidebarMenu ? <IconCloseSidebar /> : <IconOpenSidebar />}
           </Logo>
         </button>
-        <div className='user secondary-font'>
-          <Link href='/auth/ingresar'>Salir</Link>
+        <div className='user secondary-font relative'>
+          <DropdownMenu />
         </div>
       </nav>
     </header>

@@ -473,15 +473,91 @@ const IconSend = ({ className = '', size = '24' }: IconProps) => (
     viewBox='0 0 24 24'
     fill='none'
     stroke='currentColor'
-    stroke-width='2'
-    stroke-linecap='round'
-    stroke-linejoin='round'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
     className={className}
   >
     <path stroke='none' d='M0 0h24v24H0z' fill='none' />
     <path d='M10.5 19h-5.5a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v4' />
     <path d='M3 7l9 6l2.983 -1.989l6.017 -4.011' />
     <path d='M18 22l3.35 -3.284a2.143 2.143 0 0 0 .005 -3.071a2.242 2.242 0 0 0 -3.129 -.006l-.224 .22l-.223 -.22a2.242 2.242 0 0 0 -3.128 -.006a2.143 2.143 0 0 0 -.006 3.071l3.355 3.296z' />
+  </svg>
+)
+
+const IconPencil = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' />
+    <path d='M13.5 6.5l4 4' />
+  </svg>
+)
+
+const IconCheck = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M5 12l5 5l10 -10' />
+  </svg>
+)
+
+const IconSettings = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z' />
+    <path d='M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0' />
+  </svg>
+)
+
+const IconSignOut = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M10 8v-2a2 2 0 0 1 2 -2h7a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-2' />
+    <path d='M15 12h-12l3 -3' />
+    <path d='M6 15l-3 -3' />
   </svg>
 )
 
@@ -529,5 +605,9 @@ export {
   IconMedicineBox,
   IconTeam,
   IconSecurity,
-  IconSend
+  IconSend,
+  IconPencil,
+  IconCheck,
+  IconSettings,
+  IconSignOut
 }

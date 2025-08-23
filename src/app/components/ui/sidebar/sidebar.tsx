@@ -2,26 +2,31 @@
 
 import useSidebar from '@/hooks/useSidebar'
 import ToggleLink from './toggleLink'
-import NavLink from './navLink'
 
 export default function Sidebar() {
   const { sidebarMenu } = useSidebar()
 
   const permissions = [
     {
-      icon: 'home',
-      label: 'Inicio',
-      link: '/dashboard'
-    },
-    {
-      icon: 'user',
-      label: 'Perfil',
-      link: '/perfil'
-    },
-    {
-      icon: 'bell',
-      label: 'Notificaciones',
-      link: '/notificaciones'
+      icon: 'principal',
+      label: 'Principal',
+      options: [
+        {
+          icon: 'home',
+          label: 'Inicio',
+          link: '/dashboard'
+        },
+        {
+          icon: 'user',
+          label: 'Perfil',
+          link: '/dashboard/perfil'
+        },
+        {
+          icon: 'bell',
+          label: 'Notificaciones',
+          link: '/dashboard/notificaciones'
+        }
+      ]
     },
     // Módulo para Doctor de Fichas
     {
@@ -142,26 +147,35 @@ export default function Sidebar() {
     <aside
       className={`
         size-window font-secondary font-semibold py-4
-        transition-all shadow-xs shadow-gray-700 bg-primary-700 text-white
+        transition-all shadow-xs shadow-gray-700 bg-primary-800 text-white
         fixed top-[var(--size-header)] z-50 overflow-y-auto
         no-scrollbar
         ${
           sidebarMenu
-            ? 'translate-x-0 w-[300px] px-2 pointer-events-auto opacity-100'
+            ? 'translate-x-0 w-[250px] pointer-events-auto opacity-100'
             : '-translate-x-full w-0 px-0 pointer-events-none opacity-0'
         }
       `}
     >
+      {/* Informacion del usuario */}
+      <div className='user flex flex-col items-center justify-center gap-2 w-full border-b border-white-100 pb-2 mb-2 px-2'>
+        <div className='avatar bg-white-100 p-2 rounded-full size-10 overflow-hidden'>
+          <img
+            src='/globe.svg'
+            alt='Logo del usuario'
+            className='w-full h-auto object-contain aspect-square'
+          />
+        </div>
+        <div className='profile text-step-0 leading-4'>
+          <h2 className='text-center font-bold'>Juan Perez</h2>
+          <h3 className='text-center'>Administrador</h3>
+        </div>
+      </div>
       {/* Menú principal */}
-      <nav className='flex flex-col gap-2 text-step-0'>
-        {permissions?.map(permission => {
-          const isSubmenu = permission.options
-          return isSubmenu ? (
-            <ToggleLink key={permission.label} {...permission} />
-          ) : (
-            <NavLink key={permission.label} {...permission} />
-          )
-        })}
+      <nav className='flex flex-col gap-2 text-step-0 px-2'>
+        {permissions?.map(permission => (
+          <ToggleLink key={permission.label} {...permission} />
+        ))}
       </nav>
     </aside>
   )
