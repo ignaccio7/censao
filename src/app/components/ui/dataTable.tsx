@@ -1,6 +1,8 @@
-// oxlint-disable no-nested-ternary
 import { ReactNode } from 'react'
-import { ColumnaType } from '@/app/types'
+
+export interface ColumnaType {
+  campo: string
+}
 
 export interface CustomDataTableType {
   titulo?: string
@@ -14,6 +16,11 @@ export interface CustomDataTableType {
   contenidoCuandoVacio?: ReactNode
   paginacion?: ReactNode
   numeracion?: boolean
+  // Nueva prop opcional para estilos de fila personalizados
+  estilosPersonalizadosFila?: (
+    filaIndex: number,
+    fila: Array<ReactNode>
+  ) => string
 }
 
 export default function CustomDataTable({
@@ -27,35 +34,23 @@ export default function CustomDataTable({
   contenidoTabla,
   contenidoCuandoVacio,
   paginacion,
-  numeracion = false
+  numeracion = false,
+  estilosPersonalizadosFila
 }: CustomDataTableType) {
-  // Verifica si una fila tiene "estado"
-  const verificarEstado = (text: any[]) => {
-    try {
-      for (const campo of text) {
-        if (campo?.key?.includes('estado')) return true
-      }
-      return false
-    } catch {
-      return false
-    }
-  }
+  const obtenerEstilosFila = (filaIndex: number, fila: Array<ReactNode>) => {
+    const estilosBase = filaIndex % 2 === 0 ? 'bg-white-100' : 'bg-gray-200'
 
-  const obtenerColor = (text: any[]) => {
-    for (const campo of text) {
-      if (campo?.key?.includes('estado')) {
-        if (campo.props?.color) return campo.props.color
-        if (campo.props?.children?.props?.color)
-          return campo.props.children.props.color
-      }
-    }
-    return 'blue'
+    const estilosPersonalizados = estilosPersonalizadosFila
+      ? estilosPersonalizadosFila(filaIndex, fila)
+      : ''
+
+    return `${estilosBase} ${estilosPersonalizados}`.trim()
   }
 
   return (
     <div className='pb-4'>
       {/* Título y acciones */}
-      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center'>
+      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4'>
         <div>
           {titulo && (
             <h2 className='text-xl font-semibold text-gray-800'>{titulo}</h2>
@@ -64,81 +59,125 @@ export default function CustomDataTable({
             <p className='text-sm text-gray-500 mt-1'>{subtitulo}</p>
           )}
         </div>
-        <div className='flex gap-2 mt-2 sm:mt-0'>
-          {acciones.map((accion, index) => (
-            <div key={`accion-id-${index}`}>{accion}</div>
-          ))}
-        </div>
+        {acciones.length > 0 && (
+          <div className='flex gap-2 mt-2 sm:mt-0 flex-wrap'>
+            {acciones.map((accion, index) => (
+              <div key={`accion-${index}`}>{accion}</div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Filtros */}
-      {filtros && <div className='py-3'>{filtros}</div>}
+      {filtros && <div className='mb-4'>{filtros}</div>}
 
-      {/* Contenedor tabla */}
-      <div className='overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow'>
+      {/* Contenedor principal */}
+      <div className='rounded-lg shadow-sm border border-gray-200'>
         {cargando ? (
-          <div className='p-6 text-center text-gray-500'>Cargando...</div>
+          <div className='p-8 text-center text-gray-500'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2'></div>
+            Cargando...
+          </div>
         ) : error ? (
-          <div className='p-6 text-center text-red-500'>
+          <div className='p-8 text-center text-red-500 dark:text-red-400'>
+            <div className='mb-2'>⚠️</div>
             Error obteniendo información
           </div>
         ) : contenidoTabla.length === 0 ? (
-          <div className='p-6 text-center text-gray-500'>
+          <div className='p-8 text-center text-gray-700'>
             {contenidoCuandoVacio ?? 'Sin registros'}
           </div>
         ) : (
-          <div>
-            <table className='w-full border-collapse'>
-              <thead className='bg-gray-100 dark:bg-gray-700'>
-                <tr>
-                  {numeracion && (
-                    <th className='px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300'>
-                      #
-                    </th>
-                  )}
-                  {columnas.map((columna, index) => (
-                    <th
-                      key={`cabecera-id-${index}`}
-                      className='px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300'
-                    >
-                      {columna.nombre}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {contenidoTabla.map((fila, filaIndex) => (
-                  <tr
-                    key={`row-id-${filaIndex}`}
-                    className={`${
-                      filaIndex % 2 === 0
-                        ? 'bg-white dark:bg-gray-800'
-                        : 'bg-gray-50 dark:bg-gray-700'
-                    } ${
-                      verificarEstado(fila)
-                        ? `border-l-4 border-${obtenerColor(fila)}-500`
-                        : ''
-                    }`}
-                  >
+          <>
+            {/* Vista de tabla para desktop */}
+            <div className='hidden md:block overflow-x-auto'>
+              <table className='w-full'>
+                <thead className='bg-primary-700 border-b border-gray-200 '>
+                  <tr>
                     {numeracion && (
-                      <td className='px-3 py-2 text-sm text-gray-700 dark:text-gray-200'>
-                        {filaIndex + 1}
-                      </td>
+                      <th className='px-6 py-3 text-left text-xs font-semibold text-secondary-300 uppercase tracking-wider'>
+                        Nro
+                      </th>
                     )}
-                    {fila.map((contenido, celdaIndex) => (
-                      <td
-                        key={`celda-id-${filaIndex}-${celdaIndex}`}
-                        className='px-3 py-2 text-sm text-gray-700 dark:text-gray-200'
+                    {columnas.map((columna, index) => (
+                      <th
+                        key={`header-${index}`}
+                        className='px-6 py-3 text-left text-xs text-secondary-300 font-semibold uppercase tracking-wider'
                       >
-                        {contenido}
-                      </td>
+                        {columna.campo}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            {paginacion && <div className='p-3'>{paginacion}</div>}
-          </div>
+                </thead>
+                <tbody className='divide-y divide-gray-200'>
+                  {contenidoTabla.map((fila, filaIndex) => (
+                    <tr
+                      key={`row-${filaIndex}`}
+                      className={`${obtenerEstilosFila(filaIndex, fila)}`}
+                    >
+                      {numeracion && (
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold'>
+                          {filaIndex + 1}
+                        </td>
+                      )}
+                      {fila.map((contenido, celdaIndex) => (
+                        <td
+                          key={`cell-${filaIndex}-${celdaIndex}`}
+                          className='px-6 py-4 text-sm text-gray-90'
+                        >
+                          {contenido}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Vista de lista para móvil */}
+            <div className='block md:hidden'>
+              {contenidoTabla.map((fila, filaIndex) => (
+                <div
+                  key={`mobile-row-${filaIndex}`}
+                  className={`p-4 border-b border-gray-200  last:border-b-0 ${obtenerEstilosFila(filaIndex, fila)}`}
+                >
+                  {numeracion && (
+                    <div className='flex justify-between items-center mb-3'>
+                      <span className='text-xs font-semibold text-secondary-800 uppercase tracking-wider'>
+                        Registro
+                      </span>
+                      <span className='text-sm font-semibold text-gray-800 '>
+                        #{filaIndex + 1}
+                      </span>
+                    </div>
+                  )}
+                  <div className='space-y-3'>
+                    {fila.map((contenido, celdaIndex) => (
+                      <div
+                        key={`mobile-cell-${filaIndex}-${celdaIndex}`}
+                        className='flex flex-col'
+                      >
+                        <span className='text-xs font-semibold text-secondary-800 uppercase tracking-wider mb-1'>
+                          {columnas[celdaIndex]?.campo ||
+                            `Campo ${celdaIndex + 1}`}
+                        </span>
+                        <span className='text-sm text-gray-900 '>
+                          {contenido}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Paginación */}
+            {paginacion && (
+              <div className='px-6 py-3 border-t border-gray-200'>
+                {paginacion}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

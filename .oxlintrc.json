@@ -93,7 +93,8 @@
     "prefer-arrow-callback": "error",
 
     "no-unassigned-import": "off",
-    "no-ternary": "off"
+    "no-ternary": "off",
+    "sort-keys": "off"
   },
 
   "ignorePatterns": [

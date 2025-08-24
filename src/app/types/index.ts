@@ -1,1 +1,3 @@
-export * from './datatableTypes'
+export interface ColumnaType {
+  campo: string
+}
