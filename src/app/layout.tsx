@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang='es' className={`${primaryFont.variable}`}>
       <body className='antialiased'>
-        <main>{children}</main>
+        <main className='w-full overflow-x-hidden'>{children}</main>
       </body>
     </html>
   )

@@ -165,3 +165,18 @@ body {
 .no-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary-600);
 }
+
+/* Full calendar */
+/* Ejemplo para el botón prev */
+.fc-button-primary {
+  background-color: var(--color-primary-800) !important;
+  border: 1px solid var(--color-primary-800) !important;
+}
+
+.fc-button-primary:hover {
+  background-color: var(--color-primary-900) !important;
+}
+
+.fc-day-today {
+  background-color: var(--color-secondary-200) !important;
+}
