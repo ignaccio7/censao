@@ -19,15 +19,16 @@ export default function CardNotification({
   const IconComponent = Icons[icon]
 
   const color = getColorByNotification(icon)
+  console.log(color)
 
   return (
     <div
-      className={`card-notification flex flex-row gap-2 items-center border border-dashed border-${color} p-2 rounded-md hover:bg-gray-200 text-step-0`}
+      className={`card-notification flex flex-row gap-2 items-center border border-dashed ${color.border} p-2 rounded-md hover:bg-gray-200 text-step-0`}
     >
       <div className='image-notification relative'>
         <IconComponent
           size={`${!isAside ? '24' : '20'}`}
-          className={`bg-${color} rounded-full text-white p-1`}
+          className={`${color.bg} rounded-full text-white p-1`}
         />
       </div>
       <div className='content-notification w-full'>

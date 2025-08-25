@@ -1,3 +1,4 @@
+import { IconCalendar, IconVaccine } from '@/app/components/icons/icons'
 import Title from '@/app/components/ui/title'
 import { notFound } from 'next/navigation'
 
@@ -39,7 +40,8 @@ const treatmentHistoryUser = [
     fecha: '2025-01-01',
     turno: 'Diurno',
     motivo: 'Inicio de vacuna para tratamiento del COVID-19',
-    tipo: 'cita'
+    tipo: 'cita',
+    nro: '1'
   },
   {
     fecha: '2025-01-01',
@@ -53,14 +55,16 @@ const treatmentHistoryUser = [
   {
     fecha: '2025-01-01',
     turno: 'Diurno',
-    motivo: 'Inicio de vacuna para tratamiento del COVID-19',
-    tipo: 'cita'
+    motivo: 'Chequeo general',
+    tipo: 'cita',
+    nro: '2'
   },
   {
     fecha: '2025-01-01',
     turno: 'Diurno',
-    motivo: 'Inicio de vacuna para tratamiento del COVID-19',
-    tipo: 'cita'
+    motivo: 'Fin del tratamiento de la vacuna para tratamiento del COVID-19',
+    tipo: 'cita',
+    nro: '3'
   },
   {
     fecha: '2025-01-01',
@@ -86,28 +90,73 @@ export default async function Tratamiento({
 
   const treatment = treatments.find(treat => treat.id === uuid)
 
-  console.log(treatmentHistoryUser)
-
   if (!treatment) {
     return notFound()
   }
 
   return (
-    <section className='tratamiento font-secondary'>
-      <Title>Tratamiento {treatment.nombre}</Title>
-      <div className='card-treatment-cite'>
-        <h2>
-          Cita #1
-          <small>Turno: Diurno</small>
-        </h2>
-        <p>
-          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ipsa eum,
-          architecto rerum eos molestias nihil sed eligendi similique,
-          exercitationem, incidunt aut voluptatibus minus. Odio cupiditate
-          dolore doloremque dolorum quo nulla!
-        </p>
+    <section className='tratamiento font-secondary pb-10'>
+      <Title className='mb-2'>Tratamiento {treatment.nombre}</Title>
+      <div className='flex flex-col gap-4 md:gap-0'>
+        {treatmentHistoryUser.map((appointment, index) => {
+          const isAppointment = appointment.tipo === 'cita'
+          const firstTitle = isAppointment
+            ? `Cita #${appointment.nro}`
+            : appointment.nombre
+          const secondTitle = isAppointment
+            ? `Turno: ${appointment.turno}`
+            : `Estado: ${appointment.estado}`
+          const description = isAppointment
+            ? appointment.motivo
+            : appointment.descripcion
+
+          return (
+            <section
+              className='grid grid-cols-1 md:grid-cols-[45%_10%_45%]'
+              key={`${appointment.fecha}-${index}`}
+            >
+              <article
+                className={`card-treatment-cite bg-white rounded-md overflow-hidden shadow-md text-step-1 my-0 md:my-2 ${isAppointment ? 'order-1' : 'order-3'}`}
+              >
+                <h2
+                  className={`flex gap-1 items-center text-white justify-between p-2 font-semibold
+                  ${isAppointment ? 'bg-green-900' : 'bg-amber-600'}`}
+                >
+                  <span className='flex gap-1 items-center'>
+                    {isAppointment ? (
+                      <IconCalendar className='block md:hidden' />
+                    ) : (
+                      <IconVaccine className='block md:hidden' />
+                    )}
+                    {firstTitle}
+                  </span>
+                  <small>
+                    {secondTitle} | Fecha: {appointment.fecha}
+                  </small>
+                </h2>
+                <p className='p-2 text-pretty'>{description}</p>
+              </article>
+              <div className='hidden md:flex justify-center items-center order-2'>
+                {isAppointment ? (
+                  <IconCalendar
+                    className={`absolute z-10 p-2 rounded-full border text-white ${isAppointment ? 'bg-green-800' : 'bg-amber-600'}`}
+                    size='44'
+                  />
+                ) : (
+                  <IconVaccine
+                    className={`absolute z-10 p-2 rounded-full border text-white ${isAppointment ? 'bg-green-800' : 'bg-amber-600'}`}
+                    size='44'
+                  />
+                )}
+                <div className='h-full border-2 border-gray-500 w-0' />
+              </div>
+              <div
+                className={`hidden md:block ${isAppointment ? 'order-3' : 'order-1'}`}
+              />
+            </section>
+          )
+        })}
       </div>
-      <div className='card-treatment-vaccine'></div>
     </section>
   )
 }

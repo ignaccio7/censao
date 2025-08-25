@@ -1,13 +1,22 @@
 const getColorByNotification = (type: string) => {
   switch (type) {
-    case 'system': {
-      return 'black-700'
-    }
     case 'email': {
-      return 'amber-600'
+      return {
+        border: 'border-amber-600',
+        bg: 'bg-amber-600'
+      }
+    }
+    case 'system': {
+      return {
+        border: 'border-black-600',
+        bg: 'bg-black-600'
+      }
     }
     default: {
-      return 'black-900'
+      return {
+        border: 'border-gray-600',
+        bg: 'bg-gray-600'
+      }
     }
   }
 }
