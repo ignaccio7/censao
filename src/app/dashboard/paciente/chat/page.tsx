@@ -39,9 +39,9 @@ export default function Page() {
   return (
     <section className='chat-system w-full h-[calc(var(--size-window)-2rem)] md:h-[calc(var(--size-window)-4rem)] font-secondary bg-white-100 flex flex-col'>
       <Title className='pb-4'>Chat personal</Title>
-      <div className='chat-container grow overflow-y-auto bg-white rounded-tr-lg rounded-tl-lg flex flex-col border border-gray-300 border-b-0 p-4'>
+      <div className='chat-container grow overflow-y-auto bg-white rounded-tr-lg rounded-tl-lg flex flex-col border border-gray-300 border-b-0'>
         <div className='chat-content grow'>
-          <div className='frequent-questions flex flex-col gap-1 mb-2 sticky top-0 bg-white z-10'>
+          <div className='frequent-questions flex flex-col gap-1 mb-2 sticky top-0 bg-white z-10 p-4'>
             <h3 className='text-gray-500 font-semibold'>
               Preguntas frecuentes
             </h3>
@@ -55,7 +55,7 @@ export default function Page() {
               Ubicacion del centro?
             </button>
           </div>
-          <div className='chats flex flex-col gap-2'>
+          <div className='chats flex flex-col gap-2 p-4'>
             {messages.map((message, key) => {
               const isUser = message.user !== 'censao'
               return (

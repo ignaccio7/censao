@@ -33,20 +33,25 @@ export default function Sidebar() {
       icon: 'clipboard',
       label: 'Gestión de Fichas',
       options: [
+        // {
+        //   icon: 'plus',
+        //   label: 'Registrar Nueva Ficha',
+        //   link: '/fichas/registrar'
+        // },
+        // {
+        //   icon: 'list',
+        //   label: 'Listado de Fichas',
+        //   link: '/fichas/listado'
+        // },
+        // {
+        //   icon: 'calendar',
+        //   label: 'Reorganizar Fichas',
+        //   link: '/fichas/reorganizar'
+        // },
         {
           icon: 'plus',
-          label: 'Registrar Nueva Ficha',
-          link: '/fichas/registrar'
-        },
-        {
-          icon: 'list',
-          label: 'Listado de Fichas',
-          link: '/fichas/listado'
-        },
-        {
-          icon: 'calendar',
-          label: 'Reorganizar Fichas',
-          link: '/fichas/reorganizar'
+          label: 'Gestionar Fichas',
+          link: '/dashboard/fichas/'
         },
         {
           icon: 'message',
