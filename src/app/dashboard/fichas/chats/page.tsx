@@ -11,8 +11,25 @@ import {
 } from '@/app/components/icons/icons'
 import Title from '@/app/components/ui/title'
 
+// Definir tipos para los mensajes y chats
+interface Mensaje {
+  user: string
+  message: string
+}
+
+interface Chat {
+  id: number
+  paciente: string
+  ultimoMensaje: string
+  fecha: string
+  hora: string
+  noLeidos: number
+  estado: string
+  mensajes: Mensaje[]
+}
+
 // Mock de chats con pacientes
-const chatsDB = [
+const chatsDB: Chat[] = [
   {
     id: 1,
     paciente: 'Ana Rosa',
@@ -92,24 +109,24 @@ const chatsDB = [
 ]
 
 export default function PageChats() {
-  const [chats] = useState(chatsDB)
-  const [chatActivo, setChatActivo] = useState(null)
-  const [mensajes, setMensajes] = useState<any[]>([])
+  const [chats] = useState<Chat[]>(chatsDB)
+  const [chatActivo, setChatActivo] = useState<Chat | null>(null)
+  const [mensajes, setMensajes] = useState<Mensaje[]>([])
 
-  const handleChatClick = (chat: any) => {
+  const handleChatClick = (chat: Chat) => {
     setChatActivo(chat)
     setMensajes(chat.mensajes)
   }
 
-  const handleSubmit = (message: any) => {
+  const handleSubmit = (message: string) => {
     if (!message || !chatActivo) {
       return
     }
 
-    setMensajes([...mensajes, { user: 'doctora', message: message.toString() }])
+    setMensajes([...mensajes, { user: 'doctora', message }])
   }
 
-  const getEstadoColor = (estado: any) => {
+  const getEstadoColor = (estado: string) => {
     switch (estado) {
       case 'urgente':
         return 'bg-red-100 border-red-300'
@@ -124,7 +141,7 @@ export default function PageChats() {
     }
   }
 
-  const getEstadoText = (estado: any) => {
+  const getEstadoText = (estado: string) => {
     switch (estado) {
       case 'urgente':
         return 'Urgente'
@@ -233,11 +250,11 @@ export default function PageChats() {
               {/* Mensajes */}
               <div className='flex-1 overflow-y-auto p-4'>
                 <div className='flex flex-col gap-3'>
-                  {mensajes.map((mensaje, key) => {
+                  {mensajes.map((mensaje, index) => {
                     const isDoctora = mensaje.user === 'doctora'
                     return (
                       <div
-                        key={key}
+                        key={index}
                         className={`chat-message flex gap-2 ${isDoctora ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
@@ -276,32 +293,29 @@ export default function PageChats() {
                       type='text'
                       placeholder='Escribe tu respuesta aquí...'
                       className='w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-                      onKeyPress={e => {
+                      onKeyPress={(
+                        e: React.KeyboardEvent<HTMLInputElement>
+                      ) => {
                         if (e.key === 'Enter') {
-                          const value = e.target.value.trim()
+                          const target = e.target as HTMLInputElement
+                          const value = target.value.trim()
                           if (value && chatActivo) {
-                            setMensajes([
-                              ...mensajes,
-                              { user: 'doctora', message: value }
-                            ])
-                            e.target.value = ''
+                            handleSubmit(value)
+                            target.value = ''
                           }
                         }
                       }}
                     />
                   </div>
                   <button
-                    onClick={e => {
-                      const input = e.target
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      const target = e.currentTarget
                         .closest('.flex')
-                        .querySelector('input')
-                      const value = input.value.trim()
+                        ?.querySelector('input') as HTMLInputElement
+                      const value = target?.value.trim()
                       if (value && chatActivo) {
-                        setMensajes([
-                          ...mensajes,
-                          { user: 'doctora', message: value }
-                        ])
-                        input.value = ''
+                        handleSubmit(value)
+                        if (target) target.value = ''
                       }
                     }}
                     className='bg-primary-700 text-white p-3 rounded-lg hover:bg-primary-800 transition-colors duration-200'
