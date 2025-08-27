@@ -54,6 +54,9 @@ export default function Page() {
             <button className='text-step-1 p-1 border border-dashed border-gray-400 w-full rounded-lg text-start'>
               Ubicacion del centro?
             </button>
+            <button className='text-step-1 p-1 border border-dashed border-gray-400 w-full rounded-lg text-start'>
+              Consulta tu siguiente cita con la doctora
+            </button>
           </div>
           <div className='chats flex flex-col gap-2 p-4'>
             {messages.map((message, key) => {

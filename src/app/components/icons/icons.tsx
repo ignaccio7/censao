@@ -693,10 +693,71 @@ const IconHospital = ({ className = '', size = '24' }: IconProps) => (
   </svg>
 )
 
+const IconDotsVertical = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0' />
+    <path d='M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0' />
+    <path d='M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0' />
+  </svg>
+)
+
+const IconAlertTriangle = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M12 9v4' />
+    <path d='M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z' />
+    <path d='M12 16h.01' />
+  </svg>
+)
+
+const IconClock = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0' />
+    <path d='M12 7v5l3 3' />
+  </svg>
+)
+
 // const Icon = ({ className = '', size = '24' }: IconProps) => (
 
 // )
 export {
+  IconClock,
+  IconAlertTriangle,
   IconSignIn,
   IconHeart,
   IconSearch,
@@ -732,5 +793,6 @@ export {
   IconNotificationRinging,
   IconEye,
   IconSendMessage,
-  IconHospital
+  IconHospital,
+  IconDotsVertical
 }

@@ -56,7 +56,7 @@ export default function Sidebar() {
         {
           icon: 'message',
           label: 'Chat con Pacientes',
-          link: '/fichas/chat'
+          link: '/dashboard/fichas/chats'
         }
       ]
     },
