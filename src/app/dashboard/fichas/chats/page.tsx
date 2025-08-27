@@ -94,14 +94,14 @@ const chatsDB = [
 export default function PageChats() {
   const [chats] = useState(chatsDB)
   const [chatActivo, setChatActivo] = useState(null)
-  const [mensajes, setMensajes] = useState([])
+  const [mensajes, setMensajes] = useState<any[]>([])
 
-  const handleChatClick = chat => {
+  const handleChatClick = (chat: any) => {
     setChatActivo(chat)
     setMensajes(chat.mensajes)
   }
 
-  const handleSubmit = message => {
+  const handleSubmit = (message: any) => {
     if (!message || !chatActivo) {
       return
     }
@@ -109,7 +109,7 @@ export default function PageChats() {
     setMensajes([...mensajes, { user: 'doctora', message: message.toString() }])
   }
 
-  const getEstadoColor = estado => {
+  const getEstadoColor = (estado: any) => {
     switch (estado) {
       case 'urgente':
         return 'bg-red-100 border-red-300'
@@ -124,7 +124,7 @@ export default function PageChats() {
     }
   }
 
-  const getEstadoText = estado => {
+  const getEstadoText = (estado: any) => {
     switch (estado) {
       case 'urgente':
         return 'Urgente'
