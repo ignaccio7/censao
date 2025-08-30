@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model auditoria_log {
+  id               BigInt    @id @default(autoincrement())
+  nombre_tabla     String    @db.VarChar(255)
+  registro_id      String    @db.Uuid
+  accion           String    @db.VarChar(255)
+  registro_antiguo Json
+  registro_nuevo   Json
+  fecha_cambio     DateTime  @db.Timestamp(0)
+  usuario_id       String    @db.Uuid
+  creado_en        DateTime  @default(now()) @db.Timestamptz(0)
+  creado_por       String?   @db.Uuid
+  actualizado_en   DateTime  @default(now()) @db.Timestamptz(0)
+  actualizado_por  String?   @db.Uuid
+  eliminado_en     DateTime? @db.Timestamptz(0)
+  eliminado_por    String?   @db.Uuid
+  usuarios         usuarios  @relation(fields: [usuario_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "auditoria_log_usuario_id_foreign")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model citas {
+  id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paciente_id        String           @db.Uuid
+  disponibilidad_id  String           @db.Uuid
+  fecha_hora_inicial DateTime         @db.Timestamptz(0)
+  fecha_hora_final   DateTime         @db.Timestamptz(0)
+  turno              String?
+  motivo             String?
+  orden_turno        Int?
+  cita_original_id   String?          @db.Uuid
+  creado_en          DateTime         @default(now()) @db.Timestamptz(0)
+  creado_por         String?          @db.Uuid
+  actualizado_en     DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_por    String?          @db.Uuid
+  eliminado_en       DateTime?        @db.Timestamptz(0)
+  eliminado_por      String?          @db.Uuid
+  citas              citas?           @relation("citasTocitas", fields: [cita_original_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "citas_cita_original_id_foreign")
+  other_citas        citas[]          @relation("citasTocitas")
+  disponibilidades   disponibilidades @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "citas_disponibilidad_id_foreign")
+  pacientes          pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "citas_paciente_id_foreign")
+  tratamientos       tratamientos[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model disponibilidades {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  doctor_id       String          @db.Uuid
+  fecha           DateTime        @db.Date
+  turno_codigo    String
+  cupos           Int
+  observacion     String?
+  creado_en       DateTime        @default(now()) @db.Timestamptz(0)
+  creado_por      String?         @db.Uuid
+  actualizado_en  DateTime        @default(now()) @db.Timestamptz(0)
+  actualizado_por String?         @db.Uuid
+  eliminado_en    DateTime?       @db.Timestamptz(0)
+  eliminado_por   String?         @db.Uuid
+  citas           citas[]
+  doctores        doctores        @relation(fields: [doctor_id], references: [doctor_id], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_doctor_id_foreign")
+  turnos_catalogo turnos_catalogo @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_turno_codigo_foreign")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model doctores {
+  doctor_id        String             @id @db.Uuid
+  matricula        String
+  creado_en        DateTime           @default(now()) @db.Timestamptz(0)
+  creado_por       String?            @db.Uuid
+  actualizado_en   DateTime           @default(now()) @db.Timestamptz(0)
+  actualizado_por  String?            @db.Uuid
+  eliminado_en     DateTime?          @db.Timestamptz(0)
+  eliminado_por    String?            @db.Uuid
+  disponibilidades disponibilidades[]
+  personas         personas           @relation(fields: [doctor_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_doctores_personas")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model esquema_dosis {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vacuna_id       String         @db.Uuid
+  numero          Int
+  intervalo_dias  Int
+  edad_min_meses  Int?
+  notas           String?
+  creado_en       DateTime       @default(now()) @db.Timestamptz(0)
+  creado_por      String?        @db.Uuid
+  actualizado_en  DateTime       @default(now()) @db.Timestamptz(0)
+  actualizado_por String?        @db.Uuid
+  eliminado_en    DateTime?      @db.Timestamptz(0)
+  eliminado_por   String?        @db.Uuid
+  vacunas         vacunas        @relation(fields: [vacuna_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "esquema_dosis_vacuna_id_foreign")
+  tratamientos    tratamientos[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notificaciones {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paciente_id     String       @db.Uuid
+  titulo          String       @db.VarChar(255)
+  mensaje         String       @db.VarChar(255)
+  fecha_envio     DateTime     @db.Timestamp(0)
+  leido           Boolean      @default(false)
+  medio           String       @db.VarChar(255)
+  tratamiento_id  String       @db.Uuid
+  creado_en       DateTime     @default(now()) @db.Timestamptz(0)
+  creado_por      String?      @db.Uuid
+  actualizado_en  DateTime     @default(now()) @db.Timestamptz(0)
+  actualizado_por String?      @db.Uuid
+  eliminado_en    DateTime?    @db.Timestamptz(0)
+  eliminado_por   String?      @db.Uuid
+  pacientes       pacientes    @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_paciente_id_foreign")
+  tratamientos    tratamientos @relation(fields: [tratamiento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_tratamiento_id_foreign")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model pacientes {
+  paciente_id          String           @id @db.Uuid
+  nro_historia_clinica String?          @unique(map: "pacientes_nro_historia_clinica_unique")
+  fecha_nacimiento     DateTime?        @db.Date
+  sexo                 String?
+  grupo_sanguineo      String?
+  creado_en            DateTime         @default(now()) @db.Timestamptz(0)
+  creado_por           String?          @db.Uuid
+  actualizado_en       DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_por      String?          @db.Uuid
+  eliminado_en         DateTime?        @db.Timestamptz(0)
+  eliminado_por        String?          @db.Uuid
+  citas                citas[]
+  notificaciones       notificaciones[]
+  personas             personas         @relation(fields: [paciente_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_pacientes_personas")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model permisos {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre          String
+  ruta            String
+  metodos         String[]
+  icono           String?
+  descripcion     String?
+  modulo          String?
+  creado_en       DateTime         @default(now()) @db.Timestamptz(0)
+  creado_por      String?          @db.Uuid
+  actualizado_en  DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_por String?          @db.Uuid
+  roles_permisos  roles_permisos[]
+
+  @@unique([ruta, metodos], map: "permisos_ruta_metodos_unique")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model personas {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ci              String?
+  nombres         String
+  paterno         String?
+  materno         String?
+  telefono        String?
+  correo          String?    @unique(map: "personas_correo_unique") @db.VarChar(255)
+  direccion       String?
+  creado_en       DateTime   @default(now()) @db.Timestamptz(0)
+  creado_por      String?    @db.Uuid
+  actualizado_en  DateTime   @default(now()) @db.Timestamptz(0)
+  actualizado_por String?    @db.Uuid
+  eliminado_en    DateTime?  @db.Timestamptz(0)
+  eliminado_por   String?    @db.Uuid
+  doctores        doctores?
+  pacientes       pacientes?
+  usuarios        usuarios?
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model roles {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre          String           @unique(map: "roles_nombre_unique")
+  descripcion     String?
+  creado_en       DateTime         @default(now()) @db.Timestamptz(0)
+  creado_por      String?          @db.Uuid
+  actualizado_en  DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_por String?          @db.Uuid
+  eliminado_en    DateTime?        @db.Timestamptz(0)
+  eliminado_por   String?          @db.Uuid
+  roles_permisos  roles_permisos[]
+  usuarios_roles  usuarios_roles[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model roles_permisos {
+  rol_id          String   @db.Uuid
+  permiso_id      String   @db.Uuid
+  creado_en       DateTime @default(now()) @db.Timestamptz(0)
+  creado_por      String?  @db.Uuid
+  actualizado_en  DateTime @default(now()) @db.Timestamptz(0)
+  actualizado_por String?  @db.Uuid
+  permisos        permisos @relation(fields: [permiso_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_permisos")
+  roles           roles    @relation(fields: [rol_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_roles")
+
+  @@id([rol_id, permiso_id])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tratamientos {
+  id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  estado                  String
+  cita_id                 String           @db.Uuid
+  esquema_id              String           @db.Uuid
+  tratamiento_original_id String?          @db.Uuid
+  creado_en               DateTime         @default(now()) @db.Timestamptz(0)
+  creado_por              String?          @db.Uuid
+  actualizado_en          DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_por         String?          @db.Uuid
+  eliminado_en            DateTime?        @db.Timestamptz(0)
+  eliminado_por           String?          @db.Uuid
+  notificaciones          notificaciones[]
+  citas                   citas            @relation(fields: [cita_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_cita_id_foreign")
+  esquema_dosis           esquema_dosis    @relation(fields: [esquema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_esquema_id_foreign")
+  tratamientos            tratamientos?    @relation("tratamientosTotratamientos", fields: [tratamiento_original_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_tratamiento_original_id_foreign")
+  other_tratamientos      tratamientos[]   @relation("tratamientosTotratamientos")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model turnos_catalogo {
+  codigo           String             @id
+  nombre           String
+  hora_inicio      DateTime           @db.Time(0)
+  hora_fin         DateTime           @db.Time(0)
+  creado_en        DateTime           @default(now()) @db.Timestamptz(0)
+  creado_por       String?            @db.Uuid
+  actualizado_en   DateTime           @default(now()) @db.Timestamptz(0)
+  actualizado_por  String?            @db.Uuid
+  eliminado_en     DateTime?          @db.Timestamptz(0)
+  eliminado_por    String?            @db.Uuid
+  disponibilidades disponibilidades[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model usuarios {
+  usuario_id      String           @id @db.Uuid
+  username        String           @unique(map: "usuarios_username_unique")
+  password_hash   String
+  activo          Boolean          @default(true)
+  creado_en       DateTime         @default(now()) @db.Timestamptz(0)
+  creado_por      String?          @db.Uuid
+  actualizado_en  DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_por String?          @db.Uuid
+  eliminado_en    DateTime?        @db.Timestamptz(0)
+  eliminado_por   String?          @db.Uuid
+  auditoria_log   auditoria_log[]
+  personas        personas         @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuarios_personas")
+  usuarios_roles  usuarios_roles[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model usuarios_roles {
+  usuario_id      String    @db.Uuid
+  rol_id          String    @db.Uuid
+  desde           DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  hasta           DateTime? @db.Date
+  creado_en       DateTime  @default(now()) @db.Timestamptz(0)
+  creado_por      String?   @db.Uuid
+  actualizado_en  DateTime  @default(now()) @db.Timestamptz(0)
+  actualizado_por String?   @db.Uuid
+  eliminado_en    DateTime? @db.Timestamptz(0)
+  eliminado_por   String?   @db.Uuid
+  roles           roles     @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_rol_id_foreign")
+  usuarios        usuarios  @relation(fields: [usuario_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_usuario_id_foreign")
+
+  @@id([usuario_id, rol_id])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model vacunas {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre          String          @unique(map: "vacunas_nombre_unique")
+  descripcion     String?
+  fabricante      String?
+  creado_en       DateTime        @default(now()) @db.Timestamptz(0)
+  creado_por      String?         @db.Uuid
+  actualizado_en  DateTime        @default(now()) @db.Timestamptz(0)
+  actualizado_por String?         @db.Uuid
+  eliminado_en    DateTime?       @db.Timestamptz(0)
+  eliminado_por   String?         @db.Uuid
+  esquema_dosis   esquema_dosis[]
+}
