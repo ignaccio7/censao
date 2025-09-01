@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { IconUser, IconSignOut, IconSettings } from '../../icons/icons'
 import { useEffect, useRef, useState } from 'react'
+import { signout } from '@/actions/auth/signout'
 
 export default function DropdownMenu() {
   const [dropdownMenu, setDropdownMenu] = useState(false)
@@ -24,6 +25,16 @@ export default function DropdownMenu() {
     }
   }, [dropdownMenu])
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault()
+
+  //   // simular un loader de 2 segundos
+  //   await new Promise(res => setTimeout(res, 2000))
+
+  //   // ejecutar el server action
+  //   await signout()
+  // }
+
   return (
     <div ref={dropdownRef}>
       <button
@@ -44,13 +55,16 @@ export default function DropdownMenu() {
           Cambiar de rol
         </Link>
         <hr className='border-gray-500' />
-        <Link
-          className='p-3 flex flex-row items-center gap-1 hover:bg-gray-300 transition-colors duration-200'
-          href='/auth/ingresar'
-        >
-          <IconSignOut size='20' />
-          Cerrar Sesion
-        </Link>
+        <form className='w-full' action={signout}>
+          {/* <form onSubmit={handleSubmit}> */}
+          <button
+            className='p-3 flex flex-row items-center gap-1 hover:bg-gray-300 transition-colors duration-200 w-full'
+            type='submit'
+          >
+            <IconSignOut size='20' />
+            Cerrar Sesion
+          </button>
+        </form>
       </div>
     </div>
   )

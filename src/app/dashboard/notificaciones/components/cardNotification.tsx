@@ -19,7 +19,7 @@ export default function CardNotification({
   const IconComponent = Icons[icon]
 
   const color = getColorByNotification(icon)
-  console.log(color)
+  // console.log(color)
 
   return (
     <div

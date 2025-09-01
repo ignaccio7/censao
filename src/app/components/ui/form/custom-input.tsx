@@ -7,6 +7,7 @@ export default function AnimatedInput({
   label = 'Introduce algo aqui',
   type = 'text',
   required = true,
+  name = 'name',
   width = 'w-80'
 }) {
   const [isFocused, setIsFocused] = useState(false)
@@ -33,6 +34,7 @@ export default function AnimatedInput({
         onFocus={handleFocus}
         onBlur={handleBlur}
         onChange={handleChange}
+        name={name}
       />
       <span
         className={`absolute pointer-events-none transition-all duration-300 ease-in-out px-1 ${

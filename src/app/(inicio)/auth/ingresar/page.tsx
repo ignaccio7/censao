@@ -1,13 +1,29 @@
 'use client'
+import { signin } from '@/actions/auth/signin'
 import AnimatedInput from '@/app/components/ui/form/custom-input'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export default function SignIn() {
+  const [error, setError] = useState<boolean>(false)
   const router = useRouter()
 
-  const handleSubmit = (event: any) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    router.push('/dashboard')
+    const formData = new FormData(event.currentTarget)
+    console.log(`formData: ${Object.fromEntries(formData)}`)
+
+    try {
+      const response = await signin(formData)
+      if (response) {
+        router.replace('/dashboard')
+      } else {
+        setError(!response)
+      }
+    } catch (error) {
+      console.log(error)
+      alert('Error al ingresar')
+    }
   }
 
   return (
@@ -24,13 +40,21 @@ export default function SignIn() {
           label='Introduce tu usuario'
           type='text'
           width='w-full'
+          name='username'
         />
         <AnimatedInput
           label='Introduce tu constraseña'
           type='password'
           width='w-full'
+          name='password'
         />
       </fieldset>
+
+      {error && (
+        <fieldset className='flex flex-col gap-6 px-4 my-6'>
+          <span>Credenciales incorrectas</span>
+        </fieldset>
+      )}
 
       <fieldset className='px-4 pb-6 '>
         <button
