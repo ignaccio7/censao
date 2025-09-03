@@ -4,6 +4,7 @@
 // oxlint-disable id-length
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
+import AuthService from './lib/services/auth-service'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
@@ -16,15 +17,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
   callbacks: {
-    jwt: async (user): Promise<any> => {
-      console.log('🔄 PASO 2: Ejecutando jwt() callback')
-      console.log(user)
-      return user
+    jwt: async ({ token, user }) => {
+      console.log('🔄 JWT callback - ANTES:', { token, user })
+
+      // Solo en el primer login (cuando user existe)
+      if (user) {
+        console.log('📝 Primer login - estructurando token limpiamente')
+
+        // Tomamos los datos de user y los estructuramos bien
+        token.id = user.id
+        token.username = user.username
+        token.name = user.name
+        token.role = user.role
+        token.roleDescription = user.roleDescription
+        token.permisos = user.permisos
+      }
+
+      console.log('🔄 JWT callback - DESPUÉS:', token)
+      return token
     },
-    session: async (user: any): Promise<any> => {
-      console.log('🔄 PASO 3: Ejecutando session() callback')
-      console.log(user)
-      return user
+    session: async ({ session, token }) => {
+      console.log('🔄 SESSION callback - ANTES:', { session, token })
+
+      // Aquí tomas SOLO los datos limpios del token
+      if (token) {
+        session.user = {
+          id: token.id as string,
+          email: '',
+          image: '',
+          emailVerified: new Date(),
+          username: token.username as string,
+          name: token.name as string,
+          role: token.role as string,
+          roleDescription: token.roleDescription as string,
+          permisos: token.permisos as string[]
+        }
+      }
+
+      console.log('🔄 SESSION callback - DESPUÉS:', session)
+      return session
     }
   },
 
@@ -58,29 +89,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         console.log('🔄 PASO 1: authorize() retorna usuario para jwt()')
         console.log('Authorizando')
 
-        let user = null
-        const passwordHashed = credentials.password
-
-        const userData = [
-          {
-            username: 'admin',
-            password: '123'
-          },
-          {
-            username: 'doctor',
-            password: '123'
-          }
-        ]
-
-        user = userData.find(
-          u =>
-            u.username === credentials.username && u.password === passwordHashed
-        )
-        console.log(user)
-
-        if (!user) {
-          throw new Error('Credenciales incorrectas')
+        if (!credentials?.username || !credentials?.password) {
+          return null
         }
+
+        const user = await AuthService.validateCredentials(
+          credentials.username as string,
+          credentials.password as string
+        )
+
+        console.log('Usuario', user)
 
         return user
       }

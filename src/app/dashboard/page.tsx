@@ -1,3 +1,4 @@
+import { auth } from '@/auth'
 import CardLink from '../components/ui/cardLink'
 import Title from '../components/ui/title'
 
@@ -60,10 +61,13 @@ const permissions = [
   }
 ]
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const session = await auth()
+
   return (
     <div className='inicio font-secondary'>
       <Title>Bienvenid@ Juan Perez</Title>
+      <pre>{`La sesion es ${JSON.stringify(session?.user, null, 2)}`}</pre>
       <p className=''>Tienes acceso a los siguientes modulos</p>
       {permissions.map(permission => (
         <div className='content-submenu' key={permission.label}>

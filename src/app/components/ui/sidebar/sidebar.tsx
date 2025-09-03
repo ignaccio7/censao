@@ -2,9 +2,13 @@
 
 import useSidebar from '@/hooks/useSidebar'
 import ToggleLink from './toggleLink'
+import useProfileRoutes from '@/hooks/useProfileRoutes'
 
 export default function Sidebar() {
   const { sidebarMenu } = useSidebar()
+  const { routes } = useProfileRoutes()
+
+  console.log(routes)
 
   const permissions = [
     {

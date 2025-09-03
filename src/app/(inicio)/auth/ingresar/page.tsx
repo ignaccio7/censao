@@ -47,6 +47,7 @@ export default function SignIn() {
           type='password'
           width='w-full'
           name='password'
+          defaultValue='123'
         />
       </fieldset>
 

@@ -1,0 +1,52 @@
+import { create } from 'zustand'
+
+interface Route {
+  route: string
+  methods: string[]
+}
+
+interface ProfileRoutesState {
+  routes: Route[]
+  setRoutes: (routes: Route[]) => void
+  hasPermission: (route: string, method?: string) => boolean
+  clearRoutes: () => void
+}
+
+const useProfileRoutesStore = create<ProfileRoutesState>((set, get) => ({
+  routes: [],
+  setRoutes: routes => set({ routes: routes }),
+  hasPermission: (route, method = 'read') => {
+    const { routes } = get()
+
+    const routeMatch = routes.find(perm => perm.route === route)
+    if (routeMatch) {
+      return routeMatch.methods.includes(method)
+    }
+
+    const routeParameterMatch = routes.find(perm => {
+      if (perm.route.includes(':')) {
+        const pattern = new RegExp(
+          // oxlint-disable-next-line prefer-template
+          '^' +
+            route.replace(
+              /:uuid/g,
+              '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
+            ) +
+            '$',
+          'i'
+        )
+        return pattern.test(route)
+      }
+      return false
+    })
+
+    return routeParameterMatch
+      ? routeParameterMatch.methods.includes(method)
+      : false
+  },
+  clearRoutes() {
+    set({ routes: [] })
+  }
+}))
+
+export default useProfileRoutesStore

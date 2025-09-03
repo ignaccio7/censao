@@ -8,7 +8,8 @@ export default function AnimatedInput({
   type = 'text',
   required = true,
   name = 'name',
-  width = 'w-80'
+  width = 'w-80',
+  defaultValue = ''
 }) {
   const [isFocused, setIsFocused] = useState(false)
   const [hasValue, setHasValue] = useState(false)
@@ -34,6 +35,7 @@ export default function AnimatedInput({
         onFocus={handleFocus}
         onBlur={handleBlur}
         onChange={handleChange}
+        defaultValue={defaultValue}
         name={name}
       />
       <span
