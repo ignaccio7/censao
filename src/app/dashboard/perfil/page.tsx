@@ -4,8 +4,11 @@ import { IconUser } from '@/app/components/icons/icons'
 import Title from '@/app/components/ui/title'
 import type { PersonaCompleta } from '@/interfaces'
 import FormProfileData from './components/formProfileData'
+// import { useSession } from 'next-auth/react'
 
 export default function Page() {
+  // const { data: session } = useSession()
+
   const data = {
     personas: {
       nombres: 'Juan',

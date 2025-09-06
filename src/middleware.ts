@@ -25,12 +25,12 @@ export default async function middleware(req: NextRequest) {
     // Para rutas con parámetros uuid
     if (route.includes(':')) {
       const pattern = new RegExp(
-        '^' +
-          route.replace(
-            /:uuid/g,
-            '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
-          ) +
-          '$',
+        `
+        ^${route.replace(
+          /:uuid/g,
+          '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
+        )}$
+        `,
         'i'
       )
       return pattern.test(pathname)

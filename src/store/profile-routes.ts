@@ -1,8 +1,12 @@
 import { create } from 'zustand'
 
-interface Route {
+export interface Route {
   route: string
   methods: string[]
+  description: string
+  icon: string
+  module: string
+  name: string
 }
 
 interface ProfileRoutesState {

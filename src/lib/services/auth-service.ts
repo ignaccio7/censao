@@ -155,6 +155,13 @@ export default class AuthService {
                   where: {
                     permisos: {
                       tipo: 'frontend'
+                    },
+                    NOT: {
+                      permisos: {
+                        ruta: {
+                          contains: '/:uuid'
+                        }
+                      }
                     }
                   },
                   select: {
@@ -162,7 +169,10 @@ export default class AuthService {
                       select: {
                         ruta: true,
                         metodos: true,
-                        descripcion: true
+                        descripcion: true,
+                        icono: true,
+                        modulo: true,
+                        nombre: true
                       }
                     }
                   }
@@ -185,8 +195,12 @@ export default class AuthService {
     } else {
       permisos =
         primaryRole?.roles_permisos.map((rp: any) => ({
-          ruta: rp.permisos.ruta,
-          metodos: rp.permisos.metodos
+          link: rp.permisos.ruta,
+          methods: rp.permisos.metodos,
+          description: rp.permisos.descripcion,
+          icon: rp.permisos.icono,
+          module: rp.permisos.modulo,
+          label: rp.permisos.nombre
         })) || []
     }
 

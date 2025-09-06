@@ -68,7 +68,7 @@ const PERMISOS_COMUNES: PermisoCompleto[] = [
     ruta: '/dashboard',
     metodos: ['read'],
     icono: 'home',
-    descripcion: 'Acceso al dashboard principal',
+    descripcion: 'Bienvenid@ a la aplicación de Gestión de Salud',
     modulo: 'principal'
   },
   {
@@ -77,7 +77,7 @@ const PERMISOS_COMUNES: PermisoCompleto[] = [
     ruta: '/dashboard/perfil',
     metodos: ['read', 'update'],
     icono: 'user',
-    descripcion: 'Ver y actualizar perfil personal',
+    descripcion: 'Permite ver y actualizar el perfil del usuario personal',
     modulo: 'principal'
   },
   {
