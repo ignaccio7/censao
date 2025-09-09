@@ -1,4 +1,5 @@
 // oxlint-disable no-extraneous-class
+import { auth } from '@/auth'
 import prisma from '../prisma/prisma'
 import bcrypt from 'bcryptjs'
 
@@ -52,44 +53,43 @@ export default class AuthService {
     }
   }
 
-  static async verifyAPIPermission(
-    userId: string,
-    requiredRoute: string,
-    requiredMethod: string
-  ): Promise<boolean> {
-    const permission = await prisma.usuarios_roles.findFirst({
-      where: {
-        usuario_id: userId,
-        hasta: null
-      },
-      orderBy: { desde: 'desc' },
-      select: {
-        roles: {
-          select: {
-            roles_permisos: {
-              where: {
-                permisos: {
-                  ruta: requiredRoute,
-                  tipo: 'backend', // ✅ Para APIs usamos backend
-                  metodos: {
-                    has: requiredMethod.toLowerCase()
-                  }
-                }
-              },
-              select: {
-                permisos: {
-                  select: {
-                    ruta: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    })
+  static async validateApiPermission(route: string, method: string) {
+    const session = await auth()
+    console.log(
+      '-------------------------------------------------------------------SESION PARA VALIDAR API'
+    )
+    console.log(session)
 
-    return !!permission?.roles?.roles_permisos?.length
+    if (!session || !session.user.id) {
+      return {
+        success: false,
+        error: 'No se ha iniciado sesion',
+        status: 401
+      }
+    }
+
+    const hasPermission = await this.verifyAPIPermission(
+      session.user.id,
+      route,
+      method
+    )
+
+    if (!hasPermission) {
+      return {
+        success: false,
+        error: 'No tienes permisos para realizar esta accion',
+        status: 403
+      }
+    }
+
+    return {
+      success: true,
+      status: 200,
+      data: {
+        id: session.user.id,
+        username: session.user.username
+      }
+    }
   }
 
   /**
@@ -211,6 +211,51 @@ export default class AuthService {
       role: primaryRole?.nombre || '',
       roleDescription: primaryRole?.descripcion || '',
       permisos
+    }
+  }
+
+  static async verifyAPIPermission(
+    userId: string,
+    requiredRoute: string,
+    requiredMethod: string
+  ): Promise<boolean> {
+    try {
+      const permission = await prisma.usuarios_roles.findFirst({
+        where: {
+          usuario_id: userId,
+          hasta: null
+        },
+        orderBy: { desde: 'desc' },
+        select: {
+          roles: {
+            select: {
+              roles_permisos: {
+                where: {
+                  permisos: {
+                    ruta: requiredRoute,
+                    tipo: 'backend', // ✅ Para APIs usamos backend
+                    metodos: {
+                      has: requiredMethod.toLowerCase()
+                    }
+                  }
+                },
+                select: {
+                  permisos: {
+                    select: {
+                      ruta: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+
+      return !!permission?.roles?.roles_permisos?.length
+    } catch (error) {
+      console.log('Error verificando permisos:', error)
+      return false
     }
   }
 }
