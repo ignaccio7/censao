@@ -217,7 +217,7 @@ export default class AuthService {
   static async verifyAPIPermission(
     userId: string,
     requiredRoute: string,
-    requiredMethod: string
+    requiredMetohd: string
   ): Promise<boolean> {
     try {
       const permission = await prisma.usuarios_roles.findFirst({
@@ -233,9 +233,9 @@ export default class AuthService {
                 where: {
                   permisos: {
                     ruta: requiredRoute,
-                    tipo: 'backend', // ✅ Para APIs usamos backend
+                    tipo: 'backend',
                     metodos: {
-                      has: requiredMethod.toLowerCase()
+                      has: requiredMetohd.toString() as string
                     }
                   }
                 },
