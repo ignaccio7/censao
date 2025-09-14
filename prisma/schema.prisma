@@ -11,40 +11,37 @@ datasource db {
 model auditoria_log {
   id               BigInt    @id @default(autoincrement())
   nombre_tabla     String    @db.VarChar(255)
-  registro_id      String    @db.Uuid
+  registro_id      String
   accion           String    @db.VarChar(255)
   registro_antiguo Json
   registro_nuevo   Json
   fecha_cambio     DateTime  @db.Timestamp(0)
   usuario_id       String    @db.Uuid
   creado_en        DateTime  @default(now()) @db.Timestamptz(0)
-  creado_por       String?   @db.Uuid
+  creado_por       String?
   actualizado_en   DateTime  @default(now()) @db.Timestamptz(0)
-  actualizado_por  String?   @db.Uuid
+  actualizado_por  String?
   eliminado_en     DateTime? @db.Timestamptz(0)
-  eliminado_por    String?   @db.Uuid
+  eliminado_por    String?
   usuarios         usuarios  @relation(fields: [usuario_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "auditoria_log_usuario_id_foreign")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model citas {
   id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  paciente_id        String           @db.Uuid
+  paciente_id        String
   disponibilidad_id  String           @db.Uuid
   fecha_hora_inicial DateTime         @db.Timestamptz(0)
   fecha_hora_final   DateTime         @db.Timestamptz(0)
   turno              String?
   motivo             String?
   orden_turno        Int?
-  cita_original_id   String?          @db.Uuid
   creado_en          DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por         String?          @db.Uuid
+  creado_por         String?
   actualizado_en     DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por    String?          @db.Uuid
+  actualizado_por    String?
   eliminado_en       DateTime?        @db.Timestamptz(0)
-  eliminado_por      String?          @db.Uuid
-  citas              citas?           @relation("citasTocitas", fields: [cita_original_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "citas_cita_original_id_foreign")
-  other_citas        citas[]          @relation("citasTocitas")
+  eliminado_por      String?
   disponibilidades   disponibilidades @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "citas_disponibilidad_id_foreign")
   pacientes          pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "citas_paciente_id_foreign")
   tratamientos       tratamientos[]
@@ -53,17 +50,17 @@ model citas {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model disponibilidades {
   id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  doctor_id       String          @db.Uuid
+  doctor_id       String
   fecha           DateTime        @db.Date
   turno_codigo    String
   cupos           Int
   observacion     String?
   creado_en       DateTime        @default(now()) @db.Timestamptz(0)
-  creado_por      String?         @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime        @default(now()) @db.Timestamptz(0)
-  actualizado_por String?         @db.Uuid
+  actualizado_por String?
   eliminado_en    DateTime?       @db.Timestamptz(0)
-  eliminado_por   String?         @db.Uuid
+  eliminado_por   String?
   citas           citas[]
   doctores        doctores        @relation(fields: [doctor_id], references: [doctor_id], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_doctor_id_foreign")
   turnos_catalogo turnos_catalogo @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_turno_codigo_foreign")
@@ -71,16 +68,16 @@ model disponibilidades {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model doctores {
-  doctor_id        String             @id @db.Uuid
+  doctor_id        String             @id
   matricula        String
   creado_en        DateTime           @default(now()) @db.Timestamptz(0)
-  creado_por       String?            @db.Uuid
+  creado_por       String?
   actualizado_en   DateTime           @default(now()) @db.Timestamptz(0)
-  actualizado_por  String?            @db.Uuid
+  actualizado_por  String?
   eliminado_en     DateTime?          @db.Timestamptz(0)
-  eliminado_por    String?            @db.Uuid
+  eliminado_por    String?
   disponibilidades disponibilidades[]
-  personas         personas           @relation(fields: [doctor_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_doctores_personas")
+  personas         personas           @relation(fields: [doctor_id], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_doctores_personas")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -92,11 +89,11 @@ model esquema_dosis {
   edad_min_meses  Int?
   notas           String?
   creado_en       DateTime       @default(now()) @db.Timestamptz(0)
-  creado_por      String?        @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime       @default(now()) @db.Timestamptz(0)
-  actualizado_por String?        @db.Uuid
+  actualizado_por String?
   eliminado_en    DateTime?      @db.Timestamptz(0)
-  eliminado_por   String?        @db.Uuid
+  eliminado_por   String?
   vacunas         vacunas        @relation(fields: [vacuna_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "esquema_dosis_vacuna_id_foreign")
   tratamientos    tratamientos[]
 }
@@ -104,7 +101,7 @@ model esquema_dosis {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model notificaciones {
   id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  paciente_id     String       @db.Uuid
+  paciente_id     String
   titulo          String       @db.VarChar(255)
   mensaje         String       @db.VarChar(255)
   fecha_envio     DateTime     @db.Timestamp(0)
@@ -112,31 +109,31 @@ model notificaciones {
   medio           String       @db.VarChar(255)
   tratamiento_id  String       @db.Uuid
   creado_en       DateTime     @default(now()) @db.Timestamptz(0)
-  creado_por      String?      @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime     @default(now()) @db.Timestamptz(0)
-  actualizado_por String?      @db.Uuid
+  actualizado_por String?
   eliminado_en    DateTime?    @db.Timestamptz(0)
-  eliminado_por   String?      @db.Uuid
+  eliminado_por   String?
   pacientes       pacientes    @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_paciente_id_foreign")
   tratamientos    tratamientos @relation(fields: [tratamiento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_tratamiento_id_foreign")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model pacientes {
-  paciente_id          String           @id @db.Uuid
+  paciente_id          String           @id
   nro_historia_clinica String?          @unique(map: "pacientes_nro_historia_clinica_unique")
   fecha_nacimiento     DateTime?        @db.Date
   sexo                 String?
   grupo_sanguineo      String?
   creado_en            DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por           String?          @db.Uuid
+  creado_por           String?
   actualizado_en       DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por      String?          @db.Uuid
+  actualizado_por      String?
   eliminado_en         DateTime?        @db.Timestamptz(0)
-  eliminado_por        String?          @db.Uuid
+  eliminado_por        String?
   citas                citas[]
   notificaciones       notificaciones[]
-  personas             personas         @relation(fields: [paciente_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_pacientes_personas")
+  personas             personas         @relation(fields: [paciente_id], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_pacientes_personas")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -150,9 +147,11 @@ model permisos {
   descripcion     String?
   modulo          String?
   creado_en       DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por      String?          @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por String?          @db.Uuid
+  actualizado_por String?
+  eliminado_en    DateTime?        @db.Timestamptz(0)
+  eliminado_por   String?
   roles_permisos  roles_permisos[]
 
   @@unique([ruta, metodos], map: "permisos_ruta_metodos_unique")
@@ -160,8 +159,7 @@ model permisos {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model personas {
-  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ci              String?
+  ci              String     @id
   nombres         String
   paterno         String?
   materno         String?
@@ -169,14 +167,14 @@ model personas {
   correo          String?    @unique(map: "personas_correo_unique") @db.VarChar(255)
   direccion       String?
   creado_en       DateTime   @default(now()) @db.Timestamptz(0)
-  creado_por      String?    @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime   @default(now()) @db.Timestamptz(0)
-  actualizado_por String?    @db.Uuid
+  actualizado_por String?
   eliminado_en    DateTime?  @db.Timestamptz(0)
-  eliminado_por   String?    @db.Uuid
+  eliminado_por   String?
   doctores        doctores?
   pacientes       pacientes?
-  usuarios        usuarios?
+  usuarios        usuarios[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -185,25 +183,27 @@ model roles {
   nombre          String           @unique(map: "roles_nombre_unique")
   descripcion     String?
   creado_en       DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por      String?          @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por String?          @db.Uuid
+  actualizado_por String?
   eliminado_en    DateTime?        @db.Timestamptz(0)
-  eliminado_por   String?          @db.Uuid
+  eliminado_por   String?
   roles_permisos  roles_permisos[]
   usuarios_roles  usuarios_roles[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model roles_permisos {
-  rol_id          String   @db.Uuid
-  permiso_id      String   @db.Uuid
-  creado_en       DateTime @default(now()) @db.Timestamptz(0)
-  creado_por      String?  @db.Uuid
-  actualizado_en  DateTime @default(now()) @db.Timestamptz(0)
-  actualizado_por String?  @db.Uuid
-  permisos        permisos @relation(fields: [permiso_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_permisos")
-  roles           roles    @relation(fields: [rol_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_roles")
+  rol_id          String    @db.Uuid
+  permiso_id      String    @db.Uuid
+  creado_en       DateTime  @default(now()) @db.Timestamptz(0)
+  creado_por      String?   @db.Uuid
+  actualizado_en  DateTime  @default(now()) @db.Timestamptz(0)
+  actualizado_por String?   @db.Uuid
+  eliminado_en    DateTime? @db.Timestamptz(0)
+  eliminado_por   String?
+  permisos        permisos  @relation(fields: [permiso_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_permisos")
+  roles           roles     @relation(fields: [rol_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_roles")
 
   @@id([rol_id, permiso_id])
 }
@@ -216,11 +216,11 @@ model tratamientos {
   esquema_id              String           @db.Uuid
   tratamiento_original_id String?          @db.Uuid
   creado_en               DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por              String?          @db.Uuid
+  creado_por              String?
   actualizado_en          DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por         String?          @db.Uuid
+  actualizado_por         String?
   eliminado_en            DateTime?        @db.Timestamptz(0)
-  eliminado_por           String?          @db.Uuid
+  eliminado_por           String?
   notificaciones          notificaciones[]
   citas                   citas            @relation(fields: [cita_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_cita_id_foreign")
   esquema_dosis           esquema_dosis    @relation(fields: [esquema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_esquema_id_foreign")
@@ -235,29 +235,30 @@ model turnos_catalogo {
   hora_inicio      DateTime           @db.Time(0)
   hora_fin         DateTime           @db.Time(0)
   creado_en        DateTime           @default(now()) @db.Timestamptz(0)
-  creado_por       String?            @db.Uuid
+  creado_por       String?
   actualizado_en   DateTime           @default(now()) @db.Timestamptz(0)
-  actualizado_por  String?            @db.Uuid
+  actualizado_por  String?
   eliminado_en     DateTime?          @db.Timestamptz(0)
-  eliminado_por    String?            @db.Uuid
+  eliminado_por    String?
   disponibilidades disponibilidades[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model usuarios {
-  usuario_id      String           @id @db.Uuid
+  usuario_id      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  persona_ci      String
   username        String           @unique(map: "usuarios_username_unique")
   password_hash   String
   activo          Boolean          @default(true)
   creado_en       DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por      String?          @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por String?          @db.Uuid
+  actualizado_por String?
   eliminado_en    DateTime?        @db.Timestamptz(0)
-  eliminado_por   String?          @db.Uuid
+  eliminado_por   String?
   auditoria_log   auditoria_log[]
   refresh_tokens  refresh_tokens[]
-  personas        personas         @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuarios_personas")
+  personas        personas         @relation(fields: [persona_ci], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuarios_personas")
   usuarios_roles  usuarios_roles[]
 }
 
@@ -268,11 +269,11 @@ model usuarios_roles {
   desde           DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
   hasta           DateTime? @db.Date
   creado_en       DateTime  @default(now()) @db.Timestamptz(0)
-  creado_por      String?   @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime  @default(now()) @db.Timestamptz(0)
-  actualizado_por String?   @db.Uuid
+  actualizado_por String?
   eliminado_en    DateTime? @db.Timestamptz(0)
-  eliminado_por   String?   @db.Uuid
+  eliminado_por   String?
   roles           roles     @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_rol_id_foreign")
   usuarios        usuarios  @relation(fields: [usuario_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_usuario_id_foreign")
 
@@ -286,11 +287,11 @@ model vacunas {
   descripcion     String?
   fabricante      String?
   creado_en       DateTime        @default(now()) @db.Timestamptz(0)
-  creado_por      String?         @db.Uuid
+  creado_por      String?
   actualizado_en  DateTime        @default(now()) @db.Timestamptz(0)
-  actualizado_por String?         @db.Uuid
+  actualizado_por String?
   eliminado_en    DateTime?       @db.Timestamptz(0)
-  eliminado_por   String?         @db.Uuid
+  eliminado_por   String?
   esquema_dosis   esquema_dosis[]
 }
 

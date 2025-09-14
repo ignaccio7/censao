@@ -1,3 +1,6 @@
+// oxlint-disable prefer-default-export
+// oxlint-disable no-console
+// oxlint-disable func-style
 'use server'
 
 import { auth } from '@/auth'

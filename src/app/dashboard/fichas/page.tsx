@@ -15,13 +15,13 @@ import Title from '@/app/components/ui/title'
 import useModal from '@/hooks/useModal'
 import FormRegister from '../components/formRegister'
 import CustomDataTable from '@/app/components/ui/dataTable'
-import FichasService from '@/app/api/services/fichas'
+import { useFichas } from '@/app/api/services/fichas'
 
 export default function PageFichas() {
   const { modal, closeModal, openModal } = useModal()
   const [activeTab, setActiveTab] = useState('pacientes')
 
-  const { data } = FichasService.getFichas()
+  const { data } = useFichas()
   console.log('La data es:')
   console.log(data)
 

@@ -692,12 +692,14 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
 
   // 2. Crear usuario
   console.log(`  🔐 Creando usuario: ${usuarioData.usuario.username}`)
+  const userId = crypto.randomUUID()
   const usuario = await prisma.usuarios.create({
     data: {
-      usuario_id: persona.id,
+      usuario_id: userId,
       username: usuarioData.usuario.username,
       password_hash: hashedPassword,
-      activo: usuarioData.usuario.activo
+      activo: usuarioData.usuario.activo,
+      persona_ci: persona.ci
     }
   })
 
@@ -709,7 +711,7 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
       )
       await prisma.doctores.create({
         data: {
-          doctor_id: persona.id,
+          doctor_id: persona.ci,
           matricula: usuarioData.datosEspecificos.matricula!
         }
       })
@@ -719,7 +721,7 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
       )
       await prisma.pacientes.create({
         data: {
-          paciente_id: persona.id,
+          paciente_id: persona.ci,
           nro_historia_clinica:
             usuarioData.datosEspecificos.nroHistoriaClinica!,
           fecha_nacimiento: usuarioData.datosEspecificos.fechaNacimiento!,
@@ -763,6 +765,7 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
           }
         })
 
+        // oxlint-disable-next-line init-declarations
         let permiso
         if (permisoExistente) {
           permiso = permisoExistente
@@ -795,7 +798,7 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
   console.log(`  🔗 Asignando rol ${usuarioData.rol.nombre} al usuario`)
   await prisma.usuarios_roles.create({
     data: {
-      usuario_id: persona.id,
+      usuario_id: userId,
       rol_id: rol.id,
       desde: new Date()
     }

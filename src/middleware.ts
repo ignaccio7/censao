@@ -53,5 +53,5 @@ export default async function middleware(req: NextRequest) {
 
 // Configuración del matcher para proteger solo las rutas específicas
 export const config = {
-  matcher: ['/dashboard/:path']
+  matcher: ['/dashboard/:path*']
 }

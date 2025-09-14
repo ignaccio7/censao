@@ -23,6 +23,8 @@ export default function useProfileRoutes() {
 
       if (response) {
         setRoutes(response)
+      } else {
+        clearRoutes()
       }
     } catch (error) {
       console.log('Error cargando permisos', error)
@@ -33,6 +35,7 @@ export default function useProfileRoutes() {
 
   useEffect(() => {
     // Si no hay sesión, limpiar y no mostrar loading
+    // oxlint-disable-next-line exhaustive-deps
     if (status === 'unauthenticated') {
       // oxlint-disable-next-line exhaustive-deps
       clearRoutes()
