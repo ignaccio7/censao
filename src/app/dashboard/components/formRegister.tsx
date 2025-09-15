@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import {
+  IconCredential,
   IconSchedule,
   IconStethoscope,
   IconUser,
   IconUserPlus
 } from '@/app/components/icons/icons'
+import { useFichas } from '@/app/api/services/fichas'
 
 // Mock de datos
 const mockData = {
@@ -86,6 +88,7 @@ const mockData = {
 
 export default function FormRegister() {
   const [especialidadSeleccionada, setEspecialidadSeleccionada] = useState('')
+  const { createFicha } = useFichas()
 
   // Obtener doctores de la especialidad seleccionada
   const doctoresDisponibles = especialidadSeleccionada
@@ -97,12 +100,44 @@ export default function FormRegister() {
     setEspecialidadSeleccionada(event.target.value)
   }
 
+  const addRecord = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    console.log('Submiteando')
+    const data = new FormData(event.target as HTMLFormElement)
+    console.log(Object.fromEntries(data))
+    try {
+      const response = await createFicha.mutateAsync(Object.fromEntries(data))
+      console.log(response)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div className='form-register'>
       <h3 className='text-step-0 text-gray-600'>
         Complete los datos del paciente para generar una nueva ficha médica
       </h3>
-      <form className='my-2 md:my-4 grid grid-cols-1 md:grid-cols-2 gap-4'>
+      <form
+        className='my-2 md:my-4 grid grid-cols-1 md:grid-cols-2 gap-4'
+        onSubmit={addRecord}
+      >
+        <label
+          htmlFor='cedula'
+          className='text-step-0 w-full flex flex-col gap-1'
+        >
+          <span className='font-semibold flex gap-1 items-center'>
+            <IconCredential />
+            Cedula
+          </span>
+          <input
+            className='p-2 border border-transparent rounded-md focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600'
+            type='text'
+            name='cedula'
+            id='cedula'
+            placeholder='1054876541'
+          />
+        </label>
         <label
           htmlFor='nombre'
           className='text-step-0 w-full flex flex-col gap-1'

@@ -287,7 +287,7 @@ ALTER TABLE
 -- Tabla de disponibilidades de doctores
 CREATE TABLE "disponibilidades"(
     "id" UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    "doctor_id" TEXT NOT NULL,
+    -- "doctor_id" TEXT NOT NULL,
     "fecha" DATE NOT NULL,
     "turno_codigo" TEXT NOT NULL,
     "cupos" INTEGER NOT NULL,
@@ -301,7 +301,7 @@ CREATE TABLE "disponibilidades"(
 );
 
 COMMENT ON COLUMN disponibilidades.id IS 'Identificador único de la disponibilidad';
-COMMENT ON COLUMN disponibilidades.doctor_id IS 'ID del doctor con disponibilidad';
+-- COMMENT ON COLUMN disponibilidades.doctor_id IS 'ID del doctor con disponibilidad';
 COMMENT ON COLUMN disponibilidades.fecha IS 'Fecha de la disponibilidad';
 COMMENT ON COLUMN disponibilidades.turno_codigo IS 'Código del turno de disponibilidad';
 COMMENT ON COLUMN disponibilidades.cupos IS 'Número de cupos disponibles';
@@ -564,8 +564,8 @@ ALTER TABLE
     "tratamientos" ADD CONSTRAINT "tratamientos_tratamiento_original_id_foreign" FOREIGN KEY("tratamiento_original_id") REFERENCES "tratamientos"("id");
 ALTER TABLE
     "tratamientos" ADD CONSTRAINT "tratamientos_cita_id_foreign" FOREIGN KEY("cita_id") REFERENCES "citas"("id");
-ALTER TABLE
-    "disponibilidades" ADD CONSTRAINT "disponibilidades_doctor_id_foreign" FOREIGN KEY("doctor_id") REFERENCES "doctores"("doctor_id");
+-- ALTER TABLE
+--     "disponibilidades" ADD CONSTRAINT "disponibilidades_doctor_id_foreign" FOREIGN KEY("doctor_id") REFERENCES "doctores"("doctor_id");
 ALTER TABLE
     "tratamientos" ADD CONSTRAINT "tratamientos_esquema_id_foreign" FOREIGN KEY("esquema_id") REFERENCES "esquema_dosis"("id");
 ALTER TABLE
@@ -586,3 +586,31 @@ ALTER TABLE
     "auditoria_log" ADD CONSTRAINT "auditoria_log_usuario_id_foreign" FOREIGN KEY("usuario_id") REFERENCES "usuarios"("usuario_id");
 ALTER TABLE
     "disponibilidades" ADD CONSTRAINT "disponibilidades_turno_codigo_foreign" FOREIGN KEY("turno_codigo") REFERENCES "turnos_catalogo"("codigo");
+
+
+--------------------------------
+
+CREATE TABLE public.especialidades (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    nombre text NOT NULL,
+    descripcion text NULL,
+    creado_en timestamptz(0) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    creado_por text NULL,
+    actualizado_en timestamptz(0) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizado_por text NULL,
+    eliminado_en timestamptz(0) NULL,
+    eliminado_por text NULL
+);
+
+CREATE TABLE public.doctores_especialidades (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    doctor_id text NOT NULL REFERENCES public.doctores(doctor_id),
+    especialidad_id uuid NOT NULL REFERENCES public.especialidades(id),
+    UNIQUE (doctor_id, especialidad_id) -- evita duplicados
+);
+
+ALTER TABLE public.disponibilidades
+DROP COLUMN doctor_id;
+
+ALTER TABLE public.disponibilidades
+ADD COLUMN doctor_especialidad_id uuid NOT NULL REFERENCES public.doctores_especialidades(id);
