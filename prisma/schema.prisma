@@ -49,35 +49,34 @@ model citas {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model disponibilidades {
-  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  doctor_id       String
-  fecha           DateTime        @db.Date
-  turno_codigo    String
-  cupos           Int
-  observacion     String?
-  creado_en       DateTime        @default(now()) @db.Timestamptz(0)
-  creado_por      String?
-  actualizado_en  DateTime        @default(now()) @db.Timestamptz(0)
-  actualizado_por String?
-  eliminado_en    DateTime?       @db.Timestamptz(0)
-  eliminado_por   String?
-  citas           citas[]
-  doctores        doctores        @relation(fields: [doctor_id], references: [doctor_id], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_doctor_id_foreign")
-  turnos_catalogo turnos_catalogo @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_turno_codigo_foreign")
+  id                      String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  turno_codigo            String
+  cupos                   Int                     @default(0)
+  observacion             String?
+  creado_en               DateTime                @default(now()) @db.Timestamptz(0)
+  creado_por              String?
+  actualizado_en          DateTime                @default(now()) @db.Timestamptz(0)
+  actualizado_por         String?
+  eliminado_en            DateTime?               @db.Timestamptz(0)
+  eliminado_por           String?
+  doctor_especialidad_id  String                  @db.Uuid
+  citas                   citas[]
+  doctores_especialidades doctores_especialidades @relation(fields: [doctor_especialidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  turnos_catalogo         turnos_catalogo         @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_turno_codigo_foreign")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model doctores {
-  doctor_id        String             @id
-  matricula        String
-  creado_en        DateTime           @default(now()) @db.Timestamptz(0)
-  creado_por       String?
-  actualizado_en   DateTime           @default(now()) @db.Timestamptz(0)
-  actualizado_por  String?
-  eliminado_en     DateTime?          @db.Timestamptz(0)
-  eliminado_por    String?
-  disponibilidades disponibilidades[]
-  personas         personas           @relation(fields: [doctor_id], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_doctores_personas")
+  doctor_id               String                    @id
+  matricula               String
+  creado_en               DateTime                  @default(now()) @db.Timestamptz(0)
+  creado_por              String?
+  actualizado_en          DateTime                  @default(now()) @db.Timestamptz(0)
+  actualizado_por         String?
+  eliminado_en            DateTime?                 @db.Timestamptz(0)
+  eliminado_por           String?
+  personas                personas                  @relation(fields: [doctor_id], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_doctores_personas")
+  doctores_especialidades doctores_especialidades[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -308,4 +307,28 @@ model refresh_tokens {
   eliminado_en    DateTime? @db.Timestamptz(0)
   eliminado_por   String?   @db.Uuid
   usuarios        usuarios  @relation(fields: [user_id], references: [usuario_id], onDelete: Cascade, map: "fk_refresh_tokens_usuario")
+}
+
+model doctores_especialidades {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  doctor_id        String
+  especialidad_id  String             @db.Uuid
+  disponibilidades disponibilidades[]
+  doctores         doctores           @relation(fields: [doctor_id], references: [doctor_id], onDelete: NoAction, onUpdate: NoAction)
+  especialidades   especialidades     @relation(fields: [especialidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([doctor_id, especialidad_id])
+}
+
+model especialidades {
+  id                      String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre                  String
+  descripcion             String?
+  creado_en               DateTime                  @default(now()) @db.Timestamptz(0)
+  creado_por              String?
+  actualizado_en          DateTime                  @default(now()) @db.Timestamptz(0)
+  actualizado_por         String?
+  eliminado_en            DateTime?                 @db.Timestamptz(0)
+  eliminado_por           String?
+  doctores_especialidades doctores_especialidades[]
 }

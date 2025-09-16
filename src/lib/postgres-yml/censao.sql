@@ -288,9 +288,9 @@ ALTER TABLE
 CREATE TABLE "disponibilidades"(
     "id" UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
     -- "doctor_id" TEXT NOT NULL,
-    "fecha" DATE NOT NULL,
+    -- "fecha" DATE NOT NULL,
     "turno_codigo" TEXT NOT NULL,
-    "cupos" INTEGER NOT NULL,
+    "cupos" INTEGER NOT NULL DEFAULT 0,
     "observacion" TEXT NULL,
     "creado_en" TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "creado_por" TEXT NULL,
@@ -302,7 +302,7 @@ CREATE TABLE "disponibilidades"(
 
 COMMENT ON COLUMN disponibilidades.id IS 'Identificador único de la disponibilidad';
 -- COMMENT ON COLUMN disponibilidades.doctor_id IS 'ID del doctor con disponibilidad';
-COMMENT ON COLUMN disponibilidades.fecha IS 'Fecha de la disponibilidad';
+-- COMMENT ON COLUMN disponibilidades.fecha IS 'Fecha de la disponibilidad';
 COMMENT ON COLUMN disponibilidades.turno_codigo IS 'Código del turno de disponibilidad';
 COMMENT ON COLUMN disponibilidades.cupos IS 'Número de cupos disponibles';
 COMMENT ON COLUMN disponibilidades.observacion IS 'Observaciones sobre la disponibilidad';
@@ -614,3 +614,11 @@ DROP COLUMN doctor_id;
 
 ALTER TABLE public.disponibilidades
 ADD COLUMN doctor_especialidad_id uuid NOT NULL REFERENCES public.doctores_especialidades(id);
+
+-- Modificando la tabla disponibilidades ya que fecha no tenia sentido el registro y cupos default a 0
+ALTER TABLE disponibilidades
+ALTER COLUMN cupos SET DEFAULT 0;
+
+ALTER TABLE disponibilidades
+DROP COLUMN fecha;
+

@@ -884,6 +884,92 @@ async function main() {
     console.log('     - Todos los permisos de doctores')
     console.log('     - Gestión básica de usuarios')
 
+    // Creando las especialidades para nuestro seed al momento de crear las fichas de los pacientes
+    // 1. Creando los turnos base
+    await prisma.turnos_catalogo.createMany({
+      data: [
+        {
+          codigo: 'AM',
+          nombre: 'Mañana',
+          hora_inicio: new Date('1970-01-01T07:00:00.000Z'),
+          hora_fin: new Date('1970-01-01T12:30:00.000Z')
+        },
+        {
+          codigo: 'PM',
+          nombre: 'Tarde',
+          hora_inicio: new Date('1970-01-01T14:00:00.000Z'),
+          hora_fin: new Date('1970-01-01T18:00:00.000Z')
+        }
+      ],
+      skipDuplicates: true // por si corres el seed más de una vez
+    })
+
+    // 2. Creando las especialidades
+    const especialidadesBase = [
+      {
+        nombre: 'Medicina General',
+        descripcion: 'Atención general de pacientes'
+      },
+      { nombre: 'Odontología', descripcion: 'Atención odontológica' }
+    ]
+
+    const especialidades = []
+    for (const esp of especialidadesBase) {
+      const nuevaEsp = await prisma.especialidades.create({ data: esp })
+      especialidades.push(nuevaEsp)
+    }
+
+    // 3. Vinculando doctores con especialidades
+    const doctorGeneral = await prisma.doctores.findUnique({
+      where: { doctor_id: '11111111' }
+    })
+    const doctorOdonto = await prisma.doctores.findUnique({
+      where: { doctor_id: '22222222' }
+    })
+
+    const espGeneral = especialidades.find(e => e.nombre === 'Medicina General')
+    const espOdonto = especialidades.find(e => e.nombre === 'Odontología')
+
+    // Relación doctor general → medicina general
+    const doctorEspGeneral = await prisma.doctores_especialidades.create({
+      data: {
+        doctor_id: doctorGeneral!.doctor_id,
+        especialidad_id: espGeneral!.id
+      }
+    })
+
+    // Relación odontóloga → odontología
+    const doctorEspOdonto = await prisma.doctores_especialidades.create({
+      data: {
+        doctor_id: doctorOdonto!.doctor_id,
+        especialidad_id: espOdonto!.id
+      }
+    })
+
+    // 4. Creando disponibilidades con turnos
+    // General → solo en la mañana
+    await prisma.disponibilidades.create({
+      data: {
+        doctor_especialidad_id: doctorEspGeneral.id,
+        turno_codigo: 'AM'
+      }
+    })
+
+    // Odontología → mañana y tarde
+    await prisma.disponibilidades.createMany({
+      data: [
+        {
+          doctor_especialidad_id: doctorEspOdonto.id,
+          turno_codigo: 'AM'
+        },
+        {
+          doctor_especialidad_id: doctorEspOdonto.id,
+          turno_codigo: 'PM'
+        }
+      ]
+    })
+
+    // Finalizando creacion del seed de datos
     console.log('\n✨ ¡Listo para comenzar el desarrollo!')
   } catch (error) {
     console.error('❌ Error durante el seeding:', error)
