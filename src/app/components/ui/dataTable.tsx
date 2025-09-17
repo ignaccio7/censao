@@ -1,3 +1,6 @@
+// oxlint-disable no-magic-numbers
+// oxlint-disable group-exports
+// oxlint-disable no-nested-ternary
 import { ReactNode } from 'react'
 
 export interface ColumnaType {
@@ -9,18 +12,15 @@ export interface CustomDataTableType {
   subtitulo?: string
   error?: boolean
   cargando?: boolean
-  acciones?: Array<ReactNode>
-  columnas: Array<ColumnaType>
+  acciones?: ReactNode[]
+  columnas: ColumnaType[]
   filtros?: ReactNode
-  contenidoTabla: Array<Array<ReactNode>>
+  contenidoTabla: ReactNode[][]
   contenidoCuandoVacio?: ReactNode
   paginacion?: ReactNode
   numeracion?: boolean
   // Nueva prop opcional para estilos de fila personalizados
-  estilosPersonalizadosFila?: (
-    filaIndex: number,
-    fila: Array<ReactNode>
-  ) => string
+  estilosPersonalizadosFila?: (filaIndex: number, fila: ReactNode[]) => string
 }
 
 export default function CustomDataTable({
@@ -37,7 +37,7 @@ export default function CustomDataTable({
   numeracion = false,
   estilosPersonalizadosFila
 }: CustomDataTableType) {
-  const obtenerEstilosFila = (filaIndex: number, fila: Array<ReactNode>) => {
+  const obtenerEstilosFila = (filaIndex: number, fila: ReactNode[]) => {
     const estilosBase = filaIndex % 2 === 0 ? 'bg-white-100' : 'bg-gray-200'
 
     const estilosPersonalizados = estilosPersonalizadosFila
@@ -69,13 +69,13 @@ export default function CustomDataTable({
       </div>
 
       {/* Filtros */}
-      {filtros && <div className='mb-4'>{filtros}</div>}
+      {filtros && <div className='mb-4 w-full'>{filtros}</div>}
 
       {/* Contenedor principal */}
-      <div className='rounded-lg overflow-hidden shadow-sm border border-gray-200'>
+      <div className='shadow-sm border border-gray-200'>
         {cargando ? (
           <div className='p-8 text-center text-gray-500'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2'></div>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2' />
             Cargando...
           </div>
         ) : error ? (
@@ -91,7 +91,7 @@ export default function CustomDataTable({
           <>
             {/* Vista de tabla para desktop */}
             <div className='hidden md:block overflow-x-auto'>
-              <table className='w-full'>
+              <table className='w-full rounded-lg overflow-hidden'>
                 <thead className='bg-primary-700 border-b border-gray-200 '>
                   <tr>
                     {numeracion && (
@@ -173,7 +173,7 @@ export default function CustomDataTable({
 
             {/* Paginación */}
             {paginacion && (
-              <div className='px-6 py-3 border-t border-gray-200'>
+              <div className='w-full px-6 py-3 border-t border-gray-200'>
                 {paginacion}
               </div>
             )}

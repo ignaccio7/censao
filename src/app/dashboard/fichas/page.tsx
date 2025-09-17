@@ -160,6 +160,7 @@ export default function PageFichas() {
           Turno: Mañana
         </span>
       </div>
+      <pre>{`Fichas ${JSON.stringify(data, null, 2)}`}</pre>
 
       {/* TARJETAS DE FICHAS */}
       <div className='cards-information grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4'>
@@ -229,10 +230,12 @@ export default function PageFichas() {
                   Registrar nueva ficha
                 </button>
               </div>
-              <CustomDataTable
-                columnas={columnas}
-                contenidoTabla={contenidoTabla}
-              />
+              <div className='w-full'>
+                <CustomDataTable
+                  columnas={columnas}
+                  contenidoTabla={contenidoTabla}
+                />
+              </div>
             </div>
           )}
 

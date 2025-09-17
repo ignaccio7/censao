@@ -1,3 +1,4 @@
+// oxlint-disable consistent-type-imports
 // oxlint-disable group-exports
 // oxlint-disable func-style
 // oxlint-disable prefer-default-export
