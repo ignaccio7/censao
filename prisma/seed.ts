@@ -453,6 +453,33 @@ const USUARIO_ODONTOLOGO: UsuarioCompleto = {
   }
 }
 
+// 🦷 SEGUNDA ODONTÓLOGA (MISMOS PERMISOS QUE DOCTOR GENERAL)
+const USUARIO_ODONTOLOGO_2: UsuarioCompleto = {
+  persona: {
+    ci: '33333333',
+    nombres: 'Dra. Laura',
+    paterno: 'Gutierrez',
+    materno: 'Fernandez',
+    telefono: '70333333',
+    correo: 'odontologa2@censao.com',
+    direccion: 'Sopocachi, La Paz'
+  },
+  usuario: {
+    username: 'odontologa2',
+    password: '123',
+    activo: true
+  },
+  datosEspecificos: {
+    tipo: 'doctor',
+    matricula: 'ODO-002-2025'
+  },
+  rol: {
+    nombre: 'DOCTOR_GENERAL', // Mismo rol que DOCTOR_GENERAL
+    descripcion: 'Médico general con atención a pacientes',
+    permisos: [] // Se reutilizará el rol ya creado
+  }
+}
+
 // 👤 ADMINISTRADOR (ACCESO TOTAL)
 const USUARIO_ADMIN: UsuarioCompleto = {
   persona: {
@@ -649,6 +676,7 @@ const USUARIOS_A_CREAR: UsuarioCompleto[] = [
   USUARIO_DOCTOR_FICHAS,
   USUARIO_DOCTOR_GENERAL,
   USUARIO_ODONTOLOGO,
+  USUARIO_ODONTOLOGO_2,
   USUARIO_ADMIN
 ]
 
@@ -658,14 +686,34 @@ const USUARIOS_A_CREAR: UsuarioCompleto[] = [
 
 async function limpiarBaseDatos() {
   console.log('🧹 Limpiando datos existentes...')
+
+  // Primero eliminar tablas con más dependencias (hijos)
+  await prisma.auditoria_log.deleteMany()
+  await prisma.notificaciones.deleteMany()
+  await prisma.tratamientos.deleteMany()
+  await prisma.citas.deleteMany()
+  await prisma.disponibilidades.deleteMany()
+  await prisma.refresh_tokens.deleteMany()
   await prisma.usuarios_roles.deleteMany()
   await prisma.roles_permisos.deleteMany()
+
+  // Luego eliminar tablas intermedias
+  await prisma.doctores_especialidades.deleteMany()
+
+  // Eliminar tablas principales
   await prisma.usuarios.deleteMany()
   await prisma.doctores.deleteMany()
   await prisma.pacientes.deleteMany()
   await prisma.permisos.deleteMany()
   await prisma.roles.deleteMany()
+
+  // Finalmente eliminar tablas base
   await prisma.personas.deleteMany()
+  await prisma.esquema_dosis.deleteMany()
+  await prisma.vacunas.deleteMany()
+  await prisma.turnos_catalogo.deleteMany()
+  await prisma.especialidades.deleteMany()
+
   console.log('✅ Base de datos limpia')
 }
 
@@ -926,6 +974,9 @@ async function main() {
     const doctorOdonto = await prisma.doctores.findUnique({
       where: { doctor_id: '22222222' }
     })
+    const doctorOdonto2 = await prisma.doctores.findUnique({
+      where: { doctor_id: '33333333' }
+    })
 
     const espGeneral = especialidades.find(e => e.nombre === 'Medicina General')
     const espOdonto = especialidades.find(e => e.nombre === 'Odontología')
@@ -942,6 +993,13 @@ async function main() {
     const doctorEspOdonto = await prisma.doctores_especialidades.create({
       data: {
         doctor_id: doctorOdonto!.doctor_id,
+        especialidad_id: espOdonto!.id
+      }
+    })
+    // Relación segunda odontóloga → odontología
+    const doctorEspOdonto2 = await prisma.doctores_especialidades.create({
+      data: {
+        doctor_id: doctorOdonto2!.doctor_id,
         especialidad_id: espOdonto!.id
       }
     })
@@ -966,6 +1024,19 @@ async function main() {
           doctor_especialidad_id: doctorEspOdonto.id,
           turno_codigo: 'PM'
         }
+      ]
+    })
+    // Segunda odontóloga → mismo turno (mañana y tarde)
+    await prisma.disponibilidades.createMany({
+      data: [
+        {
+          doctor_especialidad_id: doctorEspOdonto2.id,
+          turno_codigo: 'AM'
+        }
+        // {
+        //   doctor_especialidad_id: doctorEspOdonto2.id,
+        //   turno_codigo: 'PM'
+        // }
       ]
     })
 

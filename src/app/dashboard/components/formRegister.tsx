@@ -7,6 +7,7 @@ import {
   IconUserPlus
 } from '@/app/components/icons/icons'
 import { useFichas } from '@/app/api/services/fichas'
+import { useEspecialidades } from '@/app/api/services/especialidades'
 
 // Mock de datos
 const mockData = {
@@ -88,6 +89,13 @@ const mockData = {
 
 export default function FormRegister() {
   const [especialidadSeleccionada, setEspecialidadSeleccionada] = useState('')
+
+  const { especialidadesQuery } = useEspecialidades()
+  console.log(
+    '----------------------------------------------------------------------'
+  )
+  console.log(especialidadesQuery.data)
+
   const { createFicha } = useFichas()
 
   // Obtener doctores de la especialidad seleccionada
