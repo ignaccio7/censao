@@ -7,7 +7,7 @@ import {
   IconUserPlus
 } from '@/app/components/icons/icons'
 import { useFichas } from '@/app/api/services/fichas'
-import { useEspecialidades } from '@/app/api/services/especialidades'
+import { useEspecialidades } from '@/app/api/services/disponibilidad/especialidades'
 
 // Mock de datos
 const mockData = {

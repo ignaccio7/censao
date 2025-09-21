@@ -1,7 +1,7 @@
 // oxlint-disable prefer-default-export
 // oxlint-disable func-style
 import { useQuery } from '@tanstack/react-query'
-import apiClient from './client'
+import apiClient from '../client'
 
 export function useEspecialidades() {
   // const queryClient = useQueryClient()

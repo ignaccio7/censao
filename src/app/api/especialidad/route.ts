@@ -2,7 +2,7 @@
 // oxlint-disable no-magic-numbers
 // oxlint-disable prefer-default-export
 // oxlint-disable func-style
-
+//https://claude.ai/chat/d81ba90b-2adc-40a5-b16f-553d8215578d
 import prisma from '@/lib/prisma/prisma'
 // import AuthService from '@/lib/services/auth-service'
 import { NextResponse } from 'next/server'
@@ -66,7 +66,7 @@ export async function GET() {
       fecha.getFullYear(),
       fecha.getMonth(),
       fecha.getDate(),
-      20,
+      24,
       0,
       0
     ) // 20:00
@@ -78,6 +78,17 @@ export async function GET() {
         id: true,
         nombre: true,
         doctores_especialidades: {
+          where: {
+            disponibilidades: {
+              some: {
+                turnos_catalogo: {
+                  codigo: {
+                    equals: turno
+                  }
+                }
+              }
+            }
+          },
           select: {
             doctores: {
               select: {
@@ -100,21 +111,33 @@ export async function GET() {
                 }
               },
               select: {
-                id: true,
+                cupos: true,
                 citas: {
                   where: {
                     fecha_hora_inicial: {
                       gte: rangoInicio,
                       lt: rangoFin
                     }
-                  },
-                  select: {
-                    id: true
                   }
                 },
                 _count: {
                   select: {
                     citas: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      where: {
+        doctores_especialidades: {
+          some: {
+            disponibilidades: {
+              some: {
+                turnos_catalogo: {
+                  codigo: {
+                    equals: turno
                   }
                 }
               }
