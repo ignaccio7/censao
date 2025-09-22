@@ -28,23 +28,23 @@ model auditoria_log {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model citas {
-  id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  paciente_id        String
-  disponibilidad_id  String           @db.Uuid
-  fecha_hora_inicial DateTime         @db.Timestamptz(0)
-  fecha_hora_final   DateTime         @db.Timestamptz(0)
-  turno              String?
-  motivo             String?
-  orden_turno        Int?
-  creado_en          DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por         String?
-  actualizado_en     DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por    String?
-  eliminado_en       DateTime?        @db.Timestamptz(0)
-  eliminado_por      String?
-  disponibilidades   disponibilidades @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "citas_disponibilidad_id_foreign")
-  pacientes          pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "citas_paciente_id_foreign")
-  tratamientos       tratamientos[]
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paciente_id       String
+  disponibilidad_id String           @db.Uuid
+  fecha_cita        DateTime         @default(now()) @db.Date
+  motivo            String?
+  orden_turno       Int?
+  creado_en         DateTime         @default(now()) @db.Timestamptz(0)
+  creado_por        String?
+  actualizado_en    DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_por   String?
+  eliminado_en      DateTime?        @db.Timestamptz(0)
+  eliminado_por     String?
+  disponibilidades  disponibilidades @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "citas_disponibilidad_id_foreign")
+  pacientes         pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "citas_paciente_id_foreign")
+  tratamientos      tratamientos[]
+
+  @@unique([disponibilidad_id, fecha_cita, orden_turno])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

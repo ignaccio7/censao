@@ -9,98 +9,20 @@ import {
 import { useFichas } from '@/app/api/services/fichas'
 import { useEspecialidades } from '@/app/api/services/disponibilidad/especialidades'
 
-// Mock de datos
-const mockData = {
-  especialidades: [
-    {
-      id: '1',
-      nombre: 'Consulta general',
-      doctores: [
-        {
-          id: '1',
-          nombre: 'Dr. Carlos Mendoza',
-          capacidadActual: 8,
-          capacidadMaxima: 15
-        },
-        {
-          id: '2',
-          nombre: 'Dra. Ana Rodriguez',
-          capacidadActual: 12,
-          capacidadMaxima: 20
-        }
-      ]
-    },
-    {
-      id: '2',
-      nombre: 'Odontologia',
-      doctores: [
-        {
-          id: '3',
-          nombre: 'Dr. Miguel Torres',
-          capacidadActual: 5,
-          capacidadMaxima: 10
-        },
-        {
-          id: '4',
-          nombre: 'Dra. Sofia Martinez',
-          capacidadActual: 7,
-          capacidadMaxima: 12
-        }
-      ]
-    },
-    {
-      id: '3',
-      nombre: 'Enfermeria',
-      doctores: [
-        {
-          id: '5',
-          nombre: 'Enf. Patricia Lopez',
-          capacidadActual: 15,
-          capacidadMaxima: 25
-        },
-        {
-          id: '6',
-          nombre: 'Enf. Roberto Gutierrez',
-          capacidadActual: 18,
-          capacidadMaxima: 30
-        }
-      ]
-    },
-    {
-      id: '4',
-      nombre: 'Laboratorio',
-      doctores: [
-        {
-          id: '7',
-          nombre: 'Tec. Maria Fernandez',
-          capacidadActual: 3,
-          capacidadMaxima: 8
-        },
-        {
-          id: '8',
-          nombre: 'Tec. Diego Ramirez',
-          capacidadActual: 6,
-          capacidadMaxima: 10
-        }
-      ]
-    }
-  ]
-}
-
 export default function FormRegister() {
   const [especialidadSeleccionada, setEspecialidadSeleccionada] = useState('')
 
-  const { especialidadesQuery } = useEspecialidades()
+  const { especialidades } = useEspecialidades()
   console.log(
     '----------------------------------------------------------------------'
   )
-  console.log(especialidadesQuery.data)
+  console.log(especialidades)
 
   const { createFicha } = useFichas()
 
   // Obtener doctores de la especialidad seleccionada
   const doctoresDisponibles = especialidadSeleccionada
-    ? mockData.especialidades.find(esp => esp.id === especialidadSeleccionada)
+    ? especialidades.find(esp => esp.id === especialidadSeleccionada)
         ?.doctores || []
     : []
 
@@ -178,7 +100,7 @@ export default function FormRegister() {
             className='p-2 border border-transparent rounded-md focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600'
           >
             <option value=''>Seleccione una especialidad</option>
-            {mockData.especialidades.map(especialidad => (
+            {especialidades?.map(especialidad => (
               <option key={especialidad.id} value={especialidad.id}>
                 {especialidad.nombre}
               </option>
@@ -204,7 +126,7 @@ export default function FormRegister() {
                 ? 'Seleccione un doctor'
                 : 'Primero seleccione una especialidad'}
             </option>
-            {doctoresDisponibles.map(doctor => (
+            {doctoresDisponibles.map((doctor: any) => (
               <option key={doctor.id} value={doctor.id}>
                 {doctor.nombre} • {doctor.capacidadActual}/
                 {doctor.capacidadMaxima} pacientes

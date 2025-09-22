@@ -2,6 +2,7 @@
 // oxlint-disable func-style
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../client'
+import { transformEspecilidadData } from './utils'
 
 export function useEspecialidades() {
   // const queryClient = useQueryClient()
@@ -14,7 +15,11 @@ export function useEspecialidades() {
     }
   })
 
+  const especialidades = transformEspecilidadData(
+    especialidadesQuery?.data?.data
+  )
+
   return {
-    especialidadesQuery
+    especialidades
   }
 }

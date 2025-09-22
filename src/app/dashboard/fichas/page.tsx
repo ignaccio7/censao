@@ -13,7 +13,7 @@ import {
 import Modal from '@/app/components/ui/modal/modal'
 import Title from '@/app/components/ui/title'
 import useModal from '@/hooks/useModal'
-import FormRegister from '../components/formRegister'
+import FormRegister from './components/formRegister'
 import CustomDataTable from '@/app/components/ui/dataTable'
 import { useFichas } from '@/app/api/services/fichas'
 
