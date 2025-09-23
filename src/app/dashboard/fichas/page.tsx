@@ -15,15 +15,15 @@ import Title from '@/app/components/ui/title'
 import useModal from '@/hooks/useModal'
 import FormRegister from './components/formRegister'
 import CustomDataTable from '@/app/components/ui/dataTable'
-import { useFichas } from '@/app/api/services/fichas'
+import { useFichas } from '@/app/services/fichas'
 
 export default function PageFichas() {
   const { modal, closeModal, openModal } = useModal()
   const [activeTab, setActiveTab] = useState('pacientes')
 
-  const { data } = useFichas()
+  const { fichas } = useFichas()
   console.log('La data es:')
-  console.log(data)
+  console.log(fichas)
 
   // Mock de doctores
   const doctores = [
@@ -160,7 +160,7 @@ export default function PageFichas() {
           Turno: Mañana
         </span>
       </div>
-      <pre>{`Fichas ${JSON.stringify(data, null, 2)}`}</pre>
+      <pre>{`Fichas ${JSON.stringify(fichas, null, 2)}`}</pre>
 
       {/* TARJETAS DE FICHAS */}
       <div className='cards-information grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4'>

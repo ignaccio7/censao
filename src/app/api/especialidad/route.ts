@@ -23,6 +23,12 @@ export async function GET() {
   // Fecha seleccionada por el usuario o hoy
   const fecha = new Date()
 
+  const fechaConsulta = new Date(
+    fecha.getFullYear(),
+    fecha.getMonth(),
+    fecha.getDate()
+  )
+
   const hour = parseInt(
     new Date().toLocaleString('es-BO', {
       timeZone: 'America/La_Paz',
@@ -31,46 +37,6 @@ export async function GET() {
     })
   )
   const turno = hour < 13 ? 'AM' : 'PM'
-
-  // Ajustar horas según turno
-  let rangoInicio: Date
-  let rangoFin: Date
-
-  if (turno === 'AM') {
-    rangoInicio = new Date(
-      fecha.getFullYear(),
-      fecha.getMonth(),
-      fecha.getDate(),
-      7,
-      0,
-      0
-    ) // 07:00
-    rangoFin = new Date(
-      fecha.getFullYear(),
-      fecha.getMonth(),
-      fecha.getDate(),
-      13,
-      0,
-      0
-    ) // 13:00
-  } else {
-    rangoInicio = new Date(
-      fecha.getFullYear(),
-      fecha.getMonth(),
-      fecha.getDate(),
-      14,
-      0,
-      0
-    ) // 14:00
-    rangoFin = new Date(
-      fecha.getFullYear(),
-      fecha.getMonth(),
-      fecha.getDate(),
-      24,
-      0,
-      0
-    ) // 20:00
-  }
 
   try {
     const especialidades = await prisma.especialidades.findMany({
@@ -112,17 +78,30 @@ export async function GET() {
               },
               select: {
                 cupos: true,
+                turnos_catalogo: {
+                  select: {
+                    codigo: true,
+                    nombre: true,
+                    hora_inicio: true,
+                    hora_fin: true
+                  }
+                },
                 citas: {
                   where: {
-                    fecha_hora_inicial: {
-                      gte: rangoInicio,
-                      lt: rangoFin
+                    fecha_cita: {
+                      equals: fechaConsulta
                     }
                   }
                 },
                 _count: {
                   select: {
-                    citas: true
+                    citas: {
+                      where: {
+                        fecha_cita: {
+                          equals: fechaConsulta
+                        }
+                      }
+                    }
                   }
                 }
               }

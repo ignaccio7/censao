@@ -22,14 +22,25 @@ export function useFichas() {
       const response = await apiClient.post('fichas', newFicha)
       return response.data
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       // Refresca la lista de fichas luego de crear
       queryClient.invalidateQueries({ queryKey: ['fichas'] })
+      queryClient.invalidateQueries({ queryKey: ['especialidad'] })
+      console.log('DATA EN EL ONSUCCESS')
+
+      console.log(data)
     }
   })
 
   return {
-    ...fichasQuery, // expone data, isLoading, error, etc
+    // ...fichasQuery, // expone data, isLoading, error, etc
+    fichas: fichasQuery.data?.data || [],
+    isLoading: fichasQuery.isLoading,
+    error: fichasQuery.error,
+    isError: fichasQuery.isError,
+    isSuccess: fichasQuery.isSuccess,
+    refetch: fichasQuery.refetch,
+    // Mutations
     createFicha
   }
 }

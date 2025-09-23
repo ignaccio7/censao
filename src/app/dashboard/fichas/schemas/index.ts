@@ -20,7 +20,10 @@ export const fichaSchema = z.object({
 
   especialidad: z.uuid('ID de especialidad inválido'),
 
-  doctor: z.uuid('ID del doctor inválido')
+  doctor: z
+    .string()
+    .min(1, 'El doctor es requerido')
+    .regex(/^\d+$/, 'El doctor debe contener solo números')
 })
 
 export type FichaFormData = z.infer<typeof fichaSchema>

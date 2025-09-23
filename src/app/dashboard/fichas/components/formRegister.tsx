@@ -1,4 +1,4 @@
-import { useState } from 'react'
+// oxlint-disable consistent-type-imports
 import {
   IconCredential,
   IconSchedule,
@@ -6,19 +6,29 @@ import {
   IconUser,
   IconUserPlus
 } from '@/app/components/icons/icons'
-import { useFichas } from '@/app/api/services/fichas'
-import { useEspecialidades } from '@/app/api/services/disponibilidad/especialidades'
+import { useFichas } from '@/app/services/fichas'
+import { useEspecialidades } from '@/app/services/disponibilidad/especialidades'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { FichaFormData, fichaSchema } from '../schemas'
+import { toast } from 'sonner'
 
 export default function FormRegister() {
-  const [especialidadSeleccionada, setEspecialidadSeleccionada] = useState('')
-
   const { especialidades } = useEspecialidades()
-  console.log(
-    '----------------------------------------------------------------------'
-  )
-  console.log(especialidades)
 
   const { createFicha } = useFichas()
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    reset
+  } = useForm<FichaFormData>({
+    resolver: zodResolver(fichaSchema)
+  })
+
+  const especialidadSeleccionada = watch('especialidad')
 
   // Obtener doctores de la especialidad seleccionada
   const doctoresDisponibles = especialidadSeleccionada
@@ -26,20 +36,28 @@ export default function FormRegister() {
         ?.doctores || []
     : []
 
-  const handleEspecialidadChange = (event: any) => {
-    setEspecialidadSeleccionada(event.target.value)
-  }
-
-  const addRecord = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    console.log('Submiteando')
-    const data = new FormData(event.target as HTMLFormElement)
-    console.log(Object.fromEntries(data))
+  const onSubmit = async (data: any) => {
     try {
-      const response = await createFicha.mutateAsync(Object.fromEntries(data))
-      console.log(response)
-    } catch (error) {
-      console.log(error)
+      const result = await createFicha.mutateAsync(data)
+
+      if (result.success) {
+        // Notificación de éxito
+        toast.success(result.message)
+        reset() // Limpiar formulario
+      } else {
+        toast.error(result.message)
+      }
+    } catch (error: any) {
+      // Manejar errores de validación o servidor
+      if (error.response?.data?.errors) {
+        // Errores de validación específicos
+        const validationErrors = error.response.data.errors
+        Object.keys(validationErrors).forEach(field => {
+          toast.error(`${field}: ${validationErrors[field].join(', ')}`)
+        })
+      } else {
+        toast.error(error.response?.data?.message || 'Error al crear la ficha')
+      }
     }
   }
 
@@ -48,26 +66,39 @@ export default function FormRegister() {
       <h3 className='text-step-0 text-gray-600'>
         Complete los datos del paciente para generar una nueva ficha médica
       </h3>
+
       <form
         className='my-2 md:my-4 grid grid-cols-1 md:grid-cols-2 gap-4'
-        onSubmit={addRecord}
+        onSubmit={handleSubmit(onSubmit)}
       >
+        {/* Cédula */}
         <label
           htmlFor='cedula'
           className='text-step-0 w-full flex flex-col gap-1'
         >
           <span className='font-semibold flex gap-1 items-center'>
             <IconCredential />
-            Cedula
+            Cédula
           </span>
           <input
-            className='p-2 border border-transparent rounded-md focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600'
+            {...register('cedula')}
+            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
+              errors.cedula
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
+            }`}
             type='text'
-            name='cedula'
             id='cedula'
             placeholder='1054876541'
           />
+          {errors.cedula && (
+            <span className='text-red-500 text-sm'>
+              {errors.cedula.message}
+            </span>
+          )}
         </label>
+
+        {/* Nombre */}
         <label
           htmlFor='nombre'
           className='text-step-0 w-full flex flex-col gap-1'
@@ -77,13 +108,24 @@ export default function FormRegister() {
             Nombre Completo
           </span>
           <input
-            className='p-2 border border-transparent rounded-md focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600'
+            {...register('nombre')}
+            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
+              errors.nombre
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
+            }`}
             type='text'
-            name='nombre'
             id='nombre'
             placeholder='Juan Perez Garcia'
           />
+          {errors.nombre && (
+            <span className='text-red-500 text-sm'>
+              {errors.nombre.message}
+            </span>
+          )}
         </label>
+
+        {/* Especialidad - ✅ SOLO register, sin onChange manual */}
         <label
           htmlFor='especialidad'
           className='text-step-0 w-full flex flex-col gap-1'
@@ -93,11 +135,13 @@ export default function FormRegister() {
             Especialidad Médica
           </span>
           <select
-            name='especialidad'
+            {...register('especialidad')}
             id='especialidad'
-            value={especialidadSeleccionada}
-            onChange={handleEspecialidadChange}
-            className='p-2 border border-transparent rounded-md focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600'
+            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
+              errors.especialidad
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
+            }`}
           >
             <option value=''>Seleccione una especialidad</option>
             {especialidades?.map(especialidad => (
@@ -106,7 +150,14 @@ export default function FormRegister() {
               </option>
             ))}
           </select>
+          {errors.especialidad && (
+            <span className='text-red-500 text-sm'>
+              {errors.especialidad.message}
+            </span>
+          )}
         </label>
+
+        {/* Doctor */}
         <label
           htmlFor='doctor'
           className='text-step-0 w-full flex flex-col gap-1'
@@ -116,15 +167,23 @@ export default function FormRegister() {
             Doctor disponible
           </span>
           <select
-            name='doctor'
+            {...register('doctor')}
             id='doctor'
-            disabled={!especialidadSeleccionada}
-            className='p-2 border border-transparent rounded-md focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600 disabled:bg-gray-100 disabled:cursor-not-allowed'
+            disabled={
+              !especialidadSeleccionada || doctoresDisponibles.length === 0
+            }
+            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
+              errors.doctor
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
+            }`}
           >
             <option value=''>
-              {especialidadSeleccionada
-                ? 'Seleccione un doctor'
-                : 'Primero seleccione una especialidad'}
+              {!especialidadSeleccionada
+                ? 'Primero seleccione una especialidad'
+                : doctoresDisponibles.length === 0
+                  ? 'No hay doctores disponibles'
+                  : 'Seleccione un doctor'}
             </option>
             {doctoresDisponibles.map((doctor: any) => (
               <option key={doctor.id} value={doctor.id}>
@@ -133,13 +192,30 @@ export default function FormRegister() {
               </option>
             ))}
           </select>
+          {errors.doctor && (
+            <span className='text-red-500 text-sm'>
+              {errors.doctor.message}
+            </span>
+          )}
         </label>
+
+        {/* Submit Button */}
         <button
           type='submit'
-          className='w-full bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer flex gap-2 items-center justify-center col-span-1 md:col-span-2'
+          disabled={createFicha.isPending}
+          className='w-full bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer flex gap-2 items-center justify-center col-span-1 md:col-span-2 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          <IconUserPlus />
-          Registrar nueva ficha
+          {createFicha.isPending ? (
+            <>
+              <div className='animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full' />
+              Registrando...
+            </>
+          ) : (
+            <>
+              <IconUserPlus />
+              Registrar nueva ficha
+            </>
+          )}
         </button>
       </form>
     </div>

@@ -1,3 +1,4 @@
+// ELIMINAR ESTO YA QUE ES UN ENDPOINT DE LA API
 // oxlint-disable group-exports
 // oxlint-disable no-console
 // oxlint-disable prefer-default-export
