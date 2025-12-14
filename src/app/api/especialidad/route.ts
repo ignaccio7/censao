@@ -21,13 +21,11 @@ export async function GET() {
   // }
 
   // Fecha seleccionada por el usuario o hoy
-  const fecha = new Date()
+  const fechaBolivia = new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/La_Paz'
+  })
 
-  const fechaConsulta = new Date(
-    fecha.getFullYear(),
-    fecha.getMonth(),
-    fecha.getDate()
-  )
+  const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
 
   const hour = parseInt(
     new Date().toLocaleString('es-BO', {

@@ -33,8 +33,77 @@ export async function GET() {
     )
   }
 
+  const fechaBolivia = new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/La_Paz'
+  })
+
+  const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
+
+  const hour = parseInt(
+    new Date().toLocaleString('es-BO', {
+      timeZone: 'America/La_Paz',
+      hour: 'numeric',
+      hour12: false
+    })
+  )
+
+  const turno = hour < 13 ? 'AM' : 'PM'
+
   try {
-    const fichas = await prisma.citas.findMany()
+    const fichas = await prisma.citas.findMany({
+      where: {
+        fecha_cita: {
+          equals: fechaConsulta
+        },
+        disponibilidades: {
+          turno_codigo: {
+            equals: turno
+          }
+        },
+        eliminado_en: null
+      },
+      orderBy: {
+        orden_turno: 'asc'
+      },
+      select: {
+        id: true,
+        pacientes: {
+          include: {
+            personas: {
+              select: {
+                nombres: true,
+                paterno: true,
+                materno: true
+              }
+            }
+          }
+        },
+        disponibilidades: {
+          include: {
+            doctores_especialidades: {
+              include: {
+                doctores: {
+                  select: {
+                    personas: {
+                      select: {
+                        nombres: true,
+                        paterno: true,
+                        materno: true
+                      }
+                    }
+                  }
+                },
+                especialidades: {
+                  select: {
+                    nombre: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
 
     return NextResponse.json({ success: true, data: fichas })
 
@@ -144,8 +213,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const turno = hour < 13 ? 'AM' : 'PM'
 
     // Fecha de hoy para la cita (sin hora)
-    const fechaCita = new Date()
-    fechaCita.setHours(0, 0, 0, 0)
+    const fechaBolivia = new Date().toLocaleDateString('en-CA', {
+      timeZone: 'America/La_Paz'
+    })
+
+    const fechaCita = new Date(`${fechaBolivia}T00:00:00.000Z`)
 
     // Buscar disponibilidad del doctor para el turno actual
     const disponibilidad = await prisma.disponibilidades.findFirst({
@@ -203,6 +275,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         disponibilidad_id: disponibilidad.id,
         fecha_cita: fechaCita,
         orden_turno: siguienteOrden,
+        estado: 'PENDIENTE',
         creado_por: id
       }
     })

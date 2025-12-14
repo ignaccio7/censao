@@ -12,11 +12,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { FichaFormData, fichaSchema } from '../schemas'
 import { toast } from 'sonner'
+import useModal from '@/hooks/useModal'
 
 export default function FormRegister() {
   const { especialidades } = useEspecialidades()
 
   const { createFicha } = useFichas()
+
+  const { closeModal } = useModal()
 
   const {
     register,
@@ -58,6 +61,8 @@ export default function FormRegister() {
       } else {
         toast.error(error.response?.data?.message || 'Error al crear la ficha')
       }
+    } finally {
+      closeModal()
     }
   }
 

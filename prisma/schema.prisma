@@ -33,6 +33,7 @@ model citas {
   disponibilidad_id String           @db.Uuid
   fecha_cita        DateTime         @default(now()) @db.Date
   motivo            String?
+  estado            String?          @default("PENDIENTE")
   orden_turno       Int?
   creado_en         DateTime         @default(now()) @db.Timestamptz(0)
   creado_por        String?
