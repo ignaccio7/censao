@@ -85,8 +85,8 @@ export interface Disponibilidad {
   observacion?: string | null
 }
 
-// Interface para la tabla citas
-export interface Cita {
+// Interface para la tabla fichas
+export interface Ficha {
   id: string
   paciente_id: string
   disponibilidad_id: string
@@ -94,7 +94,7 @@ export interface Cita {
   turno?: string | null
   motivo?: string | null
   orden_turno?: number | null
-  cita_original_id?: string | null
+  ficha_original_id?: string | null
 }
 
 // Interface para la tabla vacunas
@@ -119,7 +119,7 @@ export interface EsquemaDosis {
 export interface Tratamiento {
   id: string
   nombre: string
-  cita_id: string
+  ficha_id: string
   esquema_id: string
 }
 
@@ -178,7 +178,7 @@ export interface PacienteCompleto extends Paciente {
   persona: Persona
 }
 
-export interface CitaCompleta extends Cita {
+export interface FichaCompleta extends Ficha {
   paciente: PacienteCompleto
   disponibilidad: Disponibilidad
 }

@@ -84,18 +84,18 @@ export async function GET() {
                     hora_fin: true
                   }
                 },
-                citas: {
+                fichas: {
                   where: {
-                    fecha_cita: {
+                    fecha_ficha: {
                       equals: fechaConsulta
                     }
                   }
                 },
                 _count: {
                   select: {
-                    citas: {
+                    fichas: {
                       where: {
-                        fecha_cita: {
+                        fecha_ficha: {
                           equals: fechaConsulta
                         }
                       }

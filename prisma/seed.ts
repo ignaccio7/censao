@@ -142,12 +142,12 @@ const USUARIO_PACIENTE_1: UsuarioCompleto = {
         modulo: 'mi_salud'
       },
       {
-        nombre: 'Mis Citas',
+        nombre: 'Mis Fichas',
         tipo: 'frontend',
-        ruta: '/dashboard/paciente/citas',
+        ruta: '/dashboard/paciente/fichas',
         metodos: ['read'],
         icono: 'calendar',
-        descripcion: 'Ver mis citas médicas programadas',
+        descripcion: 'Ver mis fichas médicas programadas',
         modulo: 'mi_salud'
       },
       // BACKEND - APIs específicas del paciente
@@ -168,11 +168,11 @@ const USUARIO_PACIENTE_1: UsuarioCompleto = {
         modulo: 'mi_salud'
       },
       {
-        nombre: 'API Mis Citas',
+        nombre: 'API Mis Fichas',
         tipo: 'backend',
-        ruta: '/api/paciente/:uuid/citas',
+        ruta: '/api/paciente/:uuid/fichas',
         metodos: ['GET'],
-        descripcion: 'API para ver citas del paciente',
+        descripcion: 'API para ver fichas del paciente',
         modulo: 'mi_salud'
       }
     ]
@@ -340,12 +340,12 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'tratamientos'
       },
       {
-        nombre: 'Citas',
+        nombre: 'Fichas',
         tipo: 'frontend',
-        ruta: '/dashboard/paciente/citas',
+        ruta: '/dashboard/paciente/fichas',
         metodos: ['read', 'update', 'delete'],
         icono: 'calendar',
-        descripcion: 'Gestionar citas médicas',
+        descripcion: 'Gestionar fichas médicas',
         modulo: 'tratamientos'
       },
 
@@ -415,11 +415,11 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'tratamientos'
       },
       {
-        nombre: 'API Citas de Paciente',
+        nombre: 'API Fichas de Paciente',
         tipo: 'backend',
-        ruta: '/api/paciente/:uuid/citas',
+        ruta: '/api/paciente/:uuid/fichas',
         metodos: ['GET', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestionar citas de pacientes',
+        descripcion: 'API para gestionar fichas de pacientes',
         modulo: 'tratamientos'
       }
     ]
@@ -570,12 +570,12 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         modulo: 'tratamientos'
       },
       {
-        nombre: 'Citas',
+        nombre: 'Fichas',
         tipo: 'frontend',
-        ruta: '/dashboard/paciente/citas',
+        ruta: '/dashboard/paciente/fichas',
         metodos: ['read', 'update', 'delete'],
         icono: 'calendar',
-        descripcion: 'Gestionar todas las citas',
+        descripcion: 'Gestionar todas las fichas',
         modulo: 'tratamientos'
       },
 
@@ -637,11 +637,11 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         modulo: 'tratamientos'
       },
       {
-        nombre: 'API Citas de Paciente',
+        nombre: 'API Fichas de Paciente',
         tipo: 'backend',
-        ruta: '/api/paciente/:uuid/citas',
+        ruta: '/api/paciente/:uuid/fichas',
         metodos: ['GET', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestión total de citas',
+        descripcion: 'API para gestión total de fichas',
         modulo: 'tratamientos'
       },
 
@@ -691,7 +691,7 @@ async function limpiarBaseDatos() {
   await prisma.auditoria_log.deleteMany()
   await prisma.notificaciones.deleteMany()
   await prisma.tratamientos.deleteMany()
-  await prisma.citas.deleteMany()
+  await prisma.fichas.deleteMany()
   await prisma.disponibilidades.deleteMany()
   await prisma.refresh_tokens.deleteMany()
   await prisma.usuarios_roles.deleteMany()
@@ -914,7 +914,7 @@ async function main() {
     console.log('\n📋 PERMISOS POR ROL:')
     console.log('')
     console.log('   🏥 PACIENTE:')
-    console.log('     - Solo ver sus propios tratamientos y citas')
+    console.log('     - Solo ver sus propios tratamientos y fichas')
     console.log('     - Acceso de solo lectura a su información médica')
     console.log('')
     console.log('   👩‍⚕️ DOCTOR FICHAS:')
@@ -924,7 +924,7 @@ async function main() {
     console.log('   👨‍⚕️ DOCTOR GENERAL y 🦷 ODONTÓLOGA:')
     console.log('     - Gestión completa de fichas médicas')
     console.log('     - Atención y seguimiento de pacientes')
-    console.log('     - Gestión de tratamientos y citas')
+    console.log('     - Gestión de tratamientos y fichas')
     console.log('     - Envío de notificaciones médicas')
     console.log('')
     console.log('   👤 ADMINISTRADOR:')

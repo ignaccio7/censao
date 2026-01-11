@@ -94,7 +94,7 @@ export async function GET() {
             disponibilidades: {
               select: {
                 id: true,
-                citas: {
+                fichas: {
                   where: {
                     fecha_hora_inicial: {
                       gte: rangoInicio,
@@ -107,7 +107,7 @@ export async function GET() {
                 },
                 _count: {
                   select: {
-                    citas: true
+                    fichas: true
                   }
                 }
               }

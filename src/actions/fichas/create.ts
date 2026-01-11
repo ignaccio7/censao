@@ -77,9 +77,9 @@ export async function createFichaAction(
     )
     const turno = hour < 13 ? 'AM' : 'PM'
 
-    // Fecha de hoy para la cita (sin hora)
-    const fechaCita = new Date()
-    fechaCita.setHours(0, 0, 0, 0)
+    // Fecha de hoy para la ficha (sin hora)
+    const fechaFicha = new Date()
+    fechaFicha.setHours(0, 0, 0, 0)
 
     // Buscar disponibilidad del doctor para el turno actual
     const disponibilidad = await prisma.disponibilidades.findFirst({
@@ -95,10 +95,10 @@ export async function createFichaAction(
       include: {
         _count: {
           select: {
-            citas: {
+            Fichas: {
               where: {
-                fecha_cita: fechaCita, // Solo citas de hoy
-                eliminado_en: null // Solo citas activas
+                fecha_ficha: fechaFicha, // Solo fichas de hoy
+                eliminado_en: null // Solo fichas activas
               }
             }
           }
@@ -114,7 +114,7 @@ export async function createFichaAction(
     }
 
     // Verificar capacidad disponible para HOY
-    if (disponibilidad._count.citas >= disponibilidad.cupos) {
+    if (disponibilidad._count.fichas >= disponibilidad.cupos) {
       return {
         success: false,
         message: `El doctor ya no tiene cupos disponibles para el turno ${turno} de hoy`
@@ -122,14 +122,14 @@ export async function createFichaAction(
     }
 
     // Calcular siguiente orden para HOY
-    const siguienteOrden = disponibilidad._count.citas + 1
+    const siguienteOrden = disponibilidad._count.fichas + 1
 
-    // Crear la cita
-    const nuevaCita = await prisma.citas.create({
+    // Crear la ficha
+    const nuevaFicha = await prisma.fichas.create({
       data: {
         paciente_id: validData.cedula,
         disponibilidad_id: disponibilidad.id,
-        fecha_cita: fechaCita, // Fecha de hoy
+        fecha_ficha: fechaFicha, // Fecha de hoy
         orden_turno: siguienteOrden, // Orden secuencial para hoy
         creado_por: 'sistema' // Para auditoría
       }
@@ -139,11 +139,11 @@ export async function createFichaAction(
 
     return {
       success: true,
-      message: `Ficha creada exitosamente. ${fechaCita.toLocaleDateString('es-BO')} - Turno ${turno} #${siguienteOrden}`,
+      message: `Ficha creada exitosamente. ${fechaFicha.toLocaleDateString('es-BO')} - Turno ${turno} #${siguienteOrden}`,
       data: {
-        cita_id: nuevaCita.id,
+        ficha_id: nuevaFicha.id,
         paciente: paciente.paciente_id,
-        fecha: fechaCita.toISOString().split('T')[0],
+        fecha: fechaFicha.toISOString().split('T')[0],
         turno: turno,
         orden: siguienteOrden,
         disponibilidad_id: disponibilidad.id
@@ -168,14 +168,14 @@ export async function createFichaAction(
   }
 }
 
-// Función auxiliar para obtener citas del día
-export async function obtenerCitasDelDia(fecha?: Date) {
+// Función auxiliar para obtener fichas del día
+export async function obtenerFichasDelDia(fecha?: Date) {
   const fechaBuscada = fecha || new Date()
   fechaBuscada.setHours(0, 0, 0, 0)
 
-  return await prisma.citas.findMany({
+  return await prisma.fichas.findMany({
     where: {
-      fecha_cita: fechaBuscada,
+      fecha_ficha: fechaBuscada,
       eliminado_en: null
     },
     include: {

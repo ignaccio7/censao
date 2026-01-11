@@ -50,9 +50,9 @@ export async function GET() {
   const turno = hour < 13 ? 'AM' : 'PM'
 
   try {
-    const fichas = await prisma.citas.findMany({
+    const fichas = await prisma.fichas.findMany({
       where: {
-        fecha_cita: {
+        fecha_ficha: {
           equals: fechaConsulta
         },
         disponibilidades: {
@@ -104,6 +104,10 @@ export async function GET() {
         }
       }
     })
+
+    // const data = fichas.map(ficha => ({
+
+    // }))
 
     return NextResponse.json({ success: true, data: fichas })
 
@@ -212,12 +216,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     )
     const turno = hour < 13 ? 'AM' : 'PM'
 
-    // Fecha de hoy para la cita (sin hora)
+    // Fecha de hoy para la ficha (sin hora)
     const fechaBolivia = new Date().toLocaleDateString('en-CA', {
       timeZone: 'America/La_Paz'
     })
 
-    const fechaCita = new Date(`${fechaBolivia}T00:00:00.000Z`)
+    const fechaFicha = new Date(`${fechaBolivia}T00:00:00.000Z`)
 
     // Buscar disponibilidad del doctor para el turno actual
     const disponibilidad = await prisma.disponibilidades.findFirst({
@@ -233,9 +237,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       include: {
         _count: {
           select: {
-            citas: {
+            fichas: {
               where: {
-                fecha_cita: fechaCita,
+                fecha_ficha: fechaFicha,
                 eliminado_en: null
               }
             }
@@ -255,7 +259,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verificar capacidad disponible para HOY
-    if (disponibilidad._count.citas >= disponibilidad.cupos) {
+    if (disponibilidad._count.fichas >= disponibilidad.cupos) {
       return NextResponse.json(
         {
           success: false,
@@ -266,14 +270,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Calcular siguiente orden para HOY
-    const siguienteOrden = disponibilidad._count.citas + 1
+    const siguienteOrden = disponibilidad._count.fichas + 1
 
-    // Crear la cita
-    const nuevaCita = await prisma.citas.create({
+    // Crear la ficha
+    const nuevaFicha = await prisma.fichas.create({
       data: {
         paciente_id: validData.cedula,
         disponibilidad_id: disponibilidad.id,
-        fecha_cita: fechaCita,
+        fecha_ficha: fechaFicha,
         orden_turno: siguienteOrden,
         estado: 'PENDIENTE',
         creado_por: id
@@ -283,11 +287,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         success: true,
-        message: `Ficha creada exitosamente. ${fechaCita.toLocaleDateString('es-BO')} - Turno ${turno} #${siguienteOrden}`,
+        message: `Ficha creada exitosamente. ${fechaFicha.toLocaleDateString('es-BO')} - Turno ${turno} #${siguienteOrden}`,
         data: {
-          cita_id: nuevaCita.id,
+          ficha_id: nuevaFicha.id,
           paciente: paciente.paciente_id,
-          fecha: fechaCita.toISOString().split('T')[0],
+          fecha: fechaFicha.toISOString().split('T')[0],
           turno: turno,
           orden: siguienteOrden,
           disponibilidad_id: disponibilidad.id

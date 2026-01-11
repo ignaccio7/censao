@@ -6,7 +6,7 @@ const transformEspecilidadData = (data: any[]) => {
     nombre: especilidad.nombre,
     doctores: especilidad.doctores_especialidades.map((docEsp: any) => {
       const capacidadActual = docEsp.disponibilidades.reduce(
-        (total: number, disp: any) => total + disp._count.citas,
+        (total: number, disp: any) => total + disp._count.fichas,
         0
       )
 

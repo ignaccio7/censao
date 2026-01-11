@@ -140,8 +140,8 @@ export default function Sidebar() {
   //       },
   //       {
   //         icon: 'calendar',
-  //         label: 'Mis Citas',
-  //         link: '/dashboard/paciente/citas'
+  //         label: 'Mis Fichas',
+  //         link: '/dashboard/paciente/fichas'
   //       },
   //       {
   //         icon: 'message',
