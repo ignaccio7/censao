@@ -11,7 +11,9 @@ export function useFichas() {
     queryKey: ['fichas'],
     queryFn: async () => {
       const response = await apiClient.get('/fichas')
-      return response.data
+      console.log(response)
+
+      return response.data.data
     },
     staleTime: 5 * 60 * 1000
   })
@@ -32,9 +34,11 @@ export function useFichas() {
     }
   })
 
+  console.log(fichasQuery)
+
   return {
     // ...fichasQuery, // expone data, isLoading, error, etc
-    fichas: fichasQuery.data?.data || [],
+    fichas: fichasQuery.data || [],
     isLoading: fichasQuery.isLoading,
     error: fichasQuery.error,
     isError: fichasQuery.isError,

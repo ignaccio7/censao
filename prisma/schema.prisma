@@ -31,7 +31,7 @@ model fichas {
   id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   paciente_id       String
   disponibilidad_id String           @db.Uuid
-  fecha_ficha       DateTime         @default(now()) @db.Date
+  fecha_ficha       DateTime         @default(now()) @db.Timestamptz(0)
   motivo            String?
   estado            String?          @default("PENDIENTE")
   orden_turno       Int?

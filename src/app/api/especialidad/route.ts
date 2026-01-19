@@ -21,11 +21,35 @@ export async function GET() {
   // }
 
   // Fecha seleccionada por el usuario o hoy
-  const fechaBolivia = new Date().toLocaleDateString('en-CA', {
-    timeZone: 'America/La_Paz'
-  })
+  // const fechaBolivia = new Date().toLocaleDateString('en-CA', {
+  //   timeZone: 'America/La_Paz'
+  // })
 
-  const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
+  // const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
+  const fechaConsulta = new Date(Date.now())
+
+  const inicioUTC = new Date(
+    Date.UTC(
+      fechaConsulta.getUTCFullYear(),
+      fechaConsulta.getUTCMonth(),
+      fechaConsulta.getUTCDate(),
+      4,
+      0,
+      0
+    )
+  )
+
+  const finUTC = new Date(
+    Date.UTC(
+      fechaConsulta.getUTCFullYear(),
+      fechaConsulta.getUTCMonth(),
+      fechaConsulta.getUTCDate() + 1,
+      3,
+      59,
+      59,
+      999
+    )
+  )
 
   const hour = parseInt(
     new Date().toLocaleString('es-BO', {
@@ -84,19 +108,21 @@ export async function GET() {
                     hora_fin: true
                   }
                 },
-                fichas: {
-                  where: {
-                    fecha_ficha: {
-                      equals: fechaConsulta
-                    }
-                  }
-                },
+                // fichas: {
+                //   where: {
+                //     fecha_ficha: {
+                //       gte: inicioUTC,
+                //       lte: finUTC
+                //     }
+                //   }
+                // },
                 _count: {
                   select: {
                     fichas: {
                       where: {
                         fecha_ficha: {
-                          equals: fechaConsulta
+                          gte: inicioUTC,
+                          lte: finUTC
                         }
                       }
                     }

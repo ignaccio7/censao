@@ -3,6 +3,7 @@
 // oxlint-disable func-style
 // oxlint-disable prefer-default-export
 import { fichaSchema } from '@/app/dashboard/fichas/schemas'
+import { RECORD_TYPES } from '@/lib/constants'
 import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
 import { NextRequest, NextResponse } from 'next/server'
@@ -33,11 +34,36 @@ export async function GET() {
     )
   }
 
-  const fechaBolivia = new Date().toLocaleDateString('en-CA', {
-    timeZone: 'America/La_Paz'
-  })
+  // const fechaBolivia = new Date().toLocaleDateString('en-CA', {
+  //   timeZone: 'America/La_Paz'
+  // })
 
-  const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
+  // const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
+
+  const fechaUTC = new Date()
+
+  const inicioUTC = new Date(
+    Date.UTC(
+      fechaUTC.getUTCFullYear(),
+      fechaUTC.getUTCMonth(),
+      fechaUTC.getUTCDate(),
+      4,
+      0,
+      0
+    )
+  )
+
+  const finUTC = new Date(
+    Date.UTC(
+      fechaUTC.getUTCFullYear(),
+      fechaUTC.getUTCMonth(),
+      fechaUTC.getUTCDate() + 1,
+      3,
+      59,
+      59,
+      999
+    )
+  )
 
   const hour = parseInt(
     new Date().toLocaleString('es-BO', {
@@ -47,13 +73,18 @@ export async function GET() {
     })
   )
 
+  console.log('La hora es', hour)
+
   const turno = hour < 13 ? 'AM' : 'PM'
+
+  console.log(`EL TURNO ES:${turno}`)
 
   try {
     const fichas = await prisma.fichas.findMany({
       where: {
         fecha_ficha: {
-          equals: fechaConsulta
+          gte: inicioUTC,
+          lte: finUTC
         },
         disponibilidades: {
           turno_codigo: {
@@ -67,6 +98,9 @@ export async function GET() {
       },
       select: {
         id: true,
+        orden_turno: true,
+        fecha_ficha: true,
+        estado: true,
         pacientes: {
           include: {
             personas: {
@@ -105,11 +139,44 @@ export async function GET() {
       }
     })
 
-    // const data = fichas.map(ficha => ({
+    const data = fichas.map(ficha => ({
+      fecha_ficha: ficha.fecha_ficha
+    }))
+    console.log(data)
 
-    // }))
+    // console.log(fichas)
 
-    return NextResponse.json({ success: true, data: fichas })
+    const fichasDto = fichas.map(ficha => {
+      const fechaFicha = new Date(ficha.fecha_ficha).toLocaleString('es-BO', {
+        timeZone: 'America/La_Paz',
+        hour12: false
+      })
+
+      const [fechaBoliviana, horaBoliviana] = fechaFicha.split(', ')
+
+      const statusRecord = ficha.estado
+        ? RECORD_TYPES[ficha.estado as keyof typeof RECORD_TYPES]
+        : RECORD_TYPES['PENDIENTE']
+
+      return {
+        ficha_id: ficha.id,
+        orden_turno: ficha.orden_turno,
+        fecha_ficha: fechaBoliviana,
+        hora_ficha: horaBoliviana,
+        estado: statusRecord,
+        paciente_id: ficha.pacientes.paciente_id,
+        paciente_nombres: `${ficha.pacientes.personas.nombres} ${ficha.pacientes.personas.paterno} ${ficha.pacientes.personas.materno}`,
+        turno_codigo: ficha.disponibilidades.turno_codigo,
+        doctor_id: ficha.disponibilidades.doctor_especialidad_id,
+        doctor_nombre: `${ficha.disponibilidades.doctores_especialidades.doctores.personas.nombres} ${ficha.disponibilidades.doctores_especialidades.doctores.personas.paterno} ${ficha.disponibilidades.doctores_especialidades.doctores.personas.materno}`,
+        especialidad_id:
+          ficha.disponibilidades.doctores_especialidades.especialidad_id,
+        especialidad_nombre:
+          ficha.disponibilidades.doctores_especialidades.especialidades.nombre
+      }
+    })
+
+    return NextResponse.json({ success: true, data: fichasDto })
 
     // return Response.json({
     //   success: true,
@@ -153,6 +220,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Obtener datos del request
     const body = await request.json()
 
+    console.log(`El body es:`, body)
+
     // Validación de datos
     const validationResult = fichaSchema.safeParse(body)
     if (!validationResult.success) {
@@ -170,31 +239,48 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const validData = validationResult.data
 
+    console.log(`El body es:`, validData)
+
+    // Crear/verificar persona
+    let persona = await prisma.personas.findUnique({
+      where: { ci: validData.cedula }
+    })
+
+    if (persona) {
+      // Validacion para verificar que los datos de la persona sean los mismos del formulario
+      const nombrePersona =
+        `${persona?.nombres} ${persona?.paterno} ${persona?.materno}`.trim()
+      const nombreFormulario = validData.nombre.trim()
+      console.log(nombrePersona)
+      console.log(nombreFormulario)
+
+      if (nombrePersona !== nombreFormulario) {
+        return NextResponse.json({
+          success: false,
+          message: 'Los datos de la persona no coinciden con los del formulario'
+        })
+      }
+    } else {
+      const nombreParts = validData.nombre.trim().split(' ')
+      const [nombres = '', paterno = '', materno = ''] = nombreParts
+
+      persona = await prisma.personas.create({
+        data: {
+          ci: validData.cedula,
+          nombres,
+          paterno,
+          materno,
+          creado_por: id
+        }
+      })
+    }
+
     // Crear/verificar paciente
     let paciente = await prisma.pacientes.findUnique({
       where: { paciente_id: validData.cedula }
     })
 
     if (!paciente) {
-      let persona = await prisma.personas.findUnique({
-        where: { ci: validData.cedula }
-      })
-
-      if (!persona) {
-        const nombreParts = validData.nombre.trim().split(' ')
-        const [nombres = '', paterno = '', materno = ''] = nombreParts
-
-        persona = await prisma.personas.create({
-          data: {
-            ci: validData.cedula,
-            nombres,
-            paterno,
-            materno,
-            creado_por: id
-          }
-        })
-      }
-
       paciente = await prisma.pacientes.create({
         data: {
           paciente_id: validData.cedula,
@@ -214,14 +300,41 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         hour12: false
       })
     )
+
+    console.log(hour)
+
     const turno = hour < 13 ? 'AM' : 'PM'
 
     // Fecha de hoy para la ficha (sin hora)
-    const fechaBolivia = new Date().toLocaleDateString('en-CA', {
-      timeZone: 'America/La_Paz'
-    })
+    // const fechaBolivia = new Date().toLocaleDateString('es-BO', {
+    //   timeZone: 'America/La_Paz'
+    // })
 
-    const fechaFicha = new Date(`${fechaBolivia}T00:00:00.000Z`)
+    // const fechaFicha = new Date(`${fechaBolivia}T00:00:00.000Z`)
+    const fechaFicha = new Date()
+
+    const inicioUTC = new Date(
+      Date.UTC(
+        fechaFicha.getUTCFullYear(),
+        fechaFicha.getUTCMonth(),
+        fechaFicha.getUTCDate(),
+        4,
+        0,
+        0
+      )
+    )
+
+    const finUTC = new Date(
+      Date.UTC(
+        fechaFicha.getUTCFullYear(),
+        fechaFicha.getUTCMonth(),
+        fechaFicha.getUTCDate() + 1,
+        3,
+        59,
+        59,
+        999
+      )
+    )
 
     // Buscar disponibilidad del doctor para el turno actual
     const disponibilidad = await prisma.disponibilidades.findFirst({
@@ -239,7 +352,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           select: {
             fichas: {
               where: {
-                fecha_ficha: fechaFicha,
+                fecha_ficha: {
+                  gte: inicioUTC,
+                  lte: finUTC
+                },
                 eliminado_en: null
               }
             }

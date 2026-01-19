@@ -244,6 +244,15 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         descripcion: 'Gestión completa de fichas médicas',
         modulo: 'fichas'
       },
+      {
+        nombre: 'Estado de doctores',
+        tipo: 'frontend',
+        ruta: '/dashboard/estado-doctores',
+        metodos: ['read', 'create', 'update', 'delete'],
+        icono: 'stethoscope',
+        descripcion: 'Gestión completa de fichas médicas',
+        modulo: 'fichas'
+      },
       // BACKEND - Solo fichas
       {
         nombre: 'API Fichas',
@@ -516,6 +525,15 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         modulo: 'fichas'
       },
       {
+        nombre: 'Estado de doctores',
+        tipo: 'frontend',
+        ruta: '/dashboard/estado-doctores',
+        metodos: ['read', 'create', 'update', 'delete'],
+        icono: 'stethoscope',
+        descripcion: 'Gestión completa de fichas médicas',
+        modulo: 'fichas'
+      },
+      {
         nombre: 'API Fichas',
         tipo: 'backend',
         ruta: '/api/fichas',
@@ -687,34 +705,39 @@ const USUARIOS_A_CREAR: UsuarioCompleto[] = [
 async function limpiarBaseDatos() {
   console.log('🧹 Limpiando datos existentes...')
 
-  // Primero eliminar tablas con más dependencias (hijos)
-  await prisma.auditoria_log.deleteMany()
-  await prisma.notificaciones.deleteMany()
-  await prisma.tratamientos.deleteMany()
-  await prisma.fichas.deleteMany()
-  await prisma.disponibilidades.deleteMany()
-  await prisma.refresh_tokens.deleteMany()
-  await prisma.usuarios_roles.deleteMany()
-  await prisma.roles_permisos.deleteMany()
+  try {
+    // Primero eliminar tablas con más dependencias (hijos)
+    await prisma.auditoria_log.deleteMany()
+    await prisma.notificaciones.deleteMany()
+    await prisma.tratamientos.deleteMany()
+    await prisma.fichas.deleteMany()
+    await prisma.disponibilidades.deleteMany()
+    await prisma.refresh_tokens.deleteMany()
+    await prisma.usuarios_roles.deleteMany()
+    await prisma.roles_permisos.deleteMany()
 
-  // Luego eliminar tablas intermedias
-  await prisma.doctores_especialidades.deleteMany()
+    // Luego eliminar tablas intermedias
+    await prisma.doctores_especialidades.deleteMany()
 
-  // Eliminar tablas principales
-  await prisma.usuarios.deleteMany()
-  await prisma.doctores.deleteMany()
-  await prisma.pacientes.deleteMany()
-  await prisma.permisos.deleteMany()
-  await prisma.roles.deleteMany()
+    // Eliminar tablas principales
+    await prisma.usuarios.deleteMany()
+    await prisma.doctores.deleteMany()
+    await prisma.pacientes.deleteMany()
+    await prisma.permisos.deleteMany()
+    await prisma.roles.deleteMany()
 
-  // Finalmente eliminar tablas base
-  await prisma.personas.deleteMany()
-  await prisma.esquema_dosis.deleteMany()
-  await prisma.vacunas.deleteMany()
-  await prisma.turnos_catalogo.deleteMany()
-  await prisma.especialidades.deleteMany()
+    // Finalmente eliminar tablas base
+    await prisma.personas.deleteMany()
+    await prisma.esquema_dosis.deleteMany()
+    await prisma.vacunas.deleteMany()
+    await prisma.turnos_catalogo.deleteMany()
+    await prisma.especialidades.deleteMany()
 
-  console.log('✅ Base de datos limpia')
+    console.log('✅ Base de datos limpia')
+  } catch (error) {
+    console.log('❌ Ocurrio un error aqui limpiando la BD')
+    console.log(error)
+  }
 }
 
 async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
@@ -1009,7 +1032,8 @@ async function main() {
     await prisma.disponibilidades.create({
       data: {
         doctor_especialidad_id: doctorEspGeneral.id,
-        turno_codigo: 'AM'
+        turno_codigo: 'AM',
+        cupos: 3
       }
     })
 
@@ -1018,11 +1042,13 @@ async function main() {
       data: [
         {
           doctor_especialidad_id: doctorEspOdonto.id,
-          turno_codigo: 'AM'
+          turno_codigo: 'AM',
+          cupos: 3
         },
         {
           doctor_especialidad_id: doctorEspOdonto.id,
-          turno_codigo: 'PM'
+          turno_codigo: 'PM',
+          cupos: 3
         }
       ]
     })
@@ -1031,7 +1057,8 @@ async function main() {
       data: [
         {
           doctor_especialidad_id: doctorEspOdonto2.id,
-          turno_codigo: 'AM'
+          turno_codigo: 'AM',
+          cupos: 3
         }
         // {
         //   doctor_especialidad_id: doctorEspOdonto2.id,

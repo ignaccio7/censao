@@ -95,7 +95,7 @@ export async function createFichaAction(
       include: {
         _count: {
           select: {
-            Fichas: {
+            fichas: {
               where: {
                 fecha_ficha: fechaFicha, // Solo fichas de hoy
                 eliminado_en: null // Solo fichas activas
