@@ -18,6 +18,8 @@ export async function getProfileRoutes() {
   console.log('Intenta obtener rutas')
   try {
     const routes = await AuthService.getProfilePermissions(session.user.id)
+    console.log(routes)
+
     return routes?.permisos
   } catch (error) {
     console.log('Error al obtener el sidebar')

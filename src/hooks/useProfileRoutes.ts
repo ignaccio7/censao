@@ -5,8 +5,12 @@ import useProfileRoutesStore from '@/store/profile-routes'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { delay } from '@/app/utils'
+import { usePathname } from 'next/navigation'
 
 export default function useProfileRoutes() {
+  const pathName = usePathname()
+  console.log(pathName)
+
   const { data: session, status } = useSession()
   const { routes, setRoutes, hasPermission, clearRoutes } =
     useProfileRoutesStore()
@@ -68,9 +72,14 @@ export default function useProfileRoutes() {
     routes,
     clearRoutes,
     loading,
-    read: (route: string) => hasPermission(route, 'read'),
-    create: (route: string) => hasPermission(route, 'create'),
-    update: (route: string) => hasPermission(route, 'update'),
-    delete: (route: string) => hasPermission(route, 'delete')
+    read: hasPermission(pathName, 'read'),
+    create: hasPermission(pathName, 'create'),
+    update: hasPermission(pathName, 'update'),
+    delete: hasPermission(pathName, 'delete')
+
+    // read: (route: string) => hasPermission(route, 'read'),
+    // create: (route: string) => hasPermission(route, 'create'),
+    // update: (route: string) => hasPermission(route, 'update'),
+    // delete: (route: string) => hasPermission(route, 'delete')
   }
 }

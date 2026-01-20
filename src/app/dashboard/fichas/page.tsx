@@ -2,12 +2,9 @@
 'use client'
 import { useState } from 'react'
 import {
-  IconAlertTriangle,
-  // IconClock,
   IconDotsVertical,
   IconMonitor,
   IconPlus,
-  // IconStethoscope,
   IconTeam
 } from '@/app/components/icons/icons'
 import Modal from '@/app/components/ui/modal/modal'
@@ -16,10 +13,20 @@ import useModal from '@/hooks/useModal'
 import FormRegister from './components/formRegister'
 import CustomDataTable from '@/app/components/ui/dataTable'
 import { useFichas } from '@/app/services/fichas'
+import { StatusBadge } from './components/statusBadge'
+import useProfileRoutes from '@/hooks/useProfileRoutes'
 
 export default function PageFichas() {
+  const {
+    read,
+    create
+    // update, delete: deleteFicha
+  } = useProfileRoutes()
   const { modal, closeModal, openModal } = useModal()
-  const [activeTab, setActiveTab] = useState('pacientes')
+  const [activeTab, setActiveTab] = useState('all')
+
+  console.log(read)
+  console.log(create)
 
   const { fichas } = useFichas()
   console.log('La data es:')
@@ -47,8 +54,19 @@ export default function PageFichas() {
     }
   ]
 
+  const specialities: any[] = Array.from(
+    new Set(fichas.map((ficha: any) => ficha?.especialidad_nombre))
+  )
+
+  const filteredFichas =
+    activeTab !== 'all'
+      ? fichas.filter((ficha: any) => ficha.especialidad_nombre === activeTab)
+      : fichas
+
+  console.log(filteredFichas)
+
   // TODO: ver como agregar la interface en este punto
-  const contenidoTabla = fichas.map((ficha: object, index: number) => {
+  const contenidoTabla = filteredFichas.map((ficha: any, index: number) => {
     return [
       <span className='font-semibold text-primary-700 text-step-1'>
         # {index + 1}
@@ -56,10 +74,7 @@ export default function PageFichas() {
       ficha?.paciente_nombres,
       ficha?.especialidad_nombre,
       ficha?.doctor_nombre,
-      <span className='inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-quaternary-500 focus-visible:ring-[3px] transition-[color,box-shadow] overflow-hidden border-transparent [a&]:hover:bg-quaternary-500/90 focus-visible:bg-quaternbary-500/20 bg-quaternary-500 text-white'>
-        <IconAlertTriangle />
-        {ficha.estado}
-      </span>,
+      <StatusBadge status={ficha.estado} />,
       <IconDotsVertical />
     ]
   })
@@ -125,48 +140,36 @@ export default function PageFichas() {
         <div className='border-b border-gray-200 flex flex-wrap'>
           <button
             className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
-              activeTab === 'pacientes'
+              activeTab === 'all'
                 ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
                 : 'text-gray-600 hover:text-primary-700'
             }`}
-            onClick={() => setActiveTab('pacientes')}
+            onClick={() => setActiveTab('all')}
           >
             Lista de pacientes
           </button>
-          <button
-            className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
-              activeTab === 'doctores'
-                ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
-                : 'text-gray-600 hover:text-primary-700'
-            }`}
-            onClick={() => setActiveTab('doctores')}
-          >
-            Estado de doctores
-          </button>
+          {specialities.map((speciality: string, index: number) => (
+            <button
+              key={index}
+              className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
+                activeTab === speciality
+                  ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
+                  : 'text-gray-600 hover:text-primary-700'
+              }`}
+              onClick={() => setActiveTab(speciality)}
+            >
+              {speciality}
+            </button>
+          ))}
         </div>
 
         <div className='px-4'>
-          {activeTab === 'pacientes' && (
-            <div>
-              {/* <div className='actions flex gap-2 justify-start items-center mb-4'>
-                <button
-                  className='flex gap-2 items-center bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer'
-                  onClick={openModal}
-                >
-                  <IconPlus />
-                  Registrar nueva ficha
-                </button>
-              </div> */}
-              <div className='w-full'>
-                <CustomDataTable
-                  columnas={columnas}
-                  contenidoTabla={contenidoTabla}
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'doctores' && <></>}
+          <div className='w-full'>
+            <CustomDataTable
+              columnas={columnas}
+              contenidoTabla={contenidoTabla}
+            />
+          </div>
         </div>
       </div>
 
@@ -178,8 +181,6 @@ export default function PageFichas() {
       >
         <FormRegister />
       </Modal>
-
-      <pre>{`Fichas ${JSON.stringify(fichas, null, 2)}`}</pre>
     </section>
   )
 }

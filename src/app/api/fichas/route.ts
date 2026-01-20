@@ -93,9 +93,15 @@ export async function GET() {
         },
         eliminado_en: null
       },
-      orderBy: {
-        orden_turno: 'asc'
-      },
+      orderBy: [
+        {
+          fecha_ficha: 'asc'
+        },
+        {
+          orden_turno: 'asc'
+        }
+      ],
+
       select: {
         id: true,
         orden_turno: true,

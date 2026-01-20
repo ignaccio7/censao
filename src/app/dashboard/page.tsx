@@ -71,6 +71,8 @@ export default function Dashboard() {
   const { routes } = useProfileRoutes()
   const permissions = getPermissions(routes)
 
+  console.log(permissions)
+
   return (
     <div className='inicio font-secondary'>
       <Title>Bienvenid@ Juan Perez</Title>

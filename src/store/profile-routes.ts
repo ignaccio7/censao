@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 export interface Route {
-  route: string
+  link: string
   methods: string[]
   description: string
   icon: string
@@ -21,14 +21,16 @@ const useProfileRoutesStore = create<ProfileRoutesState>((set, get) => ({
   setRoutes: routes => set({ routes: routes }),
   hasPermission: (route, method = 'read') => {
     const { routes } = get()
+    console.log(routes)
+    console.log(route)
 
-    const routeMatch = routes.find(perm => perm.route === route)
+    const routeMatch = routes.find(perm => perm.link === route)
     if (routeMatch) {
       return routeMatch.methods.includes(method)
     }
 
     const routeParameterMatch = routes.find(perm => {
-      if (perm.route.includes(':')) {
+      if (perm.link.includes(':')) {
         const pattern = new RegExp(
           // oxlint-disable-next-line prefer-template
           '^' +

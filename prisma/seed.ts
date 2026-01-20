@@ -296,7 +296,7 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         nombre: 'Gestionar Fichas',
         tipo: 'frontend',
         ruta: '/dashboard/fichas',
-        metodos: ['read', 'create', 'update', 'delete'],
+        metodos: ['read'],
         icono: 'plus',
         descripcion: 'Gestión completa de fichas médicas',
         modulo: 'fichas'
@@ -828,11 +828,14 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
       )
 
       for (const permisoData of usuarioData.rol.permisos) {
-        // Verificar si el permiso ya existe
+        // Verificar si el permiso ya existe  ======================================================================================= ======================================================================================= ======================================================================================= =======================================================================================
         const permisoExistente = await prisma.permisos.findFirst({
           where: {
             nombre: permisoData.nombre,
-            ruta: permisoData.ruta
+            ruta: permisoData.ruta,
+            metodos: {
+              equals: permisoData.metodos
+            }
           }
         })
 
@@ -840,6 +843,9 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
         let permiso
         if (permisoExistente) {
           permiso = permisoExistente
+          console.log(
+            `    ♻️  Reutilizando permiso: ${permisoData.nombre} [${permisoData.metodos.join(', ')}]`
+          )
         } else {
           permiso = await prisma.permisos.create({
             data: {
@@ -852,6 +858,9 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
               modulo: permisoData.modulo
             }
           })
+          console.log(
+            `    ➕ Creando permiso: ${permisoData.nombre} [${permisoData.metodos.join(', ')}]`
+          )
         }
 
         // Asignar permiso al rol

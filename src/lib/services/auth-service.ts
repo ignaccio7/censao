@@ -35,7 +35,11 @@ export default class AuthService {
         user.usuario_id
       )
 
-      return this.formatUserData(userWithPermissionsForJWT, true)
+      console.log(userWithPermissionsForJWT)
+      const d = this.formatUserData(userWithPermissionsForJWT, true)
+      console.log(d)
+
+      return d
     } catch (error) {
       console.error('AuthService Error:', error)
       return null
@@ -44,7 +48,11 @@ export default class AuthService {
 
   static async getProfilePermissions(userId: string) {
     try {
+      console.log(userId)
+
       const permissionsForStore = await this.getUserPermissionsForStore(userId)
+
+      console.log(permissionsForStore)
 
       return this.formatUserData(permissionsForStore)
     } catch (error) {
@@ -141,6 +149,8 @@ export default class AuthService {
   }
 
   private static async getUserPermissionsForStore(userId: string) {
+    console.log(userId)
+
     return prisma.usuarios.findUnique({
       where: { usuario_id: userId },
       select: {
