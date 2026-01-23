@@ -25,12 +25,12 @@ export default function WrapperChildren({
     <>
       <NavbarUser />
       <div
-        className={`${secondaryFont.variable} antialiased bg-white-100 min-h-[var(--size-window)] w-full h-auto flex flex-row`}
+        className={`${secondaryFont.variable} antialiased bg-white-100 min-h-(--size-window) w-full h-auto flex flex-row`}
       >
         <Sidebar />
         <div
-          className={`w-full p-4 md:p-8 mt-[var(--size-header)] h-auto
-          ${sidebarMenu ? 'md:ml-[250px] ml:0' : 'ml-0'}
+          className={`w-full p-4 md:p-8 mt-(--size-header) h-auto
+          ${sidebarMenu ? 'md:ml-62.5 ml:0' : 'ml-0'}
           transition-all duration-200 max-w-7xl`}
         >
           {children}

@@ -4,11 +4,14 @@ import useSidebar from '@/hooks/useSidebar'
 import ToggleLink from './toggleLink'
 import useProfileRoutes from '@/hooks/useProfileRoutes'
 import { getPermissions } from '@/app/utils'
+import useUser from '@/hooks/useUser'
 
 export default function Sidebar() {
   const { sidebarMenu } = useSidebar()
   const { routes } = useProfileRoutes()
   const permissions = getPermissions(routes)
+
+  const { user } = useUser()
 
   // const permissions = [
   //   {
@@ -157,11 +160,11 @@ export default function Sidebar() {
       className={`
         size-window font-secondary font-semibold py-4
         transition-all shadow-xs shadow-gray-700 bg-primary-800 text-white
-        fixed top-[var(--size-header)] z-50 overflow-y-auto
+        fixed top-(--size-header) z-50 overflow-y-auto
         no-scrollbar
         ${
           sidebarMenu
-            ? 'translate-x-0 w-[250px] pointer-events-auto opacity-100'
+            ? 'translate-x-0 w-62.5 pointer-events-auto opacity-100'
             : '-translate-x-full w-0 px-0 pointer-events-none opacity-0'
         }
       `}
@@ -176,8 +179,8 @@ export default function Sidebar() {
           />
         </div>
         <div className='profile text-step-0 leading-4'>
-          <h2 className='text-center font-bold'>Juan Perez</h2>
-          <h3 className='text-center'>Administrador</h3>
+          <h2 className='text-center font-bold'>{user?.name}</h2>
+          <h3 className='text-center'>{user?.roleName}</h3>
         </div>
       </div>
       {/* Menú principal */}

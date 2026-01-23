@@ -1,10 +1,12 @@
+import { ToggleLinkProps } from '../components/ui/sidebar/toggleLink'
+
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
 const delay = (seconds: number): Promise<boolean> =>
   new Promise(resolve => setTimeout(() => resolve(true), seconds * 1000))
 
 const getPermissions = (routes: any) => {
-  const permissions = Object.values(
+  const permissions: ToggleLinkProps[] = Object.values(
     routes.reduce((acc: any, route: any) => {
       const label = capitalize(route.module.replaceAll('_', ' '))
       if (!acc[route.module]) {

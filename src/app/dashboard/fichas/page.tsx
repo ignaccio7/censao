@@ -126,13 +126,15 @@ export default function PageFichas() {
 
       {/* ACTIONS */}
       <div className='actions flex gap-2 justify-start items-center my-4'>
-        <button
-          className='flex gap-2 items-center bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer'
-          onClick={openModal}
-        >
-          <IconPlus />
-          Registrar nueva ficha
-        </button>
+        {create && (
+          <button
+            className='flex gap-2 items-center bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer'
+            onClick={openModal}
+          >
+            <IconPlus />
+            Registrar nueva ficha
+          </button>
+        )}
       </div>
 
       {/* TABS */}
