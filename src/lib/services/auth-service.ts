@@ -95,7 +95,8 @@ export default class AuthService {
       status: 200,
       data: {
         id: session.user.id,
-        username: session.user.username
+        username: session.user.username,
+        role: session.user.role
       }
     }
   }

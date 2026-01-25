@@ -8,6 +8,7 @@ import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { FichasService } from './utils'
 
 export async function GET() {
   const validation = await AuthService.validateApiPermission(
@@ -34,11 +35,9 @@ export async function GET() {
     )
   }
 
-  // const fechaBolivia = new Date().toLocaleDateString('en-CA', {
-  //   timeZone: 'America/La_Paz'
-  // })
-
-  // const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
+  // Obtenemos la ficha segun el ID del doctor y hacemos la consulta segun el rol que tenga
+  const idUser = validation.data?.id
+  const rolUser = validation.data?.role
 
   const fechaUTC = new Date()
 
@@ -80,70 +79,77 @@ export async function GET() {
   console.log(`EL TURNO ES:${turno}`)
 
   try {
-    const fichas = await prisma.fichas.findMany({
-      where: {
-        fecha_ficha: {
-          gte: inicioUTC,
-          lte: finUTC
-        },
-        disponibilidades: {
-          turno_codigo: {
-            equals: turno
-          }
-        },
-        eliminado_en: null
-      },
-      orderBy: [
-        {
-          fecha_ficha: 'asc'
-        },
-        {
-          orden_turno: 'asc'
-        }
-      ],
-
-      select: {
-        id: true,
-        orden_turno: true,
-        fecha_ficha: true,
-        estado: true,
-        pacientes: {
-          include: {
-            personas: {
-              select: {
-                nombres: true,
-                paterno: true,
-                materno: true
-              }
-            }
-          }
-        },
-        disponibilidades: {
-          include: {
-            doctores_especialidades: {
-              include: {
-                doctores: {
-                  select: {
-                    personas: {
-                      select: {
-                        nombres: true,
-                        paterno: true,
-                        materno: true
-                      }
-                    }
-                  }
-                },
-                especialidades: {
-                  select: {
-                    nombre: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+    const fichas = await FichasService.getFichas({
+      inicioUTC,
+      finUTC,
+      turno,
+      userId: idUser as string,
+      userRole: rolUser as string
     })
+    // const fichas = await prisma.fichas.findMany({
+    //   where: {
+    //     fecha_ficha: {
+    //       gte: inicioUTC,
+    //       lte: finUTC
+    //     },
+    //     disponibilidades: {
+    //       turno_codigo: {
+    //         equals: turno
+    //       }
+    //     },
+    //     eliminado_en: null
+    //   },
+    //   orderBy: [
+    //     {
+    //       fecha_ficha: 'asc'
+    //     },
+    //     {
+    //       orden_turno: 'asc'
+    //     }
+    //   ],
+
+    //   select: {
+    //     id: true,
+    //     orden_turno: true,
+    //     fecha_ficha: true,
+    //     estado: true,
+    //     pacientes: {
+    //       include: {
+    //         personas: {
+    //           select: {
+    //             nombres: true,
+    //             paterno: true,
+    //             materno: true
+    //           }
+    //         }
+    //       }
+    //     },
+    //     disponibilidades: {
+    //       include: {
+    //         doctores_especialidades: {
+    //           include: {
+    //             doctores: {
+    //               select: {
+    //                 personas: {
+    //                   select: {
+    //                     nombres: true,
+    //                     paterno: true,
+    //                     materno: true
+    //                   }
+    //                 }
+    //               }
+    //             },
+    //             especialidades: {
+    //               select: {
+    //                 nombre: true
+    //               }
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // })
 
     const data = fichas.map(ficha => ({
       fecha_ficha: ficha.fecha_ficha
