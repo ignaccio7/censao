@@ -12,7 +12,7 @@ export default function WrapperChildren({
 }: {
   children: React.ReactNode
 }) {
-  console.log('WRAPPER CHILDREN')
+  // console.log('WRAPPER CHILDREN')
 
   const { loading } = useProfileRoutes()
   const { sidebarMenu } = useSidebar()

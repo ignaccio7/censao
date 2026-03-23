@@ -312,28 +312,37 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // const fechaFicha = new Date(`${fechaBolivia}T00:00:00.000Z`)
     const fechaFicha = new Date()
 
-    const inicioUTC = new Date(
-      Date.UTC(
-        fechaFicha.getUTCFullYear(),
-        fechaFicha.getUTCMonth(),
-        fechaFicha.getUTCDate(),
-        4,
-        0,
-        0
-      )
-    )
+    const fechaBoliviaStr = fechaFicha.toLocaleDateString('en-CA', {
+      timeZone: 'America/La_Paz'
+    })
 
-    const finUTC = new Date(
-      Date.UTC(
-        fechaFicha.getUTCFullYear(),
-        fechaFicha.getUTCMonth(),
-        fechaFicha.getUTCDate() + 1,
-        3,
-        59,
-        59,
-        999
-      )
-    )
+    const [year, month, day] = fechaBoliviaStr.split('-').map(Number)
+
+    const inicioUTC = new Date(Date.UTC(year, month - 1, day, 4, 0, 0))
+    const finUTC = new Date(Date.UTC(year, month - 1, day + 1, 3, 59, 59, 999))
+
+    // const inicioUTC = new Date(
+    //   Date.UTC(
+    //     fechaFicha.getUTCFullYear(),
+    //     fechaFicha.getUTCMonth(),
+    //     fechaFicha.getUTCDate(),
+    //     4,
+    //     0,
+    //     0
+    //   )
+    // )
+
+    // const finUTC = new Date(
+    //   Date.UTC(
+    //     fechaFicha.getUTCFullYear(),
+    //     fechaFicha.getUTCMonth(),
+    //     fechaFicha.getUTCDate() + 1,
+    //     3,
+    //     59,
+    //     59,
+    //     999
+    //   )
+    // )
 
     // Buscar disponibilidad del doctor para el turno actual
     const disponibilidad = await prisma.disponibilidades.findFirst({

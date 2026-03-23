@@ -296,7 +296,7 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         nombre: 'Gestionar Fichas',
         tipo: 'frontend',
         ruta: '/dashboard/fichas',
-        metodos: ['read'],
+        metodos: ['read', 'update'],
         icono: 'plus',
         descripcion: 'Gestión completa de fichas médicas',
         modulo: 'fichas'
