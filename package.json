@@ -22,6 +22,7 @@
     "migrate:status": "npx prisma migrate status",
     "migrate:reset": "npx prisma migrate reset",
     "db:sync": "npm run prisma:pull && npm run seed",
+    "db:fresh": "npx prisma db push --force-reset && npx prisma generate && npx prisma db seed",
     "prepare": "husky",
     "lint-staged": "lint-staged",
     "commit": "cz"

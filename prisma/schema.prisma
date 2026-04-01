@@ -27,13 +27,20 @@ model auditoria_log {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+
+enum EstadoFicha {
+  PENDIENTE
+  CANCELADA
+  ATENDIDA
+}
+
 model fichas {
   id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   paciente_id       String
   disponibilidad_id String           @db.Uuid
   fecha_ficha       DateTime         @default(now()) @db.Timestamptz(0)
   motivo            String?
-  estado            String?          @default("PENDIENTE")
+  estado            EstadoFicha?     @default(PENDIENTE)
   orden_turno       Int?
   creado_en         DateTime         @default(now()) @db.Timestamptz(0)
   creado_por        String?

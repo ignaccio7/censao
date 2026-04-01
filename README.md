@@ -10,3 +10,5 @@ npx auth secret
 npx prisma migrate reset
 npx prisma migrate dev --name init
 npx prisma db seed
+
+api -> https://nextjs.org/docs/app/api-reference/file-conventions/route
