@@ -8,7 +8,8 @@ import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { FichasService } from './utils'
+import { FichasService } from './service'
+import { getRangoUTCBoliviaHoy, getTurnoActual } from '@/app/utils/date'
 
 export async function GET() {
   const validation = await AuthService.validateApiPermission(
@@ -39,42 +40,8 @@ export async function GET() {
   const idUser = validation.data?.id
   const rolUser = validation.data?.role
 
-  const fechaUTC = new Date()
-
-  const inicioUTC = new Date(
-    Date.UTC(
-      fechaUTC.getUTCFullYear(),
-      fechaUTC.getUTCMonth(),
-      fechaUTC.getUTCDate(),
-      4,
-      0,
-      0
-    )
-  )
-
-  const finUTC = new Date(
-    Date.UTC(
-      fechaUTC.getUTCFullYear(),
-      fechaUTC.getUTCMonth(),
-      fechaUTC.getUTCDate() + 1,
-      3,
-      59,
-      59,
-      999
-    )
-  )
-
-  const hour = parseInt(
-    new Date().toLocaleString('es-BO', {
-      timeZone: 'America/La_Paz',
-      hour: 'numeric',
-      hour12: false
-    })
-  )
-
-  console.log('La hora es', hour)
-
-  const turno = hour < 13 ? 'AM' : 'PM'
+  const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
+  const turno = getTurnoActual()
 
   console.log(`EL TURNO ES:${turno}`)
 
@@ -86,74 +53,11 @@ export async function GET() {
       userId: idUser as string,
       userRole: rolUser as string
     })
-    // const fichas = await prisma.fichas.findMany({
-    //   where: {
-    //     fecha_ficha: {
-    //       gte: inicioUTC,
-    //       lte: finUTC
-    //     },
-    //     disponibilidades: {
-    //       turno_codigo: {
-    //         equals: turno
-    //       }
-    //     },
-    //     eliminado_en: null
-    //   },
-    //   orderBy: [
-    //     {
-    //       fecha_ficha: 'asc'
-    //     },
-    //     {
-    //       orden_turno: 'asc'
-    //     }
-    //   ],
-
-    //   select: {
-    //     id: true,
-    //     orden_turno: true,
-    //     fecha_ficha: true,
-    //     estado: true,
-    //     pacientes: {
-    //       include: {
-    //         personas: {
-    //           select: {
-    //             nombres: true,
-    //             paterno: true,
-    //             materno: true
-    //           }
-    //         }
-    //       }
-    //     },
-    //     disponibilidades: {
-    //       include: {
-    //         doctores_especialidades: {
-    //           include: {
-    //             doctores: {
-    //               select: {
-    //                 personas: {
-    //                   select: {
-    //                     nombres: true,
-    //                     paterno: true,
-    //                     materno: true
-    //                   }
-    //                 }
-    //               }
-    //             },
-    //             especialidades: {
-    //               select: {
-    //                 nombre: true
-    //               }
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // })
 
     const data = fichas.map(ficha => ({
       fecha_ficha: ficha.fecha_ficha
     }))
+    console.log('Fichas db')
     console.log(data)
 
     // console.log(fichas)
@@ -189,23 +93,12 @@ export async function GET() {
     })
 
     return NextResponse.json({ success: true, data: fichasDto })
-
-    // return Response.json({
-    //   success: true,
-    //   data: fichas
-    // })
   } catch (error) {
     console.log('Error al obtener las fichas', error)
     return NextResponse.json(
       { error: 'Error interno del servidor', success: false },
       { status: 500 }
     )
-    // return Response.json(
-    //   { error: 'Error interno del servidor', success: false },
-    //   {
-    //     status: 500
-    //   }
-    // )
   }
 }
 
@@ -304,49 +197,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       })
     }
 
-    // Determinar turno actual
-    const hour = parseInt(
-      new Date().toLocaleString('es-BO', {
-        timeZone: 'America/La_Paz',
-        hour: 'numeric',
-        hour12: false
-      })
-    )
-
-    console.log(hour)
-
-    const turno = hour < 13 ? 'AM' : 'PM'
-
-    // Fecha de hoy para la ficha (sin hora)
-    // const fechaBolivia = new Date().toLocaleDateString('es-BO', {
-    //   timeZone: 'America/La_Paz'
-    // })
-
-    // const fechaFicha = new Date(`${fechaBolivia}T00:00:00.000Z`)
     const fechaFicha = new Date()
 
-    const inicioUTC = new Date(
-      Date.UTC(
-        fechaFicha.getUTCFullYear(),
-        fechaFicha.getUTCMonth(),
-        fechaFicha.getUTCDate(),
-        4,
-        0,
-        0
-      )
-    )
-
-    const finUTC = new Date(
-      Date.UTC(
-        fechaFicha.getUTCFullYear(),
-        fechaFicha.getUTCMonth(),
-        fechaFicha.getUTCDate() + 1,
-        3,
-        59,
-        59,
-        999
-      )
-    )
+    const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
+    const turno = getTurnoActual()
 
     // Buscar disponibilidad del doctor para el turno actual
     const disponibilidad = await prisma.disponibilidades.findFirst({

@@ -9,7 +9,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=censao_db    
+      - POSTGRES_DB=censao_db
     ports:
       - 50432:5432
 

@@ -3,6 +3,7 @@
 // oxlint-disable prefer-default-export
 // oxlint-disable func-style
 //https://claude.ai/chat/d81ba90b-2adc-40a5-b16f-553d8215578d
+import { getRangoUTCBoliviaHoy, getTurnoActual } from '@/app/utils/date'
 import prisma from '@/lib/prisma/prisma'
 // import AuthService from '@/lib/services/auth-service'
 import { NextResponse } from 'next/server'
@@ -26,39 +27,9 @@ export async function GET() {
   // })
 
   // const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
-  const fechaConsulta = new Date(Date.now())
 
-  const inicioUTC = new Date(
-    Date.UTC(
-      fechaConsulta.getUTCFullYear(),
-      fechaConsulta.getUTCMonth(),
-      fechaConsulta.getUTCDate(),
-      4,
-      0,
-      0
-    )
-  )
-
-  const finUTC = new Date(
-    Date.UTC(
-      fechaConsulta.getUTCFullYear(),
-      fechaConsulta.getUTCMonth(),
-      fechaConsulta.getUTCDate() + 1,
-      3,
-      59,
-      59,
-      999
-    )
-  )
-
-  const hour = parseInt(
-    new Date().toLocaleString('es-BO', {
-      timeZone: 'America/La_Paz',
-      hour: 'numeric',
-      hour12: false
-    })
-  )
-  const turno = hour < 13 ? 'AM' : 'PM'
+  const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
+  const turno = getTurnoActual()
 
   try {
     const especialidades = await prisma.especialidades.findMany({

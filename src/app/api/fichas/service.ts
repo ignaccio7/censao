@@ -90,8 +90,12 @@ export class FichasService {
     userId: string
     userRole: string
   }) {
+    console.log('LISTANDO FICHAS')
+    console.log({ inicioUTC, finUTC, turno, userId, userRole })
+
     // Si es ADMINISTRADOR o DOCTOR_FICHAS, obtiene todas las fichas
     if (userRole === Roles.ADMINISTRADOR || userRole === Roles.DOCTOR_FICHAS) {
+      console.log('Sacando fichas como rol', userRole)
       return await this.getAllFichasByTurn({ inicioUTC, finUTC, turno })
     }
 
