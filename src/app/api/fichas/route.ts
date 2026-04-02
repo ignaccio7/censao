@@ -2,8 +2,8 @@
 // oxlint-disable group-exports
 // oxlint-disable func-style
 // oxlint-disable prefer-default-export
-import { fichaSchema } from '@/app/dashboard/fichas/schemas'
-import { RECORD_TYPES } from '@/lib/constants'
+import { fichaSchema, fichaUpdateSchema } from '@/app/dashboard/fichas/schemas'
+import { RECORD_TYPES } from '@/app/api/lib/constants'
 import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
 import { NextRequest, NextResponse } from 'next/server'
@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { FichasService } from './service'
 import { getRangoUTCBoliviaHoy, getTurnoActual } from '@/app/utils/date'
 
+// LISTAR LAS FICHAS
 export async function GET() {
   const validation = await AuthService.validateApiPermission(
     '/api/fichas',
@@ -102,6 +103,7 @@ export async function GET() {
   }
 }
 
+// REGISTRAR UNA NUEVA FICHA
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Validar permisos usando tu método existente
   const validation = await AuthService.validateApiPermission(
@@ -302,6 +304,95 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         message: 'Error interno del servidor'
       },
       { status: 500 }
+    )
+  }
+}
+
+// ACTUALIZAR EL ESTADO DE UNA FICHA
+export async function PATCH(request: NextRequest): Promise<NextResponse> {
+  try {
+    // Validar permisos
+    const validation = await AuthService.validateApiPermission(
+      '/api/fichas',
+      'PATCH'
+    )
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: validation.error, success: false },
+        { status: validation.status }
+      )
+    }
+
+    const userId = validation.data?.id
+    console.log(userId)
+
+    const body = await request.json()
+
+    const validationResult = fichaUpdateSchema.safeParse(body)
+    if (!validationResult.success) {
+      const treeified = z.treeifyError(validationResult.error)
+      const errors = treeified.properties || {}
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Error de validación',
+          errors
+        },
+        { status: 400 }
+      )
+    }
+
+    const validData = validationResult.data
+
+    const ficha = await prisma.fichas.findUnique({
+      where: {
+        id: validData.id
+      }
+    })
+
+    if (!ficha) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Ficha no encontrada'
+        },
+        {
+          status: 404
+        }
+      )
+    }
+
+    const fichaActualizada = await prisma.fichas.update({
+      where: {
+        id: validData.id
+      },
+      data: {
+        estado: validData.status
+      }
+    })
+
+    console.log(fichaActualizada)
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Ficha marcada como atendida'
+      },
+      {
+        status: 200
+      }
+    )
+  } catch (error) {
+    console.error('Error updating ficha:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Error al actualizar la ficha'
+      },
+      {
+        status: 500
+      }
     )
   }
 }

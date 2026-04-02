@@ -27,3 +27,10 @@ export const fichaSchema = z.object({
 })
 
 export type FichaFormData = z.infer<typeof fichaSchema>
+
+export const fichaUpdateSchema = z.object({
+  id: z.string().uuid('ID de la ficha invalido'),
+  status: z.enum(['PENDIENTE', 'ATENDIDA', 'CANCELADA'])
+})
+
+export type FichaUpdateData = z.infer<typeof fichaUpdateSchema>

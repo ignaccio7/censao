@@ -774,10 +774,54 @@ const IconCredential = ({ className = '', size = '24' }: IconProps) => (
   </svg>
 )
 
+const IconUserCheck = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0' />
+    <path d='M6 21v-2a4 4 0 0 1 4 -4h4' />
+    <path d='M15 19l2 2l4 -4' />
+  </svg>
+)
+
+const IconCheckupList = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2' />
+    <path d='M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2' />
+    <path d='M9 14h.01' />
+    <path d='M9 17h.01' />
+    <path d='M12 16l1 1l3 -3' />
+  </svg>
+)
+
 // const Icon = ({ className = '', size = '24' }: IconProps) => (
 
 // )
 export {
+  IconCheckupList,
+  IconUserCheck,
   IconCredential,
   IconClock,
   IconAlertTriangle,

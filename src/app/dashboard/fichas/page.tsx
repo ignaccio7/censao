@@ -42,7 +42,7 @@ export default function PageFichas() {
           </span>
         }
       >
-        Gestión de fichas
+        Gestión de fichas {role}
       </Title>
 
       {(Roles.DOCTOR_FICHAS === role || Roles.ADMINISTRADOR === role) && (

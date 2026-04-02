@@ -2,6 +2,7 @@
 // oxlint-disable func-style
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from './client'
+import { FichaUpdateData } from '../dashboard/fichas/schemas'
 
 export function useFichas() {
   const queryClient = useQueryClient()
@@ -32,6 +33,21 @@ export function useFichas() {
     }
   })
 
+  // Actualizar ficha
+  const updateFicha = useMutation({
+    mutationFn: async (data: FichaUpdateData) => {
+      const response = await apiClient.patch('fichas', data)
+      return response.data
+    },
+
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['fichas'] })
+      queryClient.invalidateQueries({ queryKey: ['espcialidad'] })
+      console.log('PATCH FICHAS')
+      console.log(data)
+    }
+  })
+
   return {
     // ...fichasQuery, // expone data, isLoading, error, etc
     fichas: fichasQuery.data || [],
@@ -41,6 +57,7 @@ export function useFichas() {
     isSuccess: fichasQuery.isSuccess,
     refetch: fichasQuery.refetch,
     // Mutations
-    createFicha
+    createFicha,
+    updateFicha
   }
 }

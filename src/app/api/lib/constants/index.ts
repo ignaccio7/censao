@@ -19,3 +19,13 @@ export const RoleGroups = {
   PACIENTE: [Roles.PACIENTE],
   ADMINISTRADOR: [Roles.ADMINISTRADOR]
 } as const
+
+export const RECORD_TYPES = {
+  PENDIENTE: 'PENDIENTE',
+  ATENDIDA: 'ATENDIDA',
+  CANCELADA: 'CANCELADA'
+} as const
+
+export type RecordType = (typeof RECORD_TYPES)[keyof typeof RECORD_TYPES]
+// // ahora quiero las llaves
+// export type RecordTypeKey = keyof typeof RECORD_TYPES
