@@ -48,39 +48,52 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
     }
   ]
 
-  const contenidoTabla: [] = fichas.map((ficha: any, index: number) => {
-    return [
-      <span className='font-semibold text-primary-700 text-step-1' key={index}>
-        # {index + 1}
-      </span>,
-      ficha?.paciente_nombres,
-      ficha?.especialidad_nombre,
-      ficha?.doctor_nombre,
-      <StatusBadge status={ficha.estado} key={index} />,
-      <div key={`button-${index}`}>
-        <button
-          onClick={() => {
-            const patient = {
-              fichaId: ficha.ficha_id as string,
-              pacienteId: ficha.paciente_id as string,
-              pacienteNombres: ficha.paciente_nombres as string,
-              doctorNombre: ficha.doctor_nombre as string,
-              especialidadNombre: ficha.especialidad_nombre as string
-            }
-
-            setPatient(patient)
-            setModal(true)
-          }}
-        >
-          <IconStethoscope
-            className='cursor-pointer border border-transparent bg-primary-600 text-white py-1 rounded-md hover:border-primary-600 hover:text-primary-600 hover:bg-transparent transition-all duration-300'
-            size='32'
-            key={index}
-          />
-        </button>
-      </div>
-    ]
+  const filteredFichas = fichas.filter((ficha: any) => {
+    const matchedKey = Object.keys(StateRecordValue).find(
+      key =>
+        StateRecordValue[key as keyof typeof StateRecordValue] === activeTab
+    )
+    return ficha.estado === StateRecord[matchedKey as keyof typeof StateRecord]
   })
+
+  const contenidoTabla: any[] = filteredFichas.map(
+    (ficha: any, index: number) => {
+      return [
+        <span
+          className='font-semibold text-primary-700 text-step-1'
+          key={index}
+        >
+          # {index + 1}
+        </span>,
+        ficha?.paciente_nombres,
+        ficha?.especialidad_nombre,
+        ficha?.doctor_nombre,
+        <StatusBadge status={ficha.estado} key={index} />,
+        <div key={`button-${index}`}>
+          <button
+            onClick={() => {
+              const patient = {
+                fichaId: ficha.ficha_id as string,
+                pacienteId: ficha.paciente_id as string,
+                pacienteNombres: ficha.paciente_nombres as string,
+                doctorNombre: ficha.doctor_nombre as string,
+                especialidadNombre: ficha.especialidad_nombre as string
+              }
+
+              setPatient(patient)
+              setModal(true)
+            }}
+          >
+            <IconStethoscope
+              className='cursor-pointer border border-transparent bg-primary-600 text-white py-1 rounded-md hover:border-primary-600 hover:text-primary-600 hover:bg-transparent transition-all duration-300'
+              size='32'
+              key={index}
+            />
+          </button>
+        </div>
+      ]
+    }
+  )
 
   const attendPatient = () => {
     updateFicha.mutateAsync({

@@ -50,7 +50,8 @@ model fichas {
   eliminado_por     String?
   disponibilidades  disponibilidades @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_disponibilidad_id_foreign")
   pacientes         pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_paciente_id_foreign")
-  tratamientos      tratamientos[]
+  citas             citas[]
+  tratamientos      tratamientos[] 
 
   @@unique([disponibilidad_id, fecha_ficha, orden_turno])
 }
@@ -85,6 +86,7 @@ model doctores {
   eliminado_por           String?
   personas                personas                  @relation(fields: [doctor_id], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_doctores_personas")
   doctores_especialidades doctores_especialidades[]
+  citas                   citas[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -114,7 +116,7 @@ model notificaciones {
   fecha_envio     DateTime     @db.Timestamp(0)
   leido           Boolean      @default(false)
   medio           String       @db.VarChar(255)
-  tratamiento_id  String       @db.Uuid
+  cita_id         String       @db.Uuid
   creado_en       DateTime     @default(now()) @db.Timestamptz(0)
   creado_por      String?
   actualizado_en  DateTime     @default(now()) @db.Timestamptz(0)
@@ -122,7 +124,7 @@ model notificaciones {
   eliminado_en    DateTime?    @db.Timestamptz(0)
   eliminado_por   String?
   pacientes       pacientes    @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_paciente_id_foreign")
-  tratamientos    tratamientos @relation(fields: [tratamiento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_tratamiento_id_foreign")
+  citas           citas        @relation(fields: [cita_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_cita_id_foreign")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -139,6 +141,7 @@ model pacientes {
   eliminado_en         DateTime?        @db.Timestamptz(0)
   eliminado_por        String?
   fichas               fichas[]
+  citas                citas[]
   notificaciones       notificaciones[]
   personas             personas         @relation(fields: [paciente_id], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_pacientes_personas")
 }
@@ -219,20 +222,45 @@ model roles_permisos {
 model tratamientos {
   id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   estado                  String
-  ficha_id                String           @db.Uuid
+  cita_id                 String           @db.Uuid
+  ficha_aplicacion_id     String           @db.Uuid
   esquema_id              String           @db.Uuid
-  tratamiento_original_id String?          @db.Uuid
+  dosis_numero            Int
+  fecha_aplicacion        DateTime         @default(now()) @db.Timestamptz(0) // Cuándo se aplicó realmente
   creado_en               DateTime         @default(now()) @db.Timestamptz(0)
   creado_por              String?
   actualizado_en          DateTime         @default(now()) @db.Timestamptz(0)
   actualizado_por         String?
   eliminado_en            DateTime?        @db.Timestamptz(0)
   eliminado_por           String?
-  notificaciones          notificaciones[]
-  fichas                  fichas           @relation(fields: [ficha_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_ficha_id_foreign")
+  citas                   citas            @relation(fields: [cita_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_cita_id_foreign")
+  fichas                  fichas           @relation(fields: [ficha_aplicacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_ficha_aplicacion_id_foreign")
   esquema_dosis           esquema_dosis    @relation(fields: [esquema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_esquema_id_foreign")
-  tratamientos            tratamientos?    @relation("tratamientosTotratamientos", fields: [tratamiento_original_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_tratamiento_original_id_foreign")
-  other_tratamientos      tratamientos[]   @relation("tratamientosTotratamientos")
+}
+
+
+model citas {
+  id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paciente_id             String
+  doctor_id               String
+  ficha_origen_id         String?          @db.Uuid // Ficha donde se programó esta cita
+  fecha_programada        DateTime         @db.Timestamptz(0) // Cuándo debe volver el paciente
+  fecha_real_atencion     DateTime?        @db.Timestamptz(0) // Cuando realmente vino (si aplica)
+  tipo                    String           // "VACUNA", "CONTROL", "CONSULTA"
+  estado                  String           @default("PENDIENTE") // "PENDIENTE", "COMPLETADA", "CANCELADA", "VENCIDA"
+  observaciones           String?
+  creado_en               DateTime         @default(now()) @db.Timestamptz(0)
+  creado_por              String?
+  actualizado_en          DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_por         String?
+  eliminado_en            DateTime?        @db.Timestamptz(0)
+  eliminado_por           String?
+
+  pacientes               pacientes        @relation(fields: [paciente_id], references: [paciente_id])
+  doctores                doctores         @relation(fields: [doctor_id], references: [doctor_id])
+  fichas                  fichas?          @relation(fields: [ficha_origen_id], references: [id])
+  tratamientos            tratamientos[]   // Una cita puede generar múltiples tratamientos aplicados
+  notificaciones          notificaciones[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

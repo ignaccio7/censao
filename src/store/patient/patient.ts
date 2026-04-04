@@ -1,12 +1,15 @@
 import { create } from 'zustand'
 
-interface PatientState {
+export type PatientData = {
   fichaId: string | null
   pacienteId: string | null
   pacienteNombres: string | null
   doctorNombre: string | null
   especialidadNombre: string | null
-  setPatient: (patient: PatientState) => void
+}
+
+interface PatientState extends PatientData {
+  setPatient: (patient: PatientData) => void
   clearPatient: () => void
 }
 
@@ -17,7 +20,7 @@ const usePatientStore = create<PatientState>((set, _) => ({
   doctorNombre: null,
   especialidadNombre: null,
 
-  setPatient: (patient: any) => {
+  setPatient: (patient: PatientData) => {
     set({
       fichaId: patient.fichaId,
       pacienteId: patient.pacienteId,
