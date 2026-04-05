@@ -18,7 +18,8 @@ import { useFichas } from '@/app/services/fichas'
 export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
   console.log(fichas)
 
-  const { updateFicha } = useFichas()
+  const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
+  const { updateFicha } = useFichas(refetchInterval)
   const [modal, setModal] = useState(false)
   const [activeTab, setActiveTab] = useState<StateRecordValueType>(
     StateRecordValue.PENDIENTE
@@ -108,20 +109,53 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
     <section className='fichas font-secondary'>
       {/* TABS */}
       <div className='bg-white my-4 rounded-md'>
-        <div className='border-b border-gray-200 flex flex-wrap'>
-          {Object.values(StateRecordValue).map((state, index: number) => (
-            <button
-              key={index}
-              className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 cursor-pointer ${
-                activeTab === state
-                  ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
-                  : 'text-gray-600 hover:text-primary-700'
-              }`}
-              onClick={() => setActiveTab(state)}
+        <div className='border-b border-gray-200 flex flex-wrap items-center justify-between'>
+          <div className='flex flex-wrap'>
+            {Object.values(StateRecordValue).map((state, index: number) => (
+              <button
+                key={index}
+                className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 cursor-pointer ${
+                  activeTab === state
+                    ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
+                    : 'text-gray-600 hover:text-primary-700'
+                }`}
+                onClick={() => setActiveTab(state)}
+              >
+                {state}
+              </button>
+            ))}
+          </div>
+
+          <div className='px-4 py-2 flex items-center gap-2'>
+            <label
+              htmlFor='polling'
+              className='text-sm text-gray-600 font-medium'
             >
-              {state}
-            </button>
-          ))}
+              Actualizar datos:
+            </label>
+            <select
+              id='polling'
+              className={`border rounded-md px-2 py-1 text-sm focus:outline-none cursor-pointer transition-colors duration-300 shadow-sm ${
+                refetchInterval !== false
+                  ? 'border-primary-500 bg-primary-50 text-primary-700 font-semibold focus:ring-2 focus:ring-primary-600'
+                  : 'border-gray-300 text-gray-700 bg-white focus:ring-2 focus:ring-primary-500 hover:border-primary-400'
+              }`}
+              value={
+                refetchInterval === false ? 'false' : String(refetchInterval)
+              }
+              onChange={e => {
+                const val = e.target.value
+                setRefetchInterval(val === 'false' ? false : Number(val))
+              }}
+            >
+              <option value='false'>Manual (Desactivado)</option>
+              <option value='1000'>Tiempo real (1s)</option>
+              <option value='5000'>Cada 5s</option>
+              <option value='30000'>Cada 30s</option>
+              <option value='60000'>Cada 1 min</option>
+              <option value='1800000'>Cada 30 min</option>
+            </select>
+          </div>
         </div>
 
         <div className='px-4'>

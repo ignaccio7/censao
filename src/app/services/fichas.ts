@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from './client'
 import { FichaUpdateData } from '../dashboard/fichas/schemas'
 
-export function useFichas() {
+export function useFichas(refetchInterval: number | false = false) {
   const queryClient = useQueryClient()
 
   // Obtener fichas
@@ -14,7 +14,8 @@ export function useFichas() {
       const response = await apiClient.get('/fichas')
       return response.data.data
     },
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    refetchInterval
   })
 
   // Registrar ficha

@@ -96,7 +96,7 @@ export async function GET() {
                 id: true,
                 fichas: {
                   where: {
-                    fecha_hora_inicial: {
+                    fecha_ficha: {
                       gte: rangoInicio,
                       lt: rangoFin
                     }
