@@ -8,6 +8,7 @@ export interface FichaPublicaEspecialidad {
   doctor_nombre: string
   atendiendo: number | null
   siguiente: number | null
+  fichas_pendientes: number[]
   total_pendientes: number
 }
 

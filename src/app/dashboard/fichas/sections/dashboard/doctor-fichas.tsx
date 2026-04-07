@@ -1,299 +1,151 @@
 'use client'
-import {
-  IconDotsVertical,
-  IconMonitor,
-  IconPlus,
-  IconTeam
-} from '@/app/components/icons/icons'
-import { StatusBadge } from '../../components/statusBadge'
 import { useState } from 'react'
+import { IconMonitor, IconPlus, IconTeam } from '@/app/components/icons/icons'
 import Modal from '@/app/components/ui/modal/modal'
 import FormRegister from '../../components/formRegister'
+import FormReassign from '../../components/FormReassign'
 import useModal from '@/hooks/useModal'
-import CustomDataTable from '@/app/components/ui/dataTable'
 import useProfileRoutes from '@/hooks/useProfileRoutes'
+import FichasStatCard from '../../components/FichasStatCard'
+import FichasStatusTable from '../../components/FichasStatusTable'
+import { useFichas } from '@/app/services/fichas'
 
 export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
-  const {
-    create
-    // delete: deleteFicha
-  } = useProfileRoutes()
-
+  const { create } = useProfileRoutes()
   const { modal, closeModal, openModal } = useModal()
 
-  const [activeTabPending, setActiveTabPending] = useState('all')
-  const [activeTabAttended, setActiveTabAttended] = useState('all')
-  const [activeTabCancelled, setActiveTabCancelled] = useState('all')
+  const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
+  useFichas(refetchInterval)
 
-  //tabla
-  const columnas = [
-    { campo: '# Ficha' },
-    { campo: 'Paciente' },
-    { campo: 'Especialidad' },
-    { campo: 'Doctor Asignado' },
-    { campo: 'Estado' },
-    { campo: '' }
-  ]
+  const [reassignData, setReassignData] = useState<{
+    fichaId: string
+    cedula: string
+    nombre: string
+  } | null>(null)
+
+  const handleRevertToQueue = (data: {
+    fichaId: string
+    cedula: string
+    nombre: string
+  }) => {
+    setReassignData(data)
+    openModal()
+  }
+
+  const handleOpenNewFicha = () => {
+    setReassignData(null)
+    openModal()
+  }
 
   const globalPending = fichas.filter((f: any) => f.estado === 'PENDIENTE')
   const globalAttended = fichas.filter((f: any) => f.estado === 'ATENDIDA')
   const globalCancelled = fichas.filter((f: any) => f.estado === 'CANCELADA')
 
-  const pendingSpecialities: string[] = Array.from(
-    new Set(
-      globalPending
-        .map((ficha: any) => ficha?.especialidad_nombre)
-        .filter(Boolean)
-    )
-  )
-  const attendedSpecialities: string[] = Array.from(
-    new Set(
-      globalAttended
-        .map((ficha: any) => ficha?.especialidad_nombre)
-        .filter(Boolean)
-    )
-  )
-  const cancelledSpecialities: string[] = Array.from(
-    new Set(
-      globalCancelled
-        .map((ficha: any) => ficha?.especialidad_nombre)
-        .filter(Boolean)
-    )
-  )
-
-  const pendingFichas =
-    activeTabPending !== 'all'
-      ? globalPending.filter(
-          (f: any) => f.especialidad_nombre === activeTabPending
-        )
-      : globalPending
-
-  const attendedFichas =
-    activeTabAttended !== 'all'
-      ? globalAttended.filter(
-          (f: any) => f.especialidad_nombre === activeTabAttended
-        )
-      : globalAttended
-
-  const cancelledFichas =
-    activeTabCancelled !== 'all'
-      ? globalCancelled.filter(
-          (f: any) => f.especialidad_nombre === activeTabCancelled
-        )
-      : globalCancelled
-
-  const generateTableContent = (fichasList: any[]) =>
-    fichasList.map((ficha: any, index: number) => {
-      return [
-        <span
-          className='font-semibold text-primary-700 text-step-1'
-          key={`id-${index}`}
-        >
-          # {index + 1}
-        </span>,
-        ficha?.paciente_nombres,
-        ficha?.especialidad_nombre,
-        ficha?.doctor_nombre,
-        <StatusBadge status={ficha.estado} key={`status-${index}`} />,
-        <IconDotsVertical key={`action-${index}`} />
-      ]
-    })
-
-  const pendientesContent = generateTableContent(pendingFichas)
-  const atendidosContent = generateTableContent(attendedFichas)
-  const canceladosContent = generateTableContent(cancelledFichas)
-
   return (
     <section className='fichas font-secondary'>
       {/* TARJETAS DE FICHAS GLOBALES */}
       <div className='cards-information grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4'>
-        <div className='card-patients flex justify-between gap-1 p-2 sm:flex-col w-full sm:p-4 border border-gray-300 bg-white rounded-xl'>
-          <h3 className='flex justify-between gap-2 items-center font-bold text-gray-700 text-step-1'>
-            Pacientes en espera
-            <small>
-              <IconTeam className='text-primary-700' size='26' />
-            </small>
-          </h3>
-          <p className='number text-step-4 font-bold text-primary-700'>
-            {globalPending.length}
-          </p>
-        </div>
-        <div className='card-patients flex justify-between gap-1 p-2 sm:flex-col w-full sm:p-4 border border-gray-300 bg-white rounded-xl'>
-          <h3 className='flex justify-between gap-2 items-center font-bold text-gray-700 text-step-1'>
-            Pacientes atendidos
-            <small>
-              <IconMonitor className='text-secondary-600' size='26' />
-            </small>
-          </h3>
-          <p className='number text-step-4 font-bold text-secondary-600'>
-            {globalAttended.length}
-          </p>
-        </div>
-        <div className='card-patients flex justify-between gap-1 p-2 sm:flex-col w-full sm:p-4 border border-gray-300 bg-white rounded-xl'>
-          <h3 className='flex justify-between gap-2 items-center font-bold text-gray-700 text-step-1'>
-            Cancelados
-            <small>
-              <IconTeam className='text-quaternary-500' size='26' />
-            </small>
-          </h3>
-          <p className='number text-step-4 font-bold text-quaternary-500'>
-            {globalCancelled.length}
-          </p>
-        </div>
+        <FichasStatCard
+          title='Pacientes en espera'
+          count={globalPending.length}
+          icon={<IconTeam size='26' />}
+          textColorClass='text-primary-700'
+        />
+        <FichasStatCard
+          title='Pacientes atendidos'
+          count={globalAttended.length}
+          icon={<IconMonitor size='26' />}
+          textColorClass='text-secondary-600'
+        />
+        <FichasStatCard
+          title='Cancelados'
+          count={globalCancelled.length}
+          icon={<IconTeam size='26' />}
+          textColorClass='text-quaternary-500'
+        />
       </div>
 
-      {/* ACTIONS */}
-      <div className='actions flex gap-2 justify-start items-center my-4'>
-        {create && (
-          <button
-            className='flex gap-2 items-center bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer'
-            onClick={openModal}
-          >
-            <IconPlus />
-            Registrar nueva ficha
-          </button>
-        )}
-      </div>
-
-      {/* TABLA: PENDIENTES */}
-      <h3 className='text-step-2 font-bold text-gray-700 mb-2 mt-6'>
-        Pacientes en espera
-      </h3>
-      <div className='bg-white mb-6 rounded-md'>
-        <div className='border-b border-gray-200 flex flex-wrap'>
-          <button
-            className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
-              activeTabPending === 'all'
-                ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
-                : 'text-gray-600 hover:text-primary-700'
-            }`}
-            onClick={() => setActiveTabPending('all')}
-          >
-            Lista de pacientes
-          </button>
-          {pendingSpecialities.map((speciality: string, index: number) => (
+      {/* ACTIONS Y POLLING */}
+      <div className='actions flex flex-wrap gap-4 justify-between items-center my-4'>
+        <div>
+          {create && (
             <button
-              key={index}
-              className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
-                activeTabPending === speciality
-                  ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
-                  : 'text-gray-600 hover:text-primary-700'
-              }`}
-              onClick={() => setActiveTabPending(speciality)}
+              className='flex gap-2 items-center bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer'
+              onClick={handleOpenNewFicha}
             >
-              {speciality}
+              <IconPlus />
+              Registrar nueva ficha
             </button>
-          ))}
-        </div>
-        <div className='p-4'>
-          {pendientesContent.length > 0 ? (
-            <CustomDataTable
-              columnas={columnas}
-              contenidoTabla={pendientesContent}
-            />
-          ) : (
-            <p className='text-gray-500 italic'>
-              No hay pacientes en espera para esta especialidad.
-            </p>
           )}
         </div>
-      </div>
 
-      {/* TABLA: ATENDIDOS */}
-      <h3 className='text-step-2 font-bold text-gray-700 mb-2 mt-6'>
-        Pacientes atendidos
-      </h3>
-      <div className='bg-white mb-6 rounded-md'>
-        <div className='border-b border-gray-200 flex flex-wrap'>
-          <button
-            className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
-              activeTabAttended === 'all'
-                ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
-                : 'text-gray-600 hover:text-primary-700'
-            }`}
-            onClick={() => setActiveTabAttended('all')}
+        <div className='flex items-center gap-2'>
+          <label
+            htmlFor='polling'
+            className='text-sm text-gray-600 font-medium'
           >
-            Lista de pacientes
-          </button>
-          {attendedSpecialities.map((speciality: string, index: number) => (
-            <button
-              key={index}
-              className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
-                activeTabAttended === speciality
-                  ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
-                  : 'text-gray-600 hover:text-primary-700'
-              }`}
-              onClick={() => setActiveTabAttended(speciality)}
-            >
-              {speciality}
-            </button>
-          ))}
-        </div>
-        <div className='p-4'>
-          {atendidosContent.length > 0 ? (
-            <CustomDataTable
-              columnas={columnas}
-              contenidoTabla={atendidosContent}
-            />
-          ) : (
-            <p className='text-gray-500 italic'>
-              No hay pacientes atendidos para esta especialidad.
-            </p>
-          )}
+            Actualizar datos:
+          </label>
+          <select
+            id='polling'
+            className={`border rounded-md px-2 py-1 text-sm focus:outline-none cursor-pointer transition-colors duration-300 shadow-sm ${
+              refetchInterval !== false
+                ? 'border-primary-500 bg-primary-50 text-primary-700 font-semibold focus:ring-2 focus:ring-primary-600'
+                : 'border-gray-300 text-gray-700 bg-white focus:ring-2 focus:ring-primary-500 hover:border-primary-400'
+            }`}
+            value={
+              refetchInterval === false ? 'false' : String(refetchInterval)
+            }
+            onChange={e => {
+              const val = e.target.value
+              setRefetchInterval(val === 'false' ? false : Number(val))
+            }}
+          >
+            <option value='false'>Manual (Desactivado)</option>
+            <option value='1000'>Tiempo real (1s)</option>
+            <option value='5000'>Cada 5s</option>
+            <option value='30000'>Cada 30s</option>
+            <option value='60000'>Cada 1 min</option>
+            <option value='1800000'>Cada 30 min</option>
+          </select>
         </div>
       </div>
 
-      {/* TABLA: CANCELADOS */}
-      <h3 className='text-step-2 font-bold text-gray-700 mb-2 mt-6'>
-        Pacientes cancelados
-      </h3>
-      <div className='bg-white mb-6 rounded-md'>
-        <div className='border-b border-gray-200 flex flex-wrap'>
-          <button
-            className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
-              activeTabCancelled === 'all'
-                ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
-                : 'text-gray-600 hover:text-primary-700'
-            }`}
-            onClick={() => setActiveTabCancelled('all')}
-          >
-            Lista de pacientes
-          </button>
-          {cancelledSpecialities.map((speciality: string, index: number) => (
-            <button
-              key={index}
-              className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 ${
-                activeTabCancelled === speciality
-                  ? 'text-primary-700 border-b-2 border-primary-700 bg-primary-50'
-                  : 'text-gray-600 hover:text-primary-700'
-              }`}
-              onClick={() => setActiveTabCancelled(speciality)}
-            >
-              {speciality}
-            </button>
-          ))}
-        </div>
-        <div className='p-4'>
-          {canceladosContent.length > 0 ? (
-            <CustomDataTable
-              columnas={columnas}
-              contenidoTabla={canceladosContent}
-            />
-          ) : (
-            <p className='text-gray-500 italic'>
-              No hay pacientes cancelados para esta especialidad.
-            </p>
-          )}
-        </div>
-      </div>
+      <FichasStatusTable
+        title='Pacientes en espera'
+        fichas={globalPending}
+        noDataMessage='No hay pacientes en espera para esta especialidad.'
+      />
+      <FichasStatusTable
+        title='Pacientes atendidos'
+        fichas={globalAttended}
+        noDataMessage='No hay pacientes atendidos para esta especialidad.'
+      />
+      <FichasStatusTable
+        title='Pacientes cancelados'
+        fichas={globalCancelled}
+        noDataMessage='No hay pacientes cancelados para esta especialidad.'
+        onRevertToQueue={handleRevertToQueue}
+      />
 
       <Modal
-        title='Registrar nueva ficha'
+        title={reassignData ? 'Reasignar paciente' : 'Registrar nueva ficha'}
         isOpen={modal}
-        onClose={closeModal}
+        onClose={() => {
+          setReassignData(null)
+          closeModal()
+        }}
         maxWidth='xl'
       >
-        <FormRegister />
+        {reassignData ? (
+          <FormReassign
+            fichaId={reassignData.fichaId}
+            pacienteCedula={reassignData.cedula}
+            pacienteNombres={reassignData.nombre}
+          />
+        ) : (
+          <FormRegister />
+        )}
       </Modal>
     </section>
   )

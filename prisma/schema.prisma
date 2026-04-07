@@ -50,7 +50,6 @@ model fichas {
   eliminado_por     String?
   disponibilidades  disponibilidades @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_disponibilidad_id_foreign")
   pacientes         pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_paciente_id_foreign")
-  citas             citas[]
   tratamientos      tratamientos[] 
 
   @@unique([disponibilidad_id, fecha_ficha, orden_turno])
@@ -222,8 +221,7 @@ model roles_permisos {
 model tratamientos {
   id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   estado                  String
-  cita_id                 String           @db.Uuid
-  ficha_aplicacion_id     String           @db.Uuid
+  ficha_origen_id         String           @db.Uuid
   esquema_id              String           @db.Uuid
   dosis_numero            Int
   fecha_aplicacion        DateTime         @default(now()) @db.Timestamptz(0) // Cuándo se aplicó realmente
@@ -232,10 +230,11 @@ model tratamientos {
   actualizado_en          DateTime         @default(now()) @db.Timestamptz(0)
   actualizado_por         String?
   eliminado_en            DateTime?        @db.Timestamptz(0)
-  eliminado_por           String?
-  citas                   citas            @relation(fields: [cita_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_cita_id_foreign")
-  fichas                  fichas           @relation(fields: [ficha_aplicacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_ficha_aplicacion_id_foreign")
+  eliminado_por           String?  
+
+  ficha_origen            fichas           @relation(fields: [ficha_origen_id], references: [id])
   esquema_dosis           esquema_dosis    @relation(fields: [esquema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_esquema_id_foreign")
+  citas               citas[]
 }
 
 
@@ -243,7 +242,7 @@ model citas {
   id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   paciente_id             String
   doctor_id               String
-  ficha_origen_id         String?          @db.Uuid // Ficha donde se programó esta cita
+  tratamiento_id          String           @db.Uuid   // ← NUEVA FK (viene del tratamiento que la generó)
   fecha_programada        DateTime         @db.Timestamptz(0) // Cuándo debe volver el paciente
   fecha_real_atencion     DateTime?        @db.Timestamptz(0) // Cuando realmente vino (si aplica)
   tipo                    String           // "VACUNA", "CONTROL", "CONSULTA"
@@ -258,8 +257,7 @@ model citas {
 
   pacientes               pacientes        @relation(fields: [paciente_id], references: [paciente_id])
   doctores                doctores         @relation(fields: [doctor_id], references: [doctor_id])
-  fichas                  fichas?          @relation(fields: [ficha_origen_id], references: [id])
-  tratamientos            tratamientos[]   // Una cita puede generar múltiples tratamientos aplicados
+  tratamientos            tratamientos     @relation(fields: [tratamiento_id], references: [id])
   notificaciones          notificaciones[]
 }
 

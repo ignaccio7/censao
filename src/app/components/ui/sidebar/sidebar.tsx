@@ -9,7 +9,17 @@ import useUser from '@/hooks/useUser'
 export default function Sidebar() {
   const { sidebarMenu } = useSidebar()
   const { routes } = useProfileRoutes()
+  console.log(
+    'ROUTESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'
+  )
+  console.log(routes)
+  console.log(JSON.stringify(routes, null, 2))
+
   const permissions = getPermissions(routes)
+  console.log(
+    'PERMISSIONSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'
+  )
+  console.log(permissions)
 
   const { user } = useUser()
 

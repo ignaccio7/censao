@@ -190,12 +190,14 @@ export default function FormRegister() {
                   ? 'No hay doctores disponibles'
                   : 'Seleccione un doctor'}
             </option>
-            {doctoresDisponibles.map((doctor: any) => (
-              <option key={doctor.id} value={doctor.id}>
-                {doctor.nombre} • {doctor.capacidadActual}/
-                {doctor.capacidadMaxima} pacientes
-              </option>
-            ))}
+            {doctoresDisponibles.map((doctor: any) => {
+              return (
+                <option key={doctor.id} value={doctor.id}>
+                  {doctor.nombre} • {doctor.capacidadActual}/
+                  {doctor.capacidadMaxima} pacientes
+                </option>
+              )
+            })}
           </select>
           {errors.doctor && (
             <span className='text-red-500 text-sm'>

@@ -19,6 +19,7 @@ export async function getProfileRoutes() {
   try {
     const routes = await AuthService.getProfilePermissions(session.user.id)
     console.log(routes)
+    console.log(JSON.stringify(routes, null, 2))
 
     return routes?.permisos
   } catch (error) {

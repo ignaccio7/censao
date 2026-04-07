@@ -142,12 +142,12 @@ const USUARIO_PACIENTE_1: UsuarioCompleto = {
         modulo: 'mi_salud'
       },
       {
-        nombre: 'Mis Fichas',
+        nombre: 'Mis Citas',
         tipo: 'frontend',
-        ruta: '/dashboard/paciente/fichas',
+        ruta: '/dashboard/paciente/citas',
         metodos: ['read'],
         icono: 'calendar',
-        descripcion: 'Ver mis fichas médicas programadas',
+        descripcion: 'Ver mis citas médicas programadas',
         modulo: 'mi_salud'
       },
       // BACKEND - APIs específicas del paciente
@@ -168,11 +168,11 @@ const USUARIO_PACIENTE_1: UsuarioCompleto = {
         modulo: 'mi_salud'
       },
       {
-        nombre: 'API Mis Fichas',
+        nombre: 'API Mis Citas',
         tipo: 'backend',
-        ruta: '/api/paciente/:uuid/fichas',
+        ruta: '/api/paciente/:uuid/citas',
         metodos: ['GET'],
-        descripcion: 'API para ver fichas del paciente',
+        descripcion: 'API para ver citas del paciente',
         modulo: 'mi_salud'
       }
     ]
@@ -312,28 +312,19 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'atencion'
       },
       {
-        nombre: 'Seguimiento Tratamientos',
+        nombre: 'Citas',
         tipo: 'frontend',
-        ruta: '/dashboard/atencion/seguimiento',
+        ruta: '/dashboard/atencion/citas',
         metodos: ['read', 'update', 'delete'],
-        icono: 'monitor',
-        descripcion: 'Seguimiento de tratamientos médicos',
-        modulo: 'atencion'
-      },
-      {
-        nombre: 'Reenviar Notificaciones',
-        tipo: 'frontend',
-        ruta: '/dashboard/atencion/notificaciones',
-        metodos: ['read', 'create'],
-        icono: 'send',
-        descripcion: 'Gestionar notificaciones a pacientes',
+        icono: 'calendar',
+        descripcion: 'Gestionar citas médicas',
         modulo: 'atencion'
       },
       // FRONTEND - Tratamientos (como doctor)
       {
         nombre: 'Tratamientos',
         tipo: 'frontend',
-        ruta: '/dashboard/paciente/tratamientos',
+        ruta: '/dashboard/tratamientos',
         metodos: ['read', 'create', 'update', 'delete'],
         icono: 'history',
         descripcion: 'Gestionar tratamientos de pacientes',
@@ -342,19 +333,46 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
       {
         nombre: 'Detalle Tratamiento',
         tipo: 'frontend',
-        ruta: '/dashboard/paciente/tratamientos/:uuid',
+        ruta: '/dashboard/tratamientos/:uuid',
         metodos: ['read', 'update', 'delete'],
         icono: 'history',
         descripcion: 'Gestionar detalle de tratamiento',
         modulo: 'tratamientos'
       },
       {
-        nombre: 'Fichas',
+        nombre: 'Crear Tratamientos',
         tipo: 'frontend',
-        ruta: '/dashboard/paciente/fichas',
+        ruta: '/dashboard/tratamientos/:uuid/crear',
+        metodos: ['create'],
+        icono: 'history',
+        descripcion: 'Crear tratamientos de pacientes',
+        modulo: 'tratamientos'
+      },
+      // {
+      //   nombre: 'Editar Tratamientos',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/tratamientos/:uuid/editar',
+      //   metodos: ['update'],
+      //   icono: 'history',
+      //   descripcion: 'Editar tratamientos de pacientes',
+      //   modulo: 'tratamientos'
+      // },
+      {
+        nombre: 'Seguimiento Tratamientos',
+        tipo: 'frontend',
+        ruta: '/dashboard/tratamientos/seguimiento',
         metodos: ['read', 'update', 'delete'],
-        icono: 'calendar',
-        descripcion: 'Gestionar fichas médicas',
+        icono: 'monitor',
+        descripcion: 'Seguimiento de tratamientos médicos',
+        modulo: 'tratamientos'
+      },
+      {
+        nombre: 'Reenviar Notificaciones',
+        tipo: 'frontend',
+        ruta: '/dashboard/tratamientos/notificaciones',
+        metodos: ['read', 'create'],
+        icono: 'send',
+        descripcion: 'Gestionar notificaciones a pacientes',
         modulo: 'tratamientos'
       },
 
@@ -376,20 +394,28 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'atencion'
       },
       {
+        nombre: 'API Citas de Paciente',
+        tipo: 'backend',
+        ruta: '/api/atencion/citas',
+        metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
+        descripcion: 'API para gestionar citas de pacientes',
+        modulo: 'atencion'
+      },
+      {
         nombre: 'API Tratamientos',
         tipo: 'backend',
-        ruta: '/api/atencion/tratamientos',
+        ruta: '/api/tratamientos',
         metodos: ['GET', 'POST'],
         descripcion: 'API para gestión de tratamientos',
-        modulo: 'atencion'
+        modulo: 'tratamientos'
       },
       {
         nombre: 'API Tratamientos Paciente',
         tipo: 'backend',
-        ruta: '/api/atencion/tratamientos/paciente/:uuid',
+        ruta: '/api/tratamientos/paciente/:uuid',
         metodos: ['GET', 'PATCH'],
         descripcion: 'API para tratamientos específicos de paciente',
-        modulo: 'atencion'
+        modulo: 'tratamientos'
       },
       {
         nombre: 'API Notificaciones Médicas',
@@ -421,14 +447,6 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         ruta: '/api/paciente/:uuid/tratamientos/:uuid',
         metodos: ['GET', 'PATCH', 'DELETE'],
         descripcion: 'API para detalle de tratamiento específico',
-        modulo: 'tratamientos'
-      },
-      {
-        nombre: 'API Fichas de Paciente',
-        tipo: 'backend',
-        ruta: '/api/paciente/:uuid/fichas',
-        metodos: ['GET', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestionar fichas de pacientes',
         modulo: 'tratamientos'
       }
     ]
@@ -1075,6 +1093,104 @@ async function main() {
         // }
       ]
     })
+
+    // ========================================
+    // VACUNAS Y ESQUEMAS DE DOSIS
+    // ========================================
+    // Vacunas básicas para pruebas del sistema de monitoreo de vacunación
+
+    const vacunasData = [
+      {
+        nombre: 'Tétanos',
+        descripcion: 'Vacuna contra el tétanos (toxoide tetánico)',
+        fabricante: 'Sanofi Pasteur'
+      },
+      {
+        nombre: 'Influenza',
+        descripcion: 'Vacuna antigripal estacional',
+        fabricante: 'Abbott'
+      },
+      {
+        nombre: 'COVID-19',
+        descripcion: 'Vacuna contra el coronavirus SARS-CoV-2',
+        fabricante: 'Sinopharm'
+      }
+    ]
+
+    const vacunasCreadas = []
+    for (const v of vacunasData) {
+      const vacuna = await prisma.vacunas.create({ data: v })
+      vacunasCreadas.push(vacuna)
+    }
+
+    const tetanos = vacunasCreadas.find(v => v.nombre === 'Tétanos')!
+    const influenza = vacunasCreadas.find(v => v.nombre === 'Influenza')!
+    const covid = vacunasCreadas.find(v => v.nombre === 'COVID-19')!
+
+    // Esquemas de dosis por vacuna
+    // intervalo_dias = días mínimos que deben pasar entre dosis
+    // edad_min_meses = edad mínima recomendada (null = cualquier edad)
+
+    await prisma.esquema_dosis.createMany({
+      data: [
+        // Tétanos: 3 dosis → refuerzo al mes y a los 6 meses
+        {
+          vacuna_id: tetanos.id,
+          numero: 1,
+          intervalo_dias: 0,
+          edad_min_meses: null,
+          notas: 'Dosis inicial'
+        },
+        {
+          vacuna_id: tetanos.id,
+          numero: 2,
+          intervalo_dias: 30,
+          edad_min_meses: null,
+          notas: 'Refuerzo al mes'
+        },
+        {
+          vacuna_id: tetanos.id,
+          numero: 3,
+          intervalo_dias: 180,
+          edad_min_meses: null,
+          notas: 'Refuerzo a los 6 meses'
+        },
+
+        // Influenza: 1 sola dosis anual
+        {
+          vacuna_id: influenza.id,
+          numero: 1,
+          intervalo_dias: 0,
+          edad_min_meses: 6,
+          notas: 'Dosis única anual, renovar cada año'
+        },
+
+        // COVID-19: 2 dosis + 1 refuerzo
+        {
+          vacuna_id: covid.id,
+          numero: 1,
+          intervalo_dias: 0,
+          edad_min_meses: null,
+          notas: 'Primera dosis'
+        },
+        {
+          vacuna_id: covid.id,
+          numero: 2,
+          intervalo_dias: 21,
+          edad_min_meses: null,
+          notas: 'Segunda dosis (3 semanas después)'
+        },
+        {
+          vacuna_id: covid.id,
+          numero: 3,
+          intervalo_dias: 180,
+          edad_min_meses: null,
+          notas: 'Dosis de refuerzo a los 6 meses'
+        }
+      ]
+    })
+
+    console.log('💉 Vacunas y esquemas de dosis creados')
 
     // Finalizando creacion del seed de datos
     console.log('\n✨ ¡Listo para comenzar el desarrollo!')

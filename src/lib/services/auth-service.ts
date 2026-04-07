@@ -35,7 +35,12 @@ export default class AuthService {
         user.usuario_id
       )
 
-      console.log(userWithPermissionsForJWT)
+      console.log(
+        '*****************************************************************************************'
+      )
+      console.log('PERMISOS DEL USUARIO')
+      console.log(JSON.stringify(userWithPermissionsForJWT, null, 2))
+
       const d = this.formatUserData(userWithPermissionsForJWT, true)
       console.log(d)
 
@@ -52,7 +57,11 @@ export default class AuthService {
 
       const permissionsForStore = await this.getUserPermissionsForStore(userId)
 
+      console.log(
+        '}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}'
+      )
       console.log(permissionsForStore)
+      console.log(JSON.stringify(permissionsForStore, null, 2))
 
       return this.formatUserData(permissionsForStore)
     } catch (error) {
@@ -198,6 +207,12 @@ export default class AuthService {
 
   private static formatUserData(user: any, isJWT = false) {
     // oxlint-disable-next-line no-magic-numbers
+
+    console.log(
+      '-----------------------------------------------------------------------------------------------------------------'
+    )
+    console.log(JSON.stringify(user, null, 2))
+
     const primaryRole = user.usuarios_roles[0]?.roles
     let permisos = []
     if (isJWT) {

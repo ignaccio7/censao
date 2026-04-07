@@ -77,8 +77,9 @@ censao/
     │   │   │       ├── doctor-fichas.tsx  # Vista para DOCTOR_FICHAS y ADMINISTRADOR
     │   │   │       └── doctor-general.tsx # Vista para DOCTOR_GENERAL
     │   │   ├── paciente/      # Feature: Vista del Paciente
-    │   │   │   └── tratamientos/          # Tratamientos de vacunación
+    │   │   │   └── tratamientos/          # Tratamientos de vacunación de los pacientes
     │   │   ├── atencion/      # Feature: Pantalla pública de atención
+    │   │   ├── tratamientos/      # Feature: Tratamientos de vacunación para doctores y el administrador
     │   │   ├── estado-doctores/ # Feature: Disponibilidad de médicos
     │   │   ├── notificaciones/ # Feature: Recordatorios
     │   │   └── perfil/        # Feature: Perfil de usuario
@@ -149,8 +150,8 @@ fichas
            └─► especialidades  (especialidad_id)
  └─► pacientes  (paciente_id = personas.ci)
       └─► personas  (paciente_id)
- └─► citas[]
- └─► tratamientos[]
+ └─► tratamientos (Contenedor del seguimiento, ej: "Esquema COVID")
+      └─► citas[] (Lista de dosis programadas: Dosis 2, Dosis 3, etc.)
 ```
 
 **La ficha no guarda directamente el doctor ni la especialidad.** Se obtienen navegando por:  

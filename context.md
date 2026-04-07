@@ -413,3 +413,5 @@ Por ello, la relación correcta es:
 `Paciente -> muchos tratamientos o esquemas de vacunación`
 
 Y cada tratamiento podrá tener varias dosis o citas asociadas.
+
+Un paciente puede tener múltiples Tratamientos activos. Cada Tratamiento se origina a partir de una Ficha de atención real y sirve como contenedor para una o más Citas futuras (dosis o controles).

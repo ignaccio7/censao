@@ -243,15 +243,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verificar capacidad disponible para HOY
-    if (disponibilidad._count.fichas >= disponibilidad.cupos) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `El doctor ya no tiene cupos disponibles para el turno ${turno} de hoy`
-        },
-        { status: 400 }
-      )
-    }
+    // if (disponibilidad._count.fichas >= disponibilidad.cupos) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       message: `El doctor ya no tiene cupos disponibles para el turno ${turno} de hoy`
+    //     },
+    //     { status: 400 }
+    //   )
+    // }
 
     // Calcular siguiente orden para HOY
     const siguienteOrden = disponibilidad._count.fichas + 1
@@ -363,13 +363,62 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       )
     }
 
+    // Datos a actualizar
+    const updateData: any = {
+      estado: validData.status
+    }
+
+    // Si se envía especialidad y doctor, buscar la nueva disponibilidad para reasignar
+    if (validData.especialidad && validData.doctor) {
+      const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
+      const turno = getTurnoActual()
+
+      const disponibilidad = await prisma.disponibilidades.findFirst({
+        where: {
+          doctores_especialidades: {
+            doctor_id: validData.doctor,
+            especialidad_id: validData.especialidad
+          },
+          turnos_catalogo: {
+            codigo: turno
+          }
+        },
+        include: {
+          _count: {
+            select: {
+              fichas: {
+                where: {
+                  fecha_ficha: {
+                    gte: inicioUTC,
+                    lte: finUTC
+                  },
+                  eliminado_en: null
+                }
+              }
+            }
+          }
+        }
+      })
+
+      if (!disponibilidad) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `No hay disponibilidad para este doctor en el turno ${turno}`
+          },
+          { status: 400 }
+        )
+      }
+
+      updateData.disponibilidad_id = disponibilidad.id
+      updateData.orden_turno = disponibilidad._count.fichas + 1
+    }
+
     const fichaActualizada = await prisma.fichas.update({
       where: {
         id: validData.id
       },
-      data: {
-        estado: validData.status
-      }
+      data: updateData
     })
 
     console.log(fichaActualizada)
@@ -377,7 +426,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         success: true,
-        message: 'Ficha marcada como atendida'
+        message: validData.especialidad
+          ? 'Ficha reasignada exitosamente'
+          : 'Ficha actualizada exitosamente'
       },
       {
         status: 200

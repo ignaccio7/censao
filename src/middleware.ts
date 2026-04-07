@@ -24,13 +24,14 @@ export default async function middleware(req: NextRequest) {
 
     // Para rutas con parámetros uuid
     if (route.includes(':')) {
+      // Escapar las barras para la expresión regular
+      const escapedRoute = route.replace(/\//g, '\\/')
+
       const pattern = new RegExp(
-        `
-        ^${route.replace(
+        `^${escapedRoute.replace(
           /:uuid/g,
           '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
-        )}$
-        `,
+        )}$`,
         'i'
       )
       return pattern.test(pathname)
@@ -38,6 +39,9 @@ export default async function middleware(req: NextRequest) {
 
     return false
   })
+
+  console.log('LA RUTA ESTA PERMITIDA')
+  console.log(isPermittedRoute)
 
   if (!isPermittedRoute) {
     console.log(new URL(pathname, req.url))

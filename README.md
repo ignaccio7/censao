@@ -12,3 +12,8 @@ npx prisma migrate dev --name init
 npx prisma db seed
 
 api -> https://nextjs.org/docs/app/api-reference/file-conventions/route
+
+PARA NO OLVIDARNOS:
+el jwt solo maneja las rutas permitidas solos los paths no maneja los permisos
+para construir el sidebar obtenemos todos los paths exceptos con los :uuid
+y tambien en el store almacenamos esas rutas con sus permisos para la construccion de las vistas

@@ -9,15 +9,18 @@ import { StatusBadge } from '../../components/statusBadge'
 import {
   IconCheckupList,
   IconStethoscope,
-  IconUserCheck
+  IconUserCheck,
+  IconAlertTriangle
 } from '@/app/components/icons/icons'
 import Modal from '@/app/components/ui/modal/modal'
 import usePatientStore from '@/store/patient/patient'
 import { useFichas } from '@/app/services/fichas'
+import { useRouter } from 'next/navigation'
 
 export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
   console.log(fichas)
 
+  const router = useRouter()
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
   const { updateFicha } = useFichas(refetchInterval)
   const [modal, setModal] = useState(false)
@@ -105,6 +108,15 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
     clearPatient()
   }
 
+  const cancelPatient = () => {
+    updateFicha.mutateAsync({
+      id: fichaId as string,
+      status: StateRecord.CANCELADA
+    })
+    setModal(false)
+    clearPatient()
+  }
+
   return (
     <section className='fichas font-secondary'>
       {/* TABS */}
@@ -184,10 +196,24 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
               <IconUserCheck size='36' />
             </span>
           </button>
-          <button className='bg-transparent border-4 border-cyan-800 text-cyan-800 py-2 px-4 rounded-md hover:bg-cyan-800 hover:text-white transition-colors duration-200 cursor-pointer'>
-            {' '}
+          <button
+            className='bg-transparent border-4 border-cyan-800 text-cyan-800 py-2 px-4 rounded-md hover:bg-cyan-800 hover:text-white transition-colors duration-200 cursor-pointer'
+            onClick={() => {
+              setModal(false)
+              router.push(`/dashboard/tratamientos/${fichaId}/crear`)
+            }}
+          >
             <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
               Registrar tratamiento <IconCheckupList size='36' />
+            </span>
+          </button>
+          <button
+            className='col-span-2 bg-transparent border-4 border-red-400 text-red-400 py-2 px-4 rounded-md hover:bg-red-400 hover:text-white transition-colors duration-200 cursor-pointer'
+            onClick={cancelPatient}
+          >
+            <span className='flex flex-row-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
+              No asistió (Cancelar ficha)
+              <IconAlertTriangle size='36' />
             </span>
           </button>
         </div>

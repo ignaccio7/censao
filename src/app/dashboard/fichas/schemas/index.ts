@@ -30,7 +30,13 @@ export type FichaFormData = z.infer<typeof fichaSchema>
 
 export const fichaUpdateSchema = z.object({
   id: z.string().uuid('ID de la ficha invalido'),
-  status: z.enum(['PENDIENTE', 'ATENDIDA', 'CANCELADA'])
+  status: z.enum(['PENDIENTE', 'ATENDIDA', 'CANCELADA']),
+  especialidad: z.uuid('ID de especialidad inválido').optional(),
+  doctor: z
+    .string()
+    .min(1, 'El doctor es requerido')
+    .regex(/^\d+$/, 'El doctor debe contener solo números')
+    .optional()
 })
 
 export type FichaUpdateData = z.infer<typeof fichaUpdateSchema>

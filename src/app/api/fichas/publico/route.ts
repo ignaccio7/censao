@@ -67,7 +67,7 @@ export async function GET() {
       {
         especialidad_nombre: string
         doctor_nombre: string
-        fichas: { orden_turno: number; fecha_ficha: Date }[]
+        fichas_pendientes: number[]
       }
     >()
 
@@ -84,23 +84,21 @@ export async function GET() {
         agrupado.set(key, {
           especialidad_nombre: espNombre,
           doctor_nombre: docNombre,
-          fichas: []
+          fichas_pendientes: []
         })
       }
 
-      agrupado.get(key)!.fichas.push({
-        orden_turno: ficha.orden_turno ?? 0,
-        fecha_ficha: ficha.fecha_ficha
-      })
+      agrupado.get(key)!.fichas_pendientes.push(ficha.orden_turno ?? 0)
     }
 
-    // Construir respuesta: primera PENDIENTE = "atendiendo", segunda = "siguiente"
+    // Construir respuesta con toda la cola de fichas
     const especialidades = Array.from(agrupado.values()).map(grupo => ({
       especialidad_nombre: grupo.especialidad_nombre,
       doctor_nombre: grupo.doctor_nombre,
-      atendiendo: grupo.fichas[0]?.orden_turno ?? null,
-      siguiente: grupo.fichas[1]?.orden_turno ?? null,
-      total_pendientes: grupo.fichas.length
+      atendiendo: grupo.fichas_pendientes[0] ?? null,
+      siguiente: grupo.fichas_pendientes[1] ?? null,
+      fichas_pendientes: grupo.fichas_pendientes,
+      total_pendientes: grupo.fichas_pendientes.length
     }))
 
     // Ordenar por nombre de especialidad
