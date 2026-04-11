@@ -1,13 +1,14 @@
 # Flujo de Roles del Sistema de Gestión de Fichas Médicas y Monitoreo de Vacunación
 
-El sistema tendrá cuatro roles principales:
+El sistema tendrá cinco roles principales:
 
 1. Administrador
 2. Doctor General
 3. Doctor de Fichas
-4. Paciente
+4. Enfermería
+5. Paciente
 
-El flujo del sistema parte de la situación actual del Centro de Salud Alto Obrajes: los pacientes continúan asistiendo físicamente al centro de salud, hacen fila y son registrados por el Doctor de Fichas, quien les asigna la atención correspondiente.
+El flujo del sistema parte de la situación actual del Centro de Salud Alto Obrajes: los pacientes continúan asistiendo físicamente al centro de salud, hacen fila y son registrados inicialmente, incorporando en el sistema un proceso intermedio de clasificación mediante el área de enfermería antes de la atención médica.
 
 ---
 
@@ -15,18 +16,22 @@ El flujo del sistema parte de la situación actual del Centro de Salud Alto Obra
 
 1. El paciente llega al centro de salud.
 2. El Doctor de Fichas busca al paciente o lo registra si es nuevo.
-3. El Doctor de Fichas decide a qué médico será derivado y genera una ficha.
-4. La ficha queda en estado "Pendiente".
-5. La ficha aparece:
-   - En la pantalla del Doctor General correspondiente.
-   - En una pantalla pública visible para los pacientes.
+3. El Doctor de Fichas genera una ficha sin asignación médica inicial.
+4. La ficha pasa al área de Enfermería.
+5. Enfermería evalúa el motivo de consulta y determina la especialidad requerida.
+6. Enfermería asigna la ficha a un médico disponible.
+7. La ficha queda en estado "Pendiente".
+8. La ficha aparece:
 
-6. La pantalla pública muestra qué médico está atendiendo y qué ficha sigue, de manera similar a los bancos.
-7. El paciente puede esperar fuera del consultorio o incluso fuera del centro y volver cuando vea que su ficha está próxima.
-8. El Doctor General atiende al paciente.
-9. Si no requiere seguimiento de vacunación, la ficha se marca como "Atendida".
-10. Si requiere vacunación o seguimiento, el médico registra el tratamiento y, si corresponde, una futura cita o siguiente dosis.
-11. Al final de cada día, un cronjob envía recordatorios automáticos por correo.
+- En la pantalla del Doctor General correspondiente.
+- En una pantalla pública visible para los pacientes.
+
+9. La pantalla pública muestra qué médico está atendiendo y qué ficha sigue, de manera similar a los bancos.
+10. El paciente puede esperar fuera del consultorio o incluso fuera del centro y volver cuando vea que su ficha está próxima.
+11. El Doctor General atiende al paciente.
+12. Si no requiere seguimiento de vacunación, la ficha se marca como "Atendida".
+13. Si requiere vacunación o seguimiento, el médico registra el tratamiento y, si corresponde, una futura cita o siguiente dosis.
+14. Al final de cada día, un cronjob envía recordatorios automáticos por correo.
 
 ---
 
@@ -117,12 +122,12 @@ Este rol corresponde al personal que registra pacientes, asigna fichas y control
 
 - Registrar pacientes nuevos.
 - Buscar pacientes existentes.
-- Generar fichas.
-- Elegir a qué médico será derivado el paciente.
+- Generar fichas sin asignación médica.
+- Registrar el motivo de consulta (opcional).
 - Ver disponibilidad de médicos.
-- Ver cuántas fichas tiene cada médico.
+- Ver carga de atención por médico.
 - Reasignar fichas si un médico no está disponible.
-- Reprogramar una ficha a otros medicos si correponde.
+- Reprogramar fichas si corresponde.
 - Cancelar fichas.
 - Visualizar la pantalla pública.
 
@@ -146,17 +151,49 @@ Las fichas solamente tendrán tres estados:
 1. El paciente llega al centro de salud.
 2. El Doctor de Fichas busca si ya existe.
 3. Si no existe, lo registra.
-4. Selecciona el médico disponible.
-5. Crea la ficha.
-6. La ficha aparece automáticamente en la lista del médico y en la pantalla pública.
-7. Si el médico se ausenta, puede:
-   - Reasignar la ficha a otro médico.
+4. Se crea la ficha sin asignación médica.
+5. La ficha pasa a Enfermería.
+6. En caso de contingencia:
+   - Puede reasignar fichas ya asignadas.
 
 ---
 
-# 3. Rol: Doctor General
+3. Rol: Enfermería
 
-El rol Doctor General incluye médicos generales, odontólogos u otros médicos del centro. Todos usan el mismo tipo de cuenta, pero solo ven las fichas asignadas a ellos.
+Este rol es responsable de la clasificación del paciente antes de la atención médica, cumpliendo una función de triage básico.
+
+## Funciones principales
+
+- Visualizar fichas sin asignación.
+- Evaluar el motivo de consulta.
+- Determinar la especialidad requerida.
+- Asignar la ficha a un médico disponible.
+- Ver carga de trabajo de médicos.
+- Reasignar fichas si es necesario.
+- Visualizar la pantalla pública.
+
+## Restricciones
+
+- No registra diagnósticos.
+- No aplica tratamientos médicos.
+- No registra vacunas.
+- No administra usuarios ni permisos.
+
+# Flujo típico de Enfermería
+
+1. Visualiza fichas sin asignación.
+2. Selecciona una ficha.
+3. Evalúa el motivo del paciente.
+4. Determina la especialidad y médico disponible.
+5. Asigna la ficha.
+6. La ficha se publica automáticamente en el sistema.
+7. En caso necesario:
+
+- Puede reasignar la ficha a otro médico.
+
+# 4. Rol: Doctor General
+
+El rol Doctor General incluye médicos generales, odontólogos u otros médicos del centro. Todos usan el mismo tipo de cuenta, pero solo ven las fichas asignadas a ellos. Solo recibe fichas previamente asignadas por Enfermería.
 
 ## Funciones principales
 
@@ -198,7 +235,7 @@ El rol Doctor General incluye médicos generales, odontólogos u otros médicos 
 
 ---
 
-# 4. Rol: Administrador
+# 5. Rol: Administrador
 
 El administrador tiene acceso completo al sistema.
 
@@ -225,7 +262,7 @@ El administrador tiene acceso completo al sistema.
 
 Si un médico tiene una emergencia o debe retirarse:
 
-- El administrador o el Doctor de Fichas pueden:
+- El administrador, el Doctor de Fichas o Enfermería pueden:
   - Reasignar sus fichas a otro médico.
 
 ## Restricciones
@@ -255,7 +292,6 @@ Podrán ser enviados por:
 
 - Administrador
 - Doctor General
-- Doctor de Fichas
 
 ---
 
@@ -269,6 +305,7 @@ Cada rol tiene permisos distintos:
 
 - Paciente
 - Doctor de Fichas
+- Enfermería
 - Doctor General
 - Administrador
 
@@ -281,6 +318,7 @@ Ejemplos:
 - Un paciente solo puede ver sus propias vacunas.
 - Un Doctor General solo puede ver las fichas que le fueron asignadas.
 - Un Doctor de Fichas solo puede modificar fichas pendientes.
+- Enfermería puede asignar y reasignar fichas.
 - El Administrador puede acceder a toda la información.
 
 ---
@@ -393,7 +431,7 @@ Inicialmente el sistema manejará vacunas simples, por ejemplo:
 - COVID
 - Influenza
 
-Cada vacuna podrá tener:
+Cada vacuna podrá tener varios esquemas:
 
 - Número de dosis
 - Tiempo entre dosis
