@@ -1,3 +1,6 @@
+en tratamientos borrar dosis_numero porque lo obtenemos del esquema con su foranea
+de cita eliminar fecha_real_atencion
+
 # Flujo de Roles del Sistema de Gestión de Fichas Médicas y Monitoreo de Vacunación
 
 El sistema tendrá cinco roles principales:
