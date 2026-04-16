@@ -1,17 +1,14 @@
-en tratamientos borrar dosis_numero porque lo obtenemos del esquema con su foranea
-de cita eliminar fecha_real_atencion
-
 # Flujo de Roles del Sistema de Gestión de Fichas Médicas y Monitoreo de Vacunación
 
 El sistema tendrá cinco roles principales:
 
 1. Administrador
 2. Doctor General
-3. Doctor de Fichas
+3. Doctor de Fichas (Admision)
 4. Enfermería
-5. Paciente
+5. Paciente.
 
-El flujo del sistema parte de la situación actual del Centro de Salud Alto Obrajes: los pacientes continúan asistiendo físicamente al centro de salud, hacen fila y son registrados inicialmente, incorporando en el sistema un proceso intermedio de clasificación mediante el área de enfermería antes de la atención médica.
+El flujo del sistema parte de la situación actual del Centro de Salud Alto Obrajes: la asignación de fichas presenciales. El sistema digitaliza este proceso, incorpora un paso intermedio de triage en enfermería antes de la atención médica, y automatiza la generación de fichas para pacientes con citas programadas (seguimientos o vacunación) mediante una acción controlada por el personal de Admisión, respetando siempre el orden de atención presencial inicial.
 
 ---
 
@@ -19,11 +16,14 @@ El flujo del sistema parte de la situación actual del Centro de Salud Alto Obra
 
 1. El paciente llega al centro de salud.
 2. El Doctor de Fichas busca al paciente o lo registra si es nuevo.
-3. El Doctor de Fichas genera una ficha sin asignación médica inicial.
+3. El Doctor de Fichas genera una ficha presencial con un número de orden positivo (ej. 1, 2, 3) y la ficha nace en estado "ADMISION".
+
+- Una vez concluida la recepción de pacientes presenciales del turno (sin depender de una hora estricta, adaptándose al turno mañana o tarde), el Doctor de Fichas utiliza una función del sistema para generar automáticamente las fichas de las citas programadas de ese turno. Estas fichas nacen en estado "ADMISION" con un número negativo (ej. -1, -2) para evitar colisiones, y en ese instante se envían los recordatorios por sistema al paciente.
+
 4. La ficha pasa al área de Enfermería.
 5. Enfermería evalúa el motivo de consulta y determina la especialidad requerida.
 6. Enfermería asigna la ficha a un médico disponible.
-7. La ficha queda en estado "Pendiente".
+7. La ficha queda en estado "ENFERMERIA".
 8. La ficha aparece:
 
 - En la pantalla del Doctor General correspondiente.
@@ -31,10 +31,10 @@ El flujo del sistema parte de la situación actual del Centro de Salud Alto Obra
 
 9. La pantalla pública muestra qué médico está atendiendo y qué ficha sigue, de manera similar a los bancos.
 10. El paciente puede esperar fuera del consultorio o incluso fuera del centro y volver cuando vea que su ficha está próxima.
-11. El Doctor General atiende al paciente.
-12. Si no requiere seguimiento de vacunación, la ficha se marca como "Atendida".
+11. El Doctor General atiende al paciente siguiendo el orden (primero presenciales, luego citas).
+12. Si no requiere seguimiento de vacunación, la ficha se marca como "ATENDIDA".
 13. Si requiere vacunación o seguimiento, el médico registra el tratamiento y, si corresponde, una futura cita o siguiente dosis.
-14. Al final de cada día, un cronjob envía recordatorios automáticos por correo.
+14. Al final de cada día, un cronjob envía recordatorios automáticos por correo y sistema.
 
 ---
 
@@ -47,14 +47,14 @@ Esta pantalla mostrará:
 - Nombre o código del médico.
 - Número de ficha actual atendida.
 - Número de ficha siguiente.
-- Estado de atención.
+- Estado de atención (cuántos pacientes faltan).
 
 Ejemplo:
 
-| Médico     | Atendiendo | Sigue    |
-| ---------- | ---------- | -------- |
-| Dr. Pérez  | Ficha 12   | Ficha 13 |
-| Dra. López | Ficha 5    | Ficha 6  |
+| Médico     | Atendiendo | Sigue      |
+| ---------- | ---------- | ---------- | --------- | --------- |
+| Dr. Pérez  | Ficha P-12 | Ficha P-13 | Ficha C-1 | Ficha C-2 |
+| Dra. López | Ficha P-5  | Ficha P-6  | Ficha P-7 | Ficha P-8 |
 
 La pantalla pública no mostrará información sensible del paciente.
 
@@ -70,22 +70,24 @@ El paciente solamente tendrá acceso al sistema si, durante una atención médic
 
 Por ejemplo:
 
-- El médico registra una vacuna contra el tétanos.
+- El médico registra una vacuna digamos contra el tétanos.
 - El médico pregunta si el paciente desea acceder al sistema.
 - Si el paciente acepta, se crean automáticamente:
   - Su usuario
   - Su contraseña
   - Su perfil de paciente
   - Sus vacunas y futuras dosis pendientes
+  - Sus futuras citas que le corresponden
 
 ## Funciones principales
 
 - Iniciar sesión.
 - Ver sus datos personales.
 - Ver sus fichas registradas.
-- Consultar la fecha y hora de su próxima atención.
+- Consultar la fecha y hora de su próxima atención (cita).
 - Consultar el estado de sus fichas:
-  - Pendiente
+  - Admision
+  - Enfermeria
   - Atendida
   - Cancelada
 
@@ -93,7 +95,7 @@ Por ejemplo:
   - Vacunas aplicadas
   - Vacunas pendientes
   - Próxima dosis
-
+- Consultar sus siguientes citas programadas
 - Ver recordatorios enviados.
 - Ver la pantalla pública de fichas.
 
@@ -109,15 +111,15 @@ Por ejemplo:
 ## Flujo típico del paciente
 
 1. Acude al centro de salud.
-2. Recibe una ficha del Doctor de Fichas.
+2. Pasa por Admisión o directamente a Enfermería si ya tiene su ficha de cita generada
 3. Observa la pantalla pública hasta que le corresponda.
-4. Es atendido por el Doctor General.
+4. Es atendido por el Doctor Correspondiente.
 5. Si tiene seguimiento de vacunación, se le crea acceso al sistema.
 6. Más adelante puede ingresar al sistema para consultar próximas dosis y recordatorios.
 
 ---
 
-# 2. Rol: Doctor de Fichas
+# 2. Rol: Doctor de Fichas (Admisión)
 
 Este rol corresponde al personal que registra pacientes, asigna fichas y controla el flujo diario de atención.
 
@@ -125,7 +127,8 @@ Este rol corresponde al personal que registra pacientes, asigna fichas y control
 
 - Registrar pacientes nuevos.
 - Buscar pacientes existentes.
-- Generar fichas sin asignación médica.
+- Generar fichas presenciales sin asignación médica inicial (Estado ADMISION).
+- Generar en lote las fichas de las citas programadas correspondientes a ese turno (mañana o tarde), disparando las notificaciones a los pacientes.
 - Registrar el motivo de consulta (opcional).
 - Ver disponibilidad de médicos.
 - Ver carga de atención por médico.
@@ -136,11 +139,12 @@ Este rol corresponde al personal que registra pacientes, asigna fichas y control
 
 ## Estados de las fichas
 
-Las fichas solamente tendrán tres estados:
+Las fichas solamente tendrán cuatro estados:
 
-- Pendiente
-- Atendida
-- Cancelada
+- ADMISION
+- ENFERMERIA
+- ATENDIDA
+- CANCELADA
 
 ## Restricciones
 
@@ -154,9 +158,10 @@ Las fichas solamente tendrán tres estados:
 1. El paciente llega al centro de salud.
 2. El Doctor de Fichas busca si ya existe.
 3. Si no existe, lo registra.
-4. Se crea la ficha sin asignación médica.
-5. La ficha pasa a Enfermería.
-6. En caso de contingencia:
+4. Se crea la ficha presencial sin asignación médica en estado ADMISION.
+5. Una vez terminada la fila física, genera las fichas de citas programadas del turno.
+6. Las fichas pasan a Enfermería.
+7. En caso de contingencia:
    - Puede reasignar fichas ya asignadas.
 
 ---
@@ -167,10 +172,10 @@ Este rol es responsable de la clasificación del paciente antes de la atención 
 
 ## Funciones principales
 
-- Visualizar fichas sin asignación.
+- Visualizar fichas en estado ADMISION (tanto presenciales como programadas).
 - Evaluar el motivo de consulta.
 - Determinar la especialidad requerida.
-- Asignar la ficha a un médico disponible.
+- Asignar o confirmar al médico disponible y cambiar el estado a ENFERMERIA.
 - Ver carga de trabajo de médicos.
 - Reasignar fichas si es necesario.
 - Visualizar la pantalla pública.
@@ -184,7 +189,7 @@ Este rol es responsable de la clasificación del paciente antes de la atención 
 
 # Flujo típico de Enfermería
 
-1. Visualiza fichas sin asignación.
+1. Visualiza fichas sin asignación en estado ADMISION.
 2. Selecciona una ficha.
 3. Evalúa el motivo del paciente.
 4. Determina la especialidad y médico disponible.
@@ -201,14 +206,13 @@ El rol Doctor General incluye médicos generales, odontólogos u otros médicos 
 ## Funciones principales
 
 - Iniciar sesión.
-- Ver sus fichas pendientes.
+- Ver sus fichas pendientes en estado ENFERMERIA.
 - Ver la ficha que sigue.
-- Marcar qué ficha está atendiendo.
 - Ver información básica del paciente.
-- Marcar una ficha como atendida.
+- Marcar una ficha como ATENDIDA o CANCELADA.
 - Registrar observaciones.
 - Registrar tratamientos de vacunación.
-- Registrar futuras dosis.
+- Registrar futuras dosis si corresponde.
 - Registrar una futura cita de control.
 - Crear usuario de paciente si requiere seguimiento.
 - Enviar recordatorios manuales.
@@ -217,16 +221,16 @@ El rol Doctor General incluye médicos generales, odontólogos u otros médicos 
 ## Flujo de atención
 
 1. El médico inicia sesión.
-2. Ve el listado de fichas asignadas.
+2. Ve el listado de fichas asignadas (ENFERMERIA).
 3. Selecciona la siguiente ficha.
 4. Atiende al paciente.
 5. Si no necesita seguimiento:
-   - Marca la ficha como "Atendida".
+   - Marca la ficha como "ATENDIDA".
 
 6. Si necesita vacunación:
    - Registra la vacuna aplicada.
    - Registra si habrá una próxima dosis.
-   - Registra una futura atención.
+   - Registra una futura atención (cita).
    - Crea el usuario del paciente si corresponde.
 
 ## Restricciones
@@ -248,6 +252,7 @@ El administrador tiene acceso completo al sistema.
 - Crear, editar o eliminar:
   - Pacientes
   - Doctores
+  - Enfermeria
   - Administradores
 
 - Asignar roles.
@@ -283,13 +288,21 @@ El sistema manejará dos tipos de recordatorios:
 
 - Se enviarán mediante un cronjob.
 - Se ejecutarán al final de cada día.
-- Serán enviados por correo electrónico mediante Gmail.
+- Serán enviados por correo electrónico mediante Gmail y Sistema.
 - Recordarán:
   - Próxima vacuna
   - Próxima cita
   - Seguimiento pendiente
 
 ## Recordatorios manuales
+
+- Se enviaran en el momento exacto en que el Doctor de Fichas accione la generación del lote de citas para ese turno.
+- Esto flexibiliza el proceso para adaptarse a la realidad del centro de salud (turnos mañana/tarde) sin depender de un horario fijo rígido de medianoche.
+- Recordarán:
+  - Su número de ficha asignada (Ej. C-01).
+  - La cantidad de pacientes presenciales por delante.
+
+El enlace para monitorear la pantalla pública.
 
 Podrán ser enviados por:
 
@@ -330,22 +343,21 @@ Ejemplos:
 
 ## Futuras citas y relación con las fichas
 
-Las futuras atenciones registradas por el Doctor General no se convertirán automáticamente en una ficha.
+Las futuras atenciones registradas por el Doctor General no se convierten instantáneamente en una ficha activa.
 
 El flujo será:
 
 1. El médico registra una cita futura o próxima dosis.
-2. El paciente recibe recordatorios automáticos.
-3. El día correspondiente, el paciente debe volver al centro de salud y sacar una nueva ficha mediante el Doctor de Fichas.
-4. Esa nueva ficha será la que realmente permita la atención.
+2. El día del turno correspondiente, el Doctor de Fichas genera en lote las atenciones programadas.
+3. El sistema transforma estas citas en fichas reales asignándoles un número negativo secuencial para que no choquen con los números presenciales generados esa misma mañana.
+4. El paciente recibe la notificación y puede pasar directo por Enfermería cuando se acerque su turno.
 
 Esto se ajusta mejor al funcionamiento real del centro de salud, ya que los pacientes siguen haciendo fila y no sería justo que una persona llegue directamente a consulta sin pasar por el mismo proceso que los demás.
 
-Por ello, no conviene agregar un nuevo estado "PROGRAMADA" a la tabla `fichas`.
+La recomendación aplicada es mantener fichas únicamente con los estados que reflejan el flujo físico real:
 
-La recomendación es mantener `fichas` únicamente con los estados:
-
-- PENDIENTE
+- ADMISION
+- ENFERMERIA
 - ATENDIDA
 - CANCELADA
 
@@ -387,12 +399,13 @@ Con base en tu tabla actual, una ficha tendrá:
 - Especialidad del médico
 - Fecha y hora de creación de la ficha
 - Estado:
-  - PENDIENTE
+  - ADMISION
+  - ENFERMERIA
   - ATENDIDA
   - CANCELADA
 
 - Motivo
-- Orden de turno
+- Orden de turno (Positivo para presenciales, Negativo para citas)
 - Usuario que la creó
 - Usuario que la modificó
 
@@ -410,12 +423,14 @@ La pantalla pública funcionará mediante polling.
 - La petición consultará:
   - Qué ficha está siendo atendida actualmente por cada médico.
   - Qué ficha sigue después.
+  - El volumen de la fila presencial.
 
 - No mostrará datos sensibles del paciente.
 - Solamente mostrará:
   - Médico
   - Ficha actual
   - Próxima ficha
+  - Estado de la fila
 
 Ejemplo:
 

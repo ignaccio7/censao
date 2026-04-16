@@ -25,6 +25,7 @@ export default class AuthService {
         return null
       }
 
+      // Verificamos que la contraseña sea valida hasheando la contraseña ingresada y comparandola con el hash almacenado
       const isValid = await bcrypt.compare(password, user.password_hash)
       if (!isValid) {
         return null

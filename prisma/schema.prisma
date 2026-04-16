@@ -29,7 +29,8 @@ model auditoria_log {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 
 enum EstadoFicha {
-  PENDIENTE
+  ADMISION
+  ENFERMERIA
   CANCELADA
   ATENDIDA
 }
@@ -40,7 +41,7 @@ model fichas {
   disponibilidad_id String           @db.Uuid
   fecha_ficha       DateTime         @default(now()) @db.Timestamptz(0)
   motivo            String?
-  estado            EstadoFicha?     @default(PENDIENTE)
+  estado            EstadoFicha?     @default(ADMISION)
   orden_turno       Int?
   creado_en         DateTime         @default(now()) @db.Timestamptz(0)
   creado_por        String?
@@ -223,7 +224,6 @@ model tratamientos {
   estado                  String
   ficha_origen_id         String           @db.Uuid
   esquema_id              String           @db.Uuid
-  dosis_numero            Int
   fecha_aplicacion        DateTime         @default(now()) @db.Timestamptz(0) // Cuándo se aplicó realmente
   creado_en               DateTime         @default(now()) @db.Timestamptz(0)
   creado_por              String?
@@ -244,7 +244,6 @@ model citas {
   doctor_id               String
   tratamiento_id          String           @db.Uuid   // ← NUEVA FK (viene del tratamiento que la generó)
   fecha_programada        DateTime         @db.Timestamptz(0) // Cuándo debe volver el paciente
-  fecha_real_atencion     DateTime?        @db.Timestamptz(0) // Cuando realmente vino (si aplica)
   tipo                    String           // "VACUNA", "CONTROL", "CONSULTA"
   estado                  String           @default("PENDIENTE") // "PENDIENTE", "COMPLETADA", "CANCELADA", "VENCIDA"
   observaciones           String?

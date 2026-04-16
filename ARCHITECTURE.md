@@ -7,21 +7,24 @@
 
 ## 0. Contexto de Negocio (Resumen para el Agente)
 
-| Rol              | Clave interna    | Descripción                                                             |
-| ---------------- | ---------------- | ----------------------------------------------------------------------- |
-| Administrador    | `ADMINISTRADOR`  | Acceso total: gestiona usuarios, roles, vacunas, horarios, reportes     |
-| Doctor de Fichas | `DOCTOR_FICHAS`  | Registra pacientes, crea y cancela fichas, ve disponibilidad de médicos |
-| Doctor General   | `DOCTOR_GENERAL` | Solo ve sus fichas asignadas, atiende pacientes, registra tratamientos  |
-| Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas y citas; nunca crea fichas          |
+| Rol              | Clave interna    | Descripción                                                                                  |
+| ---------------- | ---------------- | -------------------------------------------------------------------------------------------- |
+| Administrador    | `ADMINISTRADOR`  | Acceso total: gestiona usuarios, roles, vacunas, horarios, reportes                          |
+| Doctor de Fichas | `DOCTOR_FICHAS`  | Registra pacientes, crea fichas presenciales (ADMISION), genera lote de citas programadas    |
+| Enfermería       | `ENFERMERIA`     | Triage básico: evalúa motivo, asigna especialidad/médico, cambia estado ADMISION→ENFERMERIA  |
+| Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas en estado ENFERMERIA asignadas a él, atiende pacientes, registra tratamientos |
+| Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas y citas; nunca crea fichas                               |
 
-**Flujo central:** Paciente llega → Doctor de Fichas crea Ficha → Ficha aparece en pantalla del Doctor General y en pantalla pública → Doctor General atiende → marca como ATENDIDA o registra tratamiento de vacunación.
+**Flujo central:** Paciente llega → Doctor de Fichas crea Ficha (ADMISION) → Enfermería evalúa y asigna médico (ENFERMERIA) → Ficha aparece en pantalla del Doctor General y pantalla pública → Doctor General atiende → marca como ATENDIDA o registra tratamiento de vacunación.
 
-**Estados de `fichas`:** `PENDIENTE | ATENDIDA | CANCELADA` (enum `EstadoFicha` en Prisma).
+**Estados de `fichas`:** `ADMISION | ENFERMERIA | ATENDIDA | CANCELADA` (enum `EstadoFicha` en Prisma).
+
+**Orden de turno:** Positivo para presenciales (1, 2, 3…), negativo para citas programadas (-1, -2, -3…).
 
 **Modelo de seguridad:** Híbrido **RBAC + ABAC**:
 
 - RBAC: cada rol tiene permisos distintos almacenados en DB (`roles → roles_permisos → permisos`).
-- ABAC: validación de atributos en cada ruta (ej. Doctor General solo ve fichas donde la disponibilidad está vinculada a su usuario_id).
+- ABAC: validación de atributos en cada ruta (ej. Doctor General solo ve fichas en estado ENFERMERIA donde la disponibilidad está vinculada a su usuario_id; Enfermería solo ve fichas en estado ADMISION).
 
 ---
 
@@ -46,8 +49,10 @@ censao/
     │   ├── api/               # API ROUTES — comunicación cliente→servidor
     │   │   ├── auth/          # Handler de NextAuth ([...nextauth]/route.ts)
     │   │   ├── fichas/        # route.ts + service.ts — CRUD de fichas
+    │   │   │   └── publico/   # route.ts — pantalla pública (sin auth)
     │   │   ├── doctor/        # route.ts — listado de doctores
     │   │   ├── especialidad/  # API de especialidades y disponibilidades
+    │   │   ├── tratamientos/  # API de tratamientos
     │   │   └── lib/
     │   │       └── constants/ # Enums Roles, RECORD_TYPES compartidos entre API y front
     │   │
@@ -72,14 +77,18 @@ censao/
     │   │   │   ├── schemas/index.ts       # Schemas Zod: fichaSchema, fichaUpdateSchema
     │   │   │   ├── components/
     │   │   │   │   ├── formRegister.tsx   # Formulario RHF+Zod para crear fichas
-    │   │   │   │   └── statusBadge.tsx    # Badge visual de estado PENDIENTE/ATENDIDA/CANCELADA
+    │   │   │   │   ├── FormReassign.tsx   # Formulario para reasignar fichas
+    │   │   │   │   └── statusBadge.tsx    # Badge visual de estado
     │   │   │   └── sections/dashboard/
     │   │   │       ├── doctor-fichas.tsx  # Vista para DOCTOR_FICHAS y ADMINISTRADOR
     │   │   │       └── doctor-general.tsx # Vista para DOCTOR_GENERAL
     │   │   ├── paciente/      # Feature: Vista del Paciente
-    │   │   │   └── tratamientos/          # Tratamientos de vacunación de los pacientes
+    │   │   │   ├── tratamientos/          # Tratamientos de vacunación (solo lectura)
+    │   │   │   ├── citas/                 # Citas del paciente
+    │   │   │   ├── chat/                  # Chat del paciente
+    │   │   │   └── utils/                 # Utilidades compartidas
     │   │   ├── atencion/      # Feature: Pantalla pública de atención
-    │   │   ├── tratamientos/      # Feature: Tratamientos de vacunación para doctores y el administrador
+    │   │   ├── tratamientos/  # Feature: Tratamientos globales (DOCTOR_GENERAL + ADMIN)
     │   │   ├── estado-doctores/ # Feature: Disponibilidad de médicos
     │   │   ├── notificaciones/ # Feature: Recordatorios
     │   │   └── perfil/        # Feature: Perfil de usuario
@@ -112,7 +121,7 @@ censao/
         ├── prisma/prisma.ts   # Singleton del PrismaClient
         ├── services/
         │   └── auth-service.ts # AuthService — validación de credenciales y permisos API
-        └── constants/
+        └── constants/index.ts # StateRecord, StateRecordValue, Roles
 ```
 
 > **Nota sobre `src/actions/fichas/create.ts`:** Este archivo tiene un comentario `// ELIMINAR ESTO YA QUE ES UN ENDPOINT DE LA API`. La funcionalidad real de crear fichas se delegó a la API Route `POST /api/fichas`. El Server Action existe como versión alternativa pero no es el flujo activo.
@@ -123,14 +132,17 @@ censao/
 
 ### 2.1 Mapa de API Routes
 
-| Ruta                      | Método   | Handler                     | Modelos Prisma involucrados                                                                                    | Descripción                                                                    |
-| ------------------------- | -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `/api/auth/[...nextauth]` | GET/POST | NextAuth handler auto       | `usuarios`, `usuarios_roles`, `roles`, `permisos`                                                              | Login/logout/session                                                           |
-| `/api/fichas`             | GET      | `FichasService.getFichas()` | `fichas`, `disponibilidades`, `doctores_especialidades`, `doctores`, `especialidades`, `pacientes`, `personas` | Lista fichas del turno actual según rol                                        |
-| `/api/fichas`             | POST     | `route.ts::POST`            | `personas`, `pacientes`, `disponibilidades`, `fichas`                                                          | Crea persona+paciente si no existe, verifica cupos, crea ficha con orden_turno |
-| `/api/fichas`             | PATCH    | `route.ts::PATCH`           | `fichas`                                                                                                       | Actualiza estado de una ficha (PENDIENTE→ATENDIDA/CANCELADA)                   |
-| `/api/doctor`             | GET      | `route.ts::GET`             | `doctores`, `personas`, `doctores_especialidades`                                                              | Lista doctores disponibles                                                     |
-| `/api/especialidad`       | GET      | —                           | `especialidades`, `doctores_especialidades`, `disponibilidades`                                                | Lista especialidades con doctores y capacidades                                |
+| Ruta                             | Método   | Handler                     | Modelos Prisma involucrados                                                                                    | Descripción                                                                        |
+| -------------------------------- | -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `/api/auth/[...nextauth]`        | GET/POST | NextAuth handler auto       | `usuarios`, `usuarios_roles`, `roles`, `permisos`                                                              | Login/logout/session                                                               |
+| `/api/fichas`                    | GET      | `FichasService.getFichas()` | `fichas`, `disponibilidades`, `doctores_especialidades`, `doctores`, `especialidades`, `pacientes`, `personas` | Lista fichas del turno actual según rol                                            |
+| `/api/fichas`                    | POST     | `route.ts::POST`            | `personas`, `pacientes`, `disponibilidades`, `fichas`                                                          | Crea persona+paciente si no existe, verifica cupos, crea ficha con estado ADMISION |
+| `/api/fichas`                    | PATCH    | `route.ts::PATCH`           | `fichas`                                                                                                       | Actualiza estado de una ficha (ADMISION→ENFERMERIA→ATENDIDA/CANCELADA)             |
+| `/api/fichas/publico`            | GET      | `route.ts::GET`             | `fichas`, `disponibilidades`, `doctores`, `personas`                                                           | Pantalla pública de atención (sin auth, polling)                                   |
+| `/api/fichas/generar-citas-lote` | POST     | `route.ts::POST`            | `citas`, `fichas`, `disponibilidades`                                                                          | Genera fichas en lote de citas programadas del turno (DOCTOR_FICHAS)               |
+| `/api/doctor`                    | GET      | `route.ts::GET`             | `doctores`, `personas`, `doctores_especialidades`                                                              | Lista doctores disponibles                                                         |
+| `/api/especialidad`              | GET      | —                           | `especialidades`, `doctores_especialidades`, `disponibilidades`                                                | Lista especialidades con doctores y capacidades                                    |
+| `/api/estado-doctores`           | GET      | —                           | `doctores`, `disponibilidades`                                                                                 | Disponibilidad y carga de médicos (Enfermería)                                     |
 
 ### 2.2 Convención de Nombres
 
@@ -256,7 +268,19 @@ if (!validation.success) {
 | ----------- | -------------------------------------------------- | -------------------------------------------------------------------------------- |
 | **RBAC**    | `AuthService.validateApiPermission()` + Middleware | Verifica si el ROL tiene permiso para la RUTA                                    |
 | **ABAC**    | `FichasService.getFichas()` en `service.ts`        | Filtra por `userId` del doctor si el rol es `DOCTOR_GENERAL`                     |
+| **ABAC**    | Enfermería: `service.ts`                           | Filtra fichas en estado `ADMISION` para el triage                                |
 | **ABAC UI** | `useProfileRoutes()` + `hasPermission()`           | Oculta botones (ej. "Registrar ficha") si el usuario no tiene el método `create` |
+
+### 3.5 Matriz de Acciones sobre Fichas por Rol
+
+| Acción                               | DOCTOR_FICHAS | ENFERMERIA | DOCTOR_GENERAL | ADMINISTRADOR |
+| ------------------------------------ | ------------- | ---------- | -------------- | ------------- |
+| Crear ficha (ADMISION)               | ✅            | ❌         | ❌             | ✅            |
+| Generar lote citas                   | ✅            | ❌         | ❌             | ❌            |
+| Asignar médico (ADMISION→ENFERMERIA) | ❌            | ✅         | ❌             | ✅            |
+| Atender (ENFERMERIA→ATENDIDA)        | ❌            | ❌         | ✅             | ❌            |
+| Cancelar ficha                       | ✅            | ✅         | ✅             | ✅            |
+| Reasignar ficha                      | ✅            | ✅         | ❌             | ✅            |
 
 ---
 
@@ -393,7 +417,7 @@ Usa `useSession()` de NextAuth para exponer los datos del usuario:
 
 ```typescript
 const { user } = useUser()
-// user = { id, usename, name, role: 'DOCTOR_FICHAS' | 'DOCTOR_GENERAL' | ..., roleName }
+// user = { id, username, name, role: 'DOCTOR_FICHAS' | 'ENFERMERIA' | 'DOCTOR_GENERAL' | 'ADMINISTRADOR' | 'PACIENTE', roleName }
 ```
 
 **Vista condicional por rol (patrón en page.tsx):**
@@ -409,7 +433,14 @@ const { role } = user
   )
 }
 {
-  Roles.DOCTOR_GENERAL === role && <DashboardDoctorGeneral fichas={fichas} />
+  Roles.ENFERMERIA === role && (
+    <DashboardEnfermeria fichas={fichas} /> // Fichas en estado ADMISION para triage
+  )
+}
+{
+  Roles.DOCTOR_GENERAL === role && (
+    <DashboardDoctorGeneral fichas={fichas} /> // Fichas en estado ENFERMERIA asignadas
+  )
 }
 ```
 
@@ -533,6 +564,7 @@ const createFicha = useMutation({
     │
     ├─ [PASO 7] Calcular orden_turno
     │   → siguienteOrden = disponibilidad._count.fichas + 1
+    │   → (positivo para presenciales)
     │
     ├─ [PASO 8] Crear ficha en DB
     │   → prisma.fichas.create({
@@ -540,7 +572,7 @@ const createFicha = useMutation({
     │       disponibilidad_id: disponibilidad.id,
     │       fecha_ficha: new Date(),
     │       orden_turno: siguienteOrden,
-    │       estado: 'PENDIENTE',
+    │       estado: 'ADMISION',
     │       creado_por: userId
     │     })
     │   → Constraint único: [disponibilidad_id, fecha_ficha, orden_turno]
@@ -561,14 +593,38 @@ const createFicha = useMutation({
     → closeModal() — cierra el modal (Zustand)
     │
     ▼
-[UI] CustomDataTable se re-renderiza con la nueva ficha visible
+[UI] CustomDataTable se re-renderiza con la nueva ficha visible (estado ADMISION)
 ```
 
 ---
 
-## 6. Patrones y Convenciones Establecidas
+## 6. Flujo Completo de una Ficha (de ADMISION a ATENDIDA)
 
-### 6.1 Alias de Importación
+```
+[ADMISIÓN] Doctor de Fichas crea ficha → estado: ADMISION, orden_turno: +N
+    │
+    ▼
+[ENFERMERÍA] Enfermera ve ficha en cola ADMISION
+    → Evalúa motivo de consulta
+    → Determina especialidad y médico disponible
+    → Asigna médico → estado: ENFERMERIA
+    │
+    ▼
+[DOCTOR GENERAL] Médico ve ficha en su cola ENFERMERIA
+    → Atiende al paciente
+    → Si no requiere seguimiento → estado: ATENDIDA
+    → Si requiere vacunación:
+        → Crea Tratamiento (vinculado a ficha vía ficha_origen_id)
+        → Registra Cita(s) futuras (vinculadas al tratamiento)
+        → Opcionalmente crea usuario del paciente
+        → estado: ATENDIDA
+```
+
+---
+
+## 7. Patrones y Convenciones Establecidas
+
+### 7.1 Alias de Importación
 
 El proyecto usa `@/` para referenciar desde `src/`:
 
@@ -579,7 +635,7 @@ import { fichaSchema } from '@/app/dashboard/fichas/schemas'
 import { Roles } from '@/app/api/lib/constants'
 ```
 
-### 6.2 Co-localización de Schemas
+### 7.2 Co-localización de Schemas
 
 Los schemas Zod viven **junto a la feature** que los usa:
 
@@ -589,34 +645,34 @@ src/app/dashboard/fichas/schemas/index.ts  ← schema de ficha
 
 El schema es importado tanto por el formulario del cliente como por la API route del servidor (misma validación en ambos lados).
 
-### 6.3 Soft Delete
+### 7.3 Soft Delete
 
 Todos los modelos tienen `eliminado_en DateTime?` y `eliminado_por String?`.  
 Las queries siempre filtran `eliminado_en: null` para excluir registros eliminados.
 
-### 6.4 Auditoría
+### 7.4 Auditoría
 
 Todos los modelos tienen: `creado_en`, `creado_por`, `actualizado_en`, `actualizado_por`.  
 Existe tabla `auditoria_log` con `registro_antiguo / registro_nuevo` JSON.
 
-### 6.5 Zona Horaria
+### 7.5 Zona Horaria
 
 El sistema opera en **Bolivia (America/La_Paz, UTC-4)**.  
 `getRangoUTCBoliviaHoy()` y `getTurnoActual()` en `src/app/utils/date.ts` son los helpers clave para consultas de fichas del día.
 
-### 6.6 Turno AM/PM
+### 7.6 Turno AM/PM
 
 El turno se determina por la hora actual de Bolivia: `< 13:00 → 'AM'`, `>= 13:00 → 'PM'`.  
 El código `turno_catalogo` se guarda como string `'AM'` o `'PM'` en la tabla.
 
-### 6.7 Linting y Formato
+### 7.7 Linting y Formato
 
 - **OXLint** para linting (no ESLint). Configurado en `.oxlintrc.json`.
 - **Prettier** para formato.
 - **Husky + lint-staged**: corre validaciones antes de cada commit.
 - Los comentarios `// oxlint-disable rule-name` se usan para deshabilitar reglas específicas.
 
-### 6.8 Reglas Semánticas de Git
+### 7.8 Reglas Semánticas de Git
 
 - **Commitizen** con `cz-conventional-changelog`.
 - Usar `npm run commit` para commits asistidos.
@@ -624,13 +680,15 @@ El código `turno_catalogo` se guarda como string `'AM'` o `'PM'` en la tabla.
 
 ---
 
-## 7. Deuda Técnica Identificada
+## 8. Deuda Técnica Identificada
 
-| Item                         | Archivo                        | Descripción                                                                             |
-| ---------------------------- | ------------------------------ | --------------------------------------------------------------------------------------- |
-| Server Action duplicada      | `src/actions/fichas/create.ts` | Mismo lógica que POST /api/fichas. Comentario dice "ELIMINAR". Usar solo la API Route.  |
-| `any` types                  | múltiples                      | `formRegister.tsx`, `fichas.ts`, `service.ts` usan `any`. Debería tipificarse con DTOs. |
-| Datos quemados en `useUser`  | `src/hooks/useUser.ts`         | Mapa de roles con `TODO` — si se añade un nuevo rol no se reflejaría.                   |
-| Un solo modal global         | `src/store/modal.ts`           | El store `isOpen` es global y singular — no soporta múltiples modales simultáneos.      |
-| Contadores de tarjetas fijos | `doctor-fichas.tsx` línea 81   | Los números "13", "10", "1" están hardcodeados. Debería calcularse desde `fichas`.      |
-| Typo en servicio             | `src/app/services/fichas.ts`   | `queryKey: ['espcialidad']` (falta la 'e') — invalidación incorrecta.                   |
+| Item                         | Archivo                                        | Descripción                                                                                                 |
+| ---------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Server Action duplicada      | `src/actions/fichas/create.ts`                 | Mismo lógica que POST /api/fichas. Comentario dice "ELIMINAR". Usar solo la API Route.                      |
+| `any` types                  | múltiples                                      | `formRegister.tsx`, `fichas.ts`, `service.ts` usan `any`. Debería tipificarse con DTOs.                     |
+| Datos quemados en `useUser`  | `src/hooks/useUser.ts`                         | Mapa de roles con `TODO` — si se añade un nuevo rol no se reflejaría.                                       |
+| Un solo modal global         | `src/store/modal.ts`                           | El store `isOpen` es global y singular — no soporta múltiples modales simultáneos.                          |
+| Contadores de tarjetas fijos | `doctor-fichas.tsx` línea 81                   | Los números "13", "10", "1" están hardcodeados. Debería calcularse desde `fichas`.                          |
+| Typo en servicio             | `src/app/services/fichas.ts`                   | `queryKey: ['espcialidad']` (falta la 'e') — invalidación incorrecta.                                       |
+| Estado PENDIENTE en código   | `constants`, `schemas`, `sections`, `route.ts` | El enum Prisma usa `ADMISION/ENFERMERIA`, pero el código TS aún referencia `PENDIENTE`. Requiere migración. |
+| Vista Enfermería inexistente | N/A                                            | El seed define rol/permisos de ENFERMERIA, pero no hay sección dashboard específica implementada.           |

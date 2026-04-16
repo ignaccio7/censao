@@ -261,6 +261,79 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
         descripcion: 'API para gestión completa de fichas',
         modulo: 'fichas'
+      },
+      {
+        nombre: 'API Generar Citas Lote',
+        tipo: 'backend',
+        ruta: '/api/fichas/generar-citas-lote',
+        metodos: ['POST'],
+        descripcion: 'API para generar fichas de citas programadas',
+        modulo: 'fichas'
+      }
+    ]
+  }
+}
+
+// 👩‍⚕️ ENFERMERÍA
+const USUARIO_ENFERMERIA: UsuarioCompleto = {
+  persona: {
+    ci: '44444444',
+    nombres: 'Lic. Ana María',
+    paterno: 'Flores',
+    materno: 'Gutiérrez',
+    telefono: '70444444',
+    correo: 'enfermeria@censao.com',
+    direccion: 'Zona Norte, La Paz'
+  },
+  usuario: {
+    username: 'enfermeria',
+    password: '123',
+    activo: true
+  },
+  datosEspecificos: {
+    tipo: 'doctor', // Reutilizamos tipo doctor para tener acceso a la tabla doctores
+    matricula: 'ENF-001-2025'
+  },
+  rol: {
+    nombre: 'ENFERMERIA',
+    descripcion: 'Personal de enfermería para triage y asignación de fichas',
+    permisos: [
+      ...PERMISOS_COMUNES,
+      // FRONTEND - Gestión de fichas (solo lectura y actualización)
+      {
+        nombre: 'Ver Fichas',
+        tipo: 'frontend',
+        ruta: '/dashboard/fichas',
+        metodos: ['read', 'update'],
+        icono: 'plus',
+        descripcion: 'Ver fichas en estado ADMISION',
+        modulo: 'fichas'
+      },
+      {
+        nombre: 'Estado de doctores',
+        tipo: 'frontend',
+        ruta: '/dashboard/estado-doctores',
+        metodos: ['read'],
+        icono: 'stethoscope',
+        descripcion: 'Ver disponibilidad y carga de médicos',
+        modulo: 'fichas'
+      },
+      // BACKEND - APIs para enfermería
+      {
+        nombre: 'API Fichas Enfermeria',
+        tipo: 'backend',
+        ruta: '/api/fichas',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para ver y asignar fichas',
+        modulo: 'fichas'
+      },
+      {
+        nombre: 'API Estado Doctores',
+        tipo: 'backend',
+        ruta: '/api/estado-doctores',
+        metodos: ['GET'],
+        descripcion: 'API para ver disponibilidad de médicos',
+        modulo: 'fichas'
       }
     ]
   }
@@ -711,6 +784,7 @@ const USUARIOS_A_CREAR: UsuarioCompleto[] = [
   USUARIO_PACIENTE_2,
   USUARIO_DOCTOR_FICHAS,
   USUARIO_DOCTOR_GENERAL,
+  USUARIO_ENFERMERIA,
   USUARIO_ODONTOLOGO,
   USUARIO_ODONTOLOGO_2,
   USUARIO_ADMIN
@@ -849,7 +923,7 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
         // Verificar si el permiso ya existe  ======================================================================================= ======================================================================================= ======================================================================================= =======================================================================================
         const permisoExistente = await prisma.permisos.findFirst({
           where: {
-            nombre: permisoData.nombre,
+            // nombre: permisoData.nombre,
             ruta: permisoData.ruta,
             metodos: {
               equals: permisoData.metodos
@@ -865,6 +939,13 @@ async function crearUsuarioCompleto(usuarioData: UsuarioCompleto) {
             `    ♻️  Reutilizando permiso: ${permisoData.nombre} [${permisoData.metodos.join(', ')}]`
           )
         } else {
+          console.log(
+            `    ➕ Intentando crear permiso: ${permisoData.nombre}`,
+            {
+              ruta: permisoData.ruta,
+              metodos: permisoData.metodos
+            }
+          )
           permiso = await prisma.permisos.create({
             data: {
               nombre: permisoData.nombre,
@@ -957,6 +1038,7 @@ async function main() {
     console.log('   🏥 PACIENTE: username="paciente1"')
     console.log('   🏥 PACIENTE: username="paciente2"')
     console.log('   👩‍⚕️ DOCTOR FICHAS: username="doctor.fichas"')
+    console.log('   👩‍⚕️ ENFERMERIA: username="enfermeria"')
     console.log('   👨‍⚕️ DOCTOR GENERAL: username="doctor.general"')
     console.log('   🦷 ODONTÓLOGA: username="odontologa"')
     console.log('   👤 ADMINISTRADOR: username="admin"')
@@ -1008,7 +1090,11 @@ async function main() {
         nombre: 'Medicina General',
         descripcion: 'Atención general de pacientes'
       },
-      { nombre: 'Odontología', descripcion: 'Atención odontológica' }
+      { nombre: 'Odontología', descripcion: 'Atención odontológica' },
+      {
+        nombre: 'Enfermería',
+        descripcion: 'Personal de enfermería para triage'
+      }
     ]
 
     const especialidades = []
@@ -1027,9 +1113,13 @@ async function main() {
     const doctorOdonto2 = await prisma.doctores.findUnique({
       where: { doctor_id: '33333333' }
     })
+    const enfermeriaDoctor = await prisma.doctores.findUnique({
+      where: { doctor_id: '44444444' }
+    })
 
     const espGeneral = especialidades.find(e => e.nombre === 'Medicina General')
     const espOdonto = especialidades.find(e => e.nombre === 'Odontología')
+    const espEnfermeria = especialidades.find(e => e.nombre === 'Enfermería')
 
     // Relación doctor general → medicina general
     const doctorEspGeneral = await prisma.doctores_especialidades.create({
@@ -1051,6 +1141,14 @@ async function main() {
       data: {
         doctor_id: doctorOdonto2!.doctor_id,
         especialidad_id: espOdonto!.id
+      }
+    })
+
+    // Relación enfermería - enfermería
+    const doctorEspEnfermeria = await prisma.doctores_especialidades.create({
+      data: {
+        doctor_id: enfermeriaDoctor!.doctor_id,
+        especialidad_id: espEnfermeria!.id
       }
     })
 
@@ -1091,6 +1189,22 @@ async function main() {
         //   doctor_especialidad_id: doctorEspOdonto2.id,
         //   turno_codigo: 'PM'
         // }
+      ]
+    })
+
+    // Enfermeria -> (turno mañana y tarde)
+    await prisma.disponibilidades.createMany({
+      data: [
+        {
+          doctor_especialidad_id: doctorEspEnfermeria.id,
+          turno_codigo: 'AM',
+          cupos: 0 // Cupos ilimitados para enfermería
+        },
+        {
+          doctor_especialidad_id: doctorEspEnfermeria.id,
+          turno_codigo: 'PM',
+          cupos: 0
+        }
       ]
     })
 

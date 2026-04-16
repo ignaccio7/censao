@@ -115,6 +115,21 @@ export async function GET() {
                   }
                 }
               }
+            },
+            doctores: {
+              personas: {
+                usuarios: {
+                  some: {
+                    usuarios_roles: {
+                      some: {
+                        roles: {
+                          nombre: 'DOCTOR_GENERAL'
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
