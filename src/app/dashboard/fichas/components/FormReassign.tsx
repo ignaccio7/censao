@@ -12,6 +12,7 @@ import { useEspecialidades } from '@/app/services/disponibilidad/especialidades'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import useModal from '@/hooks/useModal'
+import { StateRecord } from '@/lib/constants'
 
 interface FormReassignProps {
   fichaId: string
@@ -46,7 +47,7 @@ export default function FormReassign({
     try {
       const result = await updateFicha.mutateAsync({
         id: fichaId,
-        status: 'PENDIENTE',
+        status: StateRecord.ADMISION,
         especialidad,
         doctor
       })

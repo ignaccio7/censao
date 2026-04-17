@@ -2,7 +2,10 @@
 // oxlint-disable group-exports
 // oxlint-disable func-style
 // oxlint-disable prefer-default-export
-import { fichaSchema, fichaUpdateSchema } from '@/app/dashboard/fichas/schemas'
+import {
+  fichaRegisterSchema,
+  fichaUpdateSchema
+} from '@/app/dashboard/fichas/schemas' // TODO: ver como generalizar los esquemas o separarlos entre 2 uno front otro back
 import { RECORD_TYPES } from '@/app/api/lib/constants'
 import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
@@ -42,7 +45,7 @@ export async function GET() {
   const rolUser = validation.data?.role
 
   const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
-  const turno = getTurnoActual()
+  const turno = await getTurnoActual()
 
   console.log(`EL TURNO ES:${turno}`)
 
@@ -71,33 +74,47 @@ export async function GET() {
 
       const [fechaBoliviana, horaBoliviana] = fechaFicha.split(', ')
 
-      const statusRecord = ficha.estado
-        ? RECORD_TYPES[ficha.estado as keyof typeof RECORD_TYPES]
-        : RECORD_TYPES['PENDIENTE']
+      const especialidad =
+        ficha?.disponibilidades?.doctores_especialidades.especialidades
+          .nombre ?? ''
+
+      const personaDoctor =
+        ficha?.disponibilidades?.doctores_especialidades?.doctores?.personas
+      let nombreDoctor = personaDoctor
+        ? `${personaDoctor.nombres ?? ''} ${personaDoctor.paterno ?? ''} ${personaDoctor.materno ?? ''}`
+        : ''
 
       return {
         ficha_id: ficha.id,
         orden_turno: ficha.orden_turno,
         fecha_ficha: fechaBoliviana,
         hora_ficha: horaBoliviana,
-        estado: statusRecord,
+        estado: ficha.estado,
         paciente_id: ficha.pacientes.paciente_id,
         paciente_nombres: `${ficha.pacientes.personas.nombres} ${ficha.pacientes.personas.paterno} ${ficha.pacientes.personas.materno}`,
-        turno_codigo: ficha.disponibilidades.turno_codigo,
-        doctor_id: ficha.disponibilidades.doctor_especialidad_id,
-        doctor_nombre: `${ficha.disponibilidades.doctores_especialidades.doctores.personas.nombres} ${ficha.disponibilidades.doctores_especialidades.doctores.personas.paterno} ${ficha.disponibilidades.doctores_especialidades.doctores.personas.materno}`,
+        turno_codigo: ficha?.disponibilidades?.turno_codigo ?? '',
+        doctor_id: ficha?.disponibilidades?.doctor_especialidad_id ?? '',
+        doctor_nombre: nombreDoctor,
         especialidad_id:
-          ficha.disponibilidades.doctores_especialidades.especialidad_id,
-        especialidad_nombre:
-          ficha.disponibilidades.doctores_especialidades.especialidades.nombre
+          ficha?.disponibilidades?.doctores_especialidades.especialidad_id ??
+          '',
+        especialidad_nombre: especialidad
       }
     })
+
+    console.log(fichasDto)
 
     return NextResponse.json({ success: true, data: fichasDto })
   } catch (error) {
     console.log('Error al obtener las fichas', error)
+
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al obtener las fichas'
+
     return NextResponse.json(
-      { error: 'Error interno del servidor', success: false },
+      { error: errorMessage, success: false },
       { status: 500 }
     )
   }
@@ -130,7 +147,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log(`El body es:`, body)
 
     // Validación de datos
-    const validationResult = fichaSchema.safeParse(body)
+    const validationResult = fichaRegisterSchema.safeParse(body)
     if (!validationResult.success) {
       const treeified = z.treeifyError(validationResult.error)
       const errors = treeified.properties || {}
@@ -202,68 +219,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const fechaFicha = new Date()
 
     const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
-    const turno = getTurnoActual()
+    const turno = await getTurnoActual()
 
-    // Buscar disponibilidad del doctor para el turno actual
-    const disponibilidad = await prisma.disponibilidades.findFirst({
+    // Obtenemos el nro total de fichas en este turno para este dia
+    const totalFichas = await prisma.fichas.count({
       where: {
-        doctores_especialidades: {
-          doctor_id: validData.doctor,
-          especialidad_id: validData.especialidad
-        },
-        turnos_catalogo: {
-          codigo: turno
-        }
-      },
-      include: {
-        _count: {
-          select: {
-            fichas: {
-              where: {
-                fecha_ficha: {
-                  gte: inicioUTC,
-                  lte: finUTC
-                },
-                eliminado_en: null
-              }
-            }
-          }
+        fecha_ficha: {
+          gte: inicioUTC,
+          lte: finUTC
         }
       }
     })
 
-    if (!disponibilidad) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `No hay disponibilidad para este doctor en el turno ${turno}`
-        },
-        { status: 400 }
-      )
-    }
-
-    // Verificar capacidad disponible para HOY
-    // if (disponibilidad._count.fichas >= disponibilidad.cupos) {
-    //   return NextResponse.json(
-    //     {
-    //       success: false,
-    //       message: `El doctor ya no tiene cupos disponibles para el turno ${turno} de hoy`
-    //     },
-    //     { status: 400 }
-    //   )
-    // }
-
     // Calcular siguiente orden para HOY
-    const siguienteOrden = disponibilidad._count.fichas + 1
+    const siguienteOrden = totalFichas + 1
 
     // Crear la ficha
     const nuevaFicha = await prisma.fichas.create({
       data: {
         paciente_id: validData.cedula,
-        disponibilidad_id: disponibilidad.id,
         fecha_ficha: fechaFicha,
         orden_turno: siguienteOrden,
-        estado: 'PENDIENTE',
+        estado: RECORD_TYPES.ADMISION,
+        turno_codigo: turno,
         creado_por: id
       }
     })
@@ -277,8 +255,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           paciente: paciente.paciente_id,
           fecha: fechaFicha.toISOString().split('T')[0],
           turno: turno,
-          orden: siguienteOrden,
-          disponibilidad_id: disponibilidad.id
+          orden: siguienteOrden
         }
       },
       { status: 201 }
@@ -371,7 +348,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     // Si se envía especialidad y doctor, buscar la nueva disponibilidad para reasignar
     if (validData.especialidad && validData.doctor) {
       const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
-      const turno = getTurnoActual()
+      const turno = await getTurnoActual()
 
       const disponibilidad = await prisma.disponibilidades.findFirst({
         where: {

@@ -14,13 +14,15 @@ export const RoleGroups = {
 } as const
 
 export const StateRecord = {
-  PENDIENTE: 'PENDIENTE',
+  ADMISION: 'ADMISION',
+  ENFERMERIA: 'ENFERMERIA',
   ATENDIDA: 'ATENDIDA',
   CANCELADA: 'CANCELADA'
 } as const
 
 export const StateRecordValue = {
-  PENDIENTE: 'En espera',
+  ADMISION: 'En Admision',
+  ENFERMERIA: 'En Enfermeria',
   ATENDIDA: 'Atentidos',
   CANCELADA: 'Cancelados'
 } as const

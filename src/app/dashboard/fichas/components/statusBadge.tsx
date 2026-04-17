@@ -1,22 +1,22 @@
 import {
   IconClock,
-  // IconStethoscope,
+  IconStethoscope,
   IconAlertTriangle
 } from '@/app/components/icons/icons'
 import { StateRecord, StateRecordType, StateRecordValue } from '@/lib/constants'
 
 export function StatusBadge({ status }: { status: StateRecordType }) {
   const statusConfig = {
-    [StateRecord.PENDIENTE]: {
+    [StateRecord.ADMISION]: {
       icon: IconClock,
       color: 'border-emerald-500 bg-emerald-500/20 text-emerald-700',
       iconColor: 'text-emerald-500'
     },
-    // [StateRecord.ATENCION]: {
-    //   icon: IconStethoscope,
-    //   color: 'border-green-500 bg-green-500/20 text-green-700',
-    //   iconColor: 'text-green-500'
-    // },
+    [StateRecord.ENFERMERIA]: {
+      icon: IconStethoscope,
+      color: 'border-green-500 bg-green-500/20 text-green-700',
+      iconColor: 'text-green-500'
+    },
     [StateRecord.ATENDIDA]: {
       icon: IconClock,
       color: 'border-neutral-500 bg-neutral-500/20 text-neutral-700',

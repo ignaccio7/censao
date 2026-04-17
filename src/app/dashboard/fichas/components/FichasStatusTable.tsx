@@ -1,13 +1,19 @@
 'use client'
 import { useState } from 'react'
 import CustomDataTable from '@/app/components/ui/dataTable'
-import { IconDotsVertical, IconHistory } from '@/app/components/icons/icons'
+import { IconHistory, IconMedicineBox } from '@/app/components/icons/icons'
 import { StatusBadge } from './statusBadge'
+import { StateRecord } from '@/lib/constants'
 
 interface FichasStatusTableProps {
   title: string
   fichas: any[]
   noDataMessage: string
+  onAssignDoctor?: (data: {
+    fichaId: string
+    cedula: string
+    nombre: string
+  }) => void
   onRevertToQueue?: (data: {
     fichaId: string
     cedula: string
@@ -28,6 +34,7 @@ export default function FichasStatusTable({
   title,
   fichas,
   noDataMessage,
+  onAssignDoctor,
   onRevertToQueue
 }: FichasStatusTableProps) {
   const [activeTab, setActiveTab] = useState('all')
@@ -52,12 +59,30 @@ export default function FichasStatusTable({
         # {index + 1}
       </span>,
       ficha?.paciente_nombres,
-      ficha?.especialidad_nombre,
-      ficha?.doctor_nombre,
+      ficha?.especialidad_nombre || 'Sin asignar',
+      ficha?.doctor_nombre || 'Sin asignar',
       <StatusBadge status={ficha.estado} key={`status-${index}`} />,
       <div className='flex items-center gap-2' key={`action-${index}`}>
-        <IconDotsVertical />
-        {ficha.estado === 'CANCELADA' && onRevertToQueue && (
+        {
+          // Para asignar doctor
+          ficha.estado === StateRecord.ADMISION && onAssignDoctor && (
+            <button
+              onClick={() =>
+                onAssignDoctor({
+                  fichaId: ficha.ficha_id,
+                  cedula: ficha.paciente_id,
+                  nombre: ficha.paciente_nombres
+                })
+              }
+              title='Asignar paciente'
+              className='text-primary-600 hover:text-primary-800 transition-colors cursor-pointer'
+            >
+              <IconHistory size='20' />
+            </button>
+          )
+        }
+        {/* // Para reasignar y que vuelva a la fila */}
+        {ficha.estado === StateRecord.CANCELADA && onRevertToQueue && (
           <button
             onClick={() =>
               onRevertToQueue({
@@ -69,7 +94,7 @@ export default function FichasStatusTable({
             title='Reasignar paciente'
             className='text-primary-600 hover:text-primary-800 transition-colors cursor-pointer'
           >
-            <IconHistory size='20' />
+            <IconMedicineBox size='20' />
           </button>
         )}
       </div>

@@ -1,24 +1,29 @@
 'use client'
 import { useState } from 'react'
-import { IconMonitor, IconPlus, IconTeam } from '@/app/components/icons/icons'
+import { IconMonitor, IconTeam } from '@/app/components/icons/icons'
 import Modal from '@/app/components/ui/modal/modal'
-import FormRegister from '../../components/FormRegister'
 import FormReassign from '../../components/FormReassign'
 import useModal from '@/hooks/useModal'
-import useProfileRoutes from '@/hooks/useProfileRoutes'
 import FichasStatCard from '../../components/FichasStatCard'
 import FichasStatusTable from '../../components/FichasStatusTable'
 import { useFichas } from '@/app/services/fichas'
 import { StateRecord } from '@/lib/constants'
+import FormAssign from '../../components/FormAssign'
 
-export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
-  const { create } = useProfileRoutes()
+export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
+  // const { create } = useProfileRoutes() TODO
   const { modal, closeModal, openModal } = useModal()
 
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
   useFichas(refetchInterval)
 
   const [reassignData, setReassignData] = useState<{
+    fichaId: string
+    cedula: string
+    nombre: string
+  } | null>(null)
+
+  const [assignData, setAssignData] = useState<{
     fichaId: string
     cedula: string
     nombre: string
@@ -33,10 +38,10 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
     openModal()
   }
 
-  const handleOpenNewFicha = () => {
-    setReassignData(null)
-    openModal()
-  }
+  // TODO: const handleOpenNewFicha = () => {
+  //   setReassignData(null)
+  //   openModal()
+  // }
 
   const globalWaiting = fichas.filter(
     (f: any) =>
@@ -74,19 +79,7 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
       </div>
 
       {/* ACTIONS Y POLLING */}
-      <div className='actions flex flex-wrap gap-4 justify-between items-center my-4'>
-        <div>
-          {create && (
-            <button
-              className='flex gap-2 items-center bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer'
-              onClick={handleOpenNewFicha}
-            >
-              <IconPlus />
-              Registrar nueva ficha
-            </button>
-          )}
-        </div>
-
+      <div className='actions flex flex-wrap gap-4 justify-end items-center my-4'>
         <div className='flex items-center gap-2'>
           <label
             htmlFor='polling'
@@ -123,6 +116,10 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
         title='Pacientes en espera'
         fichas={globalWaiting}
         noDataMessage='No hay pacientes en espera para esta especialidad.'
+        onAssignDoctor={data => {
+          setAssignData(data)
+          openModal()
+        }}
       />
       <FichasStatusTable
         title='Pacientes atendidos'
@@ -137,22 +134,28 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
       />
 
       <Modal
-        title={reassignData ? 'Reasignar paciente' : 'Registrar nueva ficha'}
+        title={reassignData ? 'Reasignar paciente' : 'Asignar ficha'}
         isOpen={modal}
         onClose={() => {
           setReassignData(null)
+          setAssignData(null)
           closeModal()
         }}
         maxWidth='xl'
       >
-        {reassignData ? (
+        {reassignData && (
           <FormReassign
             fichaId={reassignData.fichaId}
             pacienteCedula={reassignData.cedula}
             pacienteNombres={reassignData.nombre}
           />
-        ) : (
-          <FormRegister />
+        )}
+        {assignData && (
+          <FormAssign
+            fichaId={assignData.fichaId}
+            cedula={assignData.cedula}
+            nombre={assignData.nombre}
+          />
         )}
       </Modal>
     </section>

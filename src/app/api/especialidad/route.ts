@@ -29,7 +29,7 @@ export async function GET() {
   // const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
 
   const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
-  const turno = getTurnoActual()
+  const turno = await getTurnoActual()
 
   try {
     const especialidades = await prisma.especialidades.findMany({

@@ -21,8 +21,8 @@ export class FichasService {
           gte: inicioUTC,
           lte: finUTC
         },
-        disponibilidades: {
-          turno_codigo: turno
+        turno_codigo: {
+          equals: turno
         },
         eliminado_en: null
       },
@@ -94,7 +94,11 @@ export class FichasService {
     console.log({ inicioUTC, finUTC, turno, userId, userRole })
 
     // Si es ADMINISTRADOR o DOCTOR_FICHAS, obtiene todas las fichas
-    if (userRole === Roles.ADMINISTRADOR || userRole === Roles.DOCTOR_FICHAS) {
+    if (
+      userRole === Roles.ADMINISTRADOR ||
+      userRole === Roles.DOCTOR_FICHAS ||
+      userRole === Roles.ENFERMERIA
+    ) {
       console.log('Sacando fichas como rol', userRole)
       return await this.getAllFichasByTurn({ inicioUTC, finUTC, turno })
     }

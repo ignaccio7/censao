@@ -13,7 +13,8 @@ export default function useUser() {
     ['ADMINISTRADOR']: 'Administrador',
     ['PACIENTE']: 'Paciente',
     ['DOCTOR_FICHAS']: 'Doctor',
-    ['DOCTOR_GENERAL']: 'Doctor'
+    ['DOCTOR_GENERAL']: 'Doctor',
+    ['ENFERMERIA']: 'Enfermeria'
   } as const
 
   type RoleKey = keyof typeof roles

@@ -6,6 +6,9 @@ import useUser from '@/hooks/useUser'
 import { Roles } from '@/app/api/lib/constants'
 import DashboardDoctorFichas from './sections/dashboard/doctor-fichas'
 import DashboardDoctorGeneral from './sections/dashboard/doctor-general'
+import { useEffect } from 'react'
+import { toast } from 'sonner'
+import DashboardDoctorEnfermeria from './sections/dashboard/doctor-enfermeria'
 
 export default function PageFichas() {
   // const {
@@ -22,7 +25,8 @@ export default function PageFichas() {
   // console.log(update)
   // console.log(user)
 
-  const { fichas } = useFichas()
+  const { fichas, isError, errorMessage } = useFichas()
+
   console.log('La data es:')
   console.log(fichas)
 
@@ -30,6 +34,12 @@ export default function PageFichas() {
     Roles.DOCTOR_GENERAL === role
       ? 'Puedes dar seguimiento a los pacientes o solo atenderlos'
       : 'Configura las fichas de los pacientes'
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(errorMessage)
+    }
+  }, [isError, errorMessage])
 
   return (
     <main>
@@ -47,6 +57,10 @@ export default function PageFichas() {
 
       {(Roles.DOCTOR_FICHAS === role || Roles.ADMINISTRADOR === role) && (
         <DashboardDoctorFichas fichas={fichas} />
+      )}
+
+      {Roles.ENFERMERIA === role && (
+        <DashboardDoctorEnfermeria fichas={fichas} />
       )}
 
       {Roles.DOCTOR_GENERAL === role && (

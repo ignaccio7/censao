@@ -2,7 +2,7 @@
 // oxlint-disable func-style
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from './client'
-import { FichaUpdateData } from '../dashboard/fichas/schemas'
+import { FichaUpdateFormData } from '../dashboard/fichas/schemas'
 
 export function useFichas(refetchInterval: number | false = false) {
   const queryClient = useQueryClient()
@@ -17,6 +17,12 @@ export function useFichas(refetchInterval: number | false = false) {
     staleTime: 5 * 60 * 1000,
     refetchInterval
   })
+
+  const errorMessage = fichasQuery.error
+    ? ((fichasQuery.error as any)?.response?.data?.error ??
+      fichasQuery.error.message ??
+      'Error desconocido')
+    : null
 
   // Registrar ficha
   const createFicha = useMutation({
@@ -36,7 +42,7 @@ export function useFichas(refetchInterval: number | false = false) {
 
   // Actualizar ficha
   const updateFicha = useMutation({
-    mutationFn: async (data: FichaUpdateData) => {
+    mutationFn: async (data: FichaUpdateFormData) => {
       const response = await apiClient.patch('fichas', data)
       return response.data
     },
@@ -54,6 +60,7 @@ export function useFichas(refetchInterval: number | false = false) {
     fichas: fichasQuery.data || [],
     isLoading: fichasQuery.isLoading,
     error: fichasQuery.error,
+    errorMessage,
     isError: fichasQuery.isError,
     isSuccess: fichasQuery.isSuccess,
     refetch: fichasQuery.refetch,

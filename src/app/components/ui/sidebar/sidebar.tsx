@@ -165,6 +165,8 @@ export default function Sidebar() {
   //   }
   // ]
 
+  console.log(user)
+
   return (
     <aside
       className={`

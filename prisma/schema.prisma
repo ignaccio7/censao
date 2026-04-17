@@ -38,7 +38,8 @@ enum EstadoFicha {
 model fichas {
   id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   paciente_id       String
-  disponibilidad_id String           @db.Uuid
+  disponibilidad_id String?          @db.Uuid
+  turno_codigo      String
   fecha_ficha       DateTime         @default(now()) @db.Timestamptz(0)
   motivo            String?
   estado            EstadoFicha?     @default(ADMISION)
@@ -49,7 +50,7 @@ model fichas {
   actualizado_por   String?
   eliminado_en      DateTime?        @db.Timestamptz(0)
   eliminado_por     String?
-  disponibilidades  disponibilidades @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_disponibilidad_id_foreign")
+  disponibilidades  disponibilidades? @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_disponibilidad_id_foreign")
   pacientes         pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_paciente_id_foreign")
   tratamientos      tratamientos[] 
 

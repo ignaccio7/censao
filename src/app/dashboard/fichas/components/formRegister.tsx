@@ -1,22 +1,17 @@
 // oxlint-disable consistent-type-imports
 import {
   IconCredential,
-  IconSchedule,
-  IconStethoscope,
   IconUser,
   IconUserPlus
 } from '@/app/components/icons/icons'
 import { useFichas } from '@/app/services/fichas'
-import { useEspecialidades } from '@/app/services/disponibilidad/especialidades'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { FichaFormData, fichaSchema } from '../schemas'
+import { FichaRegisterFormData, fichaRegisterSchema } from '../schemas'
 import { toast } from 'sonner'
 import useModal from '@/hooks/useModal'
 
 export default function FormRegister() {
-  const { especialidades } = useEspecialidades()
-
   const { createFicha } = useFichas()
 
   const { closeModal } = useModal()
@@ -24,20 +19,11 @@ export default function FormRegister() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
     reset
-  } = useForm<FichaFormData>({
-    resolver: zodResolver(fichaSchema)
+  } = useForm<FichaRegisterFormData>({
+    resolver: zodResolver(fichaRegisterSchema)
   })
-
-  const especialidadSeleccionada = watch('especialidad')
-
-  // Obtener doctores de la especialidad seleccionada
-  const doctoresDisponibles = especialidadSeleccionada
-    ? especialidades.find(esp => esp.id === especialidadSeleccionada)
-        ?.doctores || []
-    : []
 
   const onSubmit = async (data: any) => {
     try {
@@ -126,82 +112,6 @@ export default function FormRegister() {
           {errors.nombre && (
             <span className='text-red-500 text-sm'>
               {errors.nombre.message}
-            </span>
-          )}
-        </label>
-
-        {/* Especialidad - ✅ SOLO register, sin onChange manual */}
-        <label
-          htmlFor='especialidad'
-          className='text-step-0 w-full flex flex-col gap-1'
-        >
-          <span className='font-semibold flex gap-1 items-center'>
-            <IconStethoscope />
-            Especialidad Médica
-          </span>
-          <select
-            {...register('especialidad')}
-            id='especialidad'
-            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
-              errors.especialidad
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
-            }`}
-          >
-            <option value=''>Seleccione una especialidad</option>
-            {especialidades?.map(especialidad => (
-              <option key={especialidad.id} value={especialidad.id}>
-                {especialidad.nombre}
-              </option>
-            ))}
-          </select>
-          {errors.especialidad && (
-            <span className='text-red-500 text-sm'>
-              {errors.especialidad.message}
-            </span>
-          )}
-        </label>
-
-        {/* Doctor */}
-        <label
-          htmlFor='doctor'
-          className='text-step-0 w-full flex flex-col gap-1'
-        >
-          <span className='font-semibold flex gap-1 items-center'>
-            <IconSchedule />
-            Doctor disponible
-          </span>
-          <select
-            {...register('doctor')}
-            id='doctor'
-            disabled={
-              !especialidadSeleccionada || doctoresDisponibles.length === 0
-            }
-            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
-              errors.doctor
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
-            }`}
-          >
-            <option value=''>
-              {!especialidadSeleccionada
-                ? 'Primero seleccione una especialidad'
-                : doctoresDisponibles.length === 0
-                  ? 'No hay doctores disponibles'
-                  : 'Seleccione un doctor'}
-            </option>
-            {doctoresDisponibles.map((doctor: any) => {
-              return (
-                <option key={doctor.id} value={doctor.id}>
-                  {doctor.nombre} • {doctor.capacidadActual}/
-                  {doctor.capacidadMaxima} pacientes
-                </option>
-              )
-            })}
-          </select>
-          {errors.doctor && (
-            <span className='text-red-500 text-sm'>
-              {errors.doctor.message}
             </span>
           )}
         </label>
