@@ -32,3 +32,9 @@ export const RECORD_TYPES = {
 export type RecordType = (typeof RECORD_TYPES)[keyof typeof RECORD_TYPES]
 // // ahora quiero las llaves
 // export type RecordTypeKey = keyof typeof RECORD_TYPES
+
+export const TREATMENT_STATUS = {
+  EN_CURSO: 'EN_CURSO',
+  COMPLETADA: 'COMPLETADA',
+  INCOMPLETA: 'INCOMPLETA'
+} as const

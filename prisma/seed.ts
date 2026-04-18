@@ -1228,6 +1228,12 @@ async function main() {
         nombre: 'COVID-19',
         descripcion: 'Vacuna contra el coronavirus SARS-CoV-2',
         fabricante: 'Sinopharm'
+      },
+      {
+        nombre: 'Tifoidea',
+        descripcion:
+          'Vacuna contra la fiebre tifoidea — requiere refuerzo en tiempo exacto',
+        fabricante: 'Sanofi Pasteur'
       }
     ]
 
@@ -1240,6 +1246,7 @@ async function main() {
     const tetanos = vacunasCreadas.find(v => v.nombre === 'Tétanos')!
     const influenza = vacunasCreadas.find(v => v.nombre === 'Influenza')!
     const covid = vacunasCreadas.find(v => v.nombre === 'COVID-19')!
+    const tifoidea = vacunasCreadas.find(v => v.nombre === 'Tifoidea')!
 
     // Esquemas de dosis por vacuna
     // intervalo_dias = días mínimos que deben pasar entre dosis
@@ -1300,6 +1307,35 @@ async function main() {
           intervalo_dias: 180,
           edad_min_meses: null,
           notas: 'Dosis de refuerzo a los 6 meses'
+        },
+
+        // ─── Tifoidea: 3 dosis con tiempo máximo entre ellas ────────────────
+        // Esta vacuna SÍ vence si no se respeta el intervalo máximo.
+        // Si el paciente se atrasa, el tratamiento debe reiniciarse desde cero.
+        // (La validación de vencimiento se implementará en una fase posterior)
+        {
+          vacuna_id: tifoidea.id,
+          numero: 1,
+          intervalo_dias: 0,
+          edad_min_meses: 24, // mínimo 2 años
+          notas:
+            'Dosis inicial — debe completarse el esquema en los tiempos indicados'
+        },
+        {
+          vacuna_id: tifoidea.id,
+          numero: 2,
+          intervalo_dias: 30, // mínimo 1 mes después de la primera
+          edad_min_meses: 24,
+          notas:
+            'Segunda dosis — máximo 60 días desde la primera, si se pasa hay que reiniciar'
+        },
+        {
+          vacuna_id: tifoidea.id,
+          numero: 3,
+          intervalo_dias: 30, // mínimo 1 mes después de la segunda
+          edad_min_meses: 24,
+          notas:
+            'Tercera dosis — máximo 60 días desde la segunda, si se pasa hay que reiniciar'
         }
       ]
     })

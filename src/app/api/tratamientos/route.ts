@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import { Roles } from '@/app/api/lib/constants'
+import { StateTreatment } from '@/lib/constants'
 
 // LISTAR TRATAMIENTOS DEL DOCTOR
 export async function GET() {
@@ -58,7 +59,6 @@ export async function GET() {
       select: {
         id: true,
         estado: true,
-        dosis_numero: true,
         fecha_aplicacion: true,
         creado_en: true,
         esquema_dosis: {
@@ -124,13 +124,12 @@ export async function GET() {
         paciente_ci: t.ficha_origen.pacientes.paciente_id,
         vacuna_nombre: t.esquema_dosis.vacunas.nombre,
         vacuna_fabricante: t.esquema_dosis.vacunas.fabricante,
-        dosis_numero: t.dosis_numero,
         dosis_notas: t.esquema_dosis.notas,
         estado: t.estado,
         fecha_aplicacion: fechaAplicacion,
         especialidad:
-          t.ficha_origen.disponibilidades.doctores_especialidades.especialidades
-            .nombre,
+          t?.ficha_origen?.disponibilidades?.doctores_especialidades
+            ?.especialidades?.nombre,
         ficha_id: t.ficha_origen.id
       }
     })
@@ -181,13 +180,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const validData = validationResult.data
 
-    // 1. Buscar la ficha origen con datos del paciente
+    // 1. Buscar la ficha origen con datos del paciente y doctor asignado
     const ficha = await prisma.fichas.findUnique({
       where: { id: validData.fichaOrigenId },
       include: {
         pacientes: {
           include: {
             personas: true
+          }
+        },
+        disponibilidades: {
+          select: {
+            doctores_especialidades: {
+              select: {
+                doctor_id: true
+              }
+            }
           }
         }
       }
@@ -269,17 +277,166 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
+    console.log('---------------------------------------------------')
+    console.log('VERIFICACION')
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 3.5 VERIFICACIÓN DE ESTADO DEL TRATAMIENTO
+    // Bitácora: cada registro en tratamientos es un evento inmutable de lo que pasó.
+    // Solo el ÚLTIMO registro cambia de estado; los anteriores quedan como testigos.
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // Obtener el esquema actual (número de dosis y a qué vacuna pertenece)
+    const esquemaActual = await prisma.esquema_dosis.findUnique({
+      where: { id: validData.esquemaId },
+      select: { vacuna_id: true, numero: true }
+    })
+
+    console.log(esquemaActual)
+
+    // Obtener todos los esquemas de esta vacuna para saber cuántas dosis tiene en total
+    const todosEsquemasVacuna = await prisma.esquema_dosis.findMany({
+      where: { vacuna_id: esquemaActual!.vacuna_id },
+      orderBy: { numero: 'asc' },
+      select: { id: true, numero: true }
+    })
+
+    console.log(todosEsquemasVacuna)
+
+    const totalDosis = todosEsquemasVacuna.length
+    const esUltimaDosis = esquemaActual!.numero === totalDosis
+
+    console.log(totalDosis)
+    console.log(esUltimaDosis)
+
+    // Buscar TODOS los tratamientos anteriores de esta vacuna para este paciente
+    // ordenados del más antiguo al más reciente
+    const tratamientosAnteriores = await prisma.tratamientos.findMany({
+      where: {
+        eliminado_en: null,
+        ficha_origen: {
+          paciente_id: pacienteCi
+        },
+        esquema_dosis: {
+          vacuna_id: esquemaActual!.vacuna_id
+        }
+      },
+      include: {
+        esquema_dosis: { select: { numero: true } }
+      },
+      orderBy: { fecha_aplicacion: 'asc' }
+    })
+
+    // ── Caso REINICIO ────────────────────────────────────────────────────────────
+    // Se detecta reinicio cuando la dosis que se intenta registrar ya fue aplicada
+    // anteriormente (mismo número de dosis de la misma vacuna).
+    // Ejemplo: paciente recibió dosis 1 y 2 de Tifoidea pero se pasó del tiempo
+    // máximo → el médico vuelve a aplicar la dosis 1 → REINICIO.
+    //
+    // Acción: solo el ÚLTIMO tratamiento activo (EN_CURSO) pasa a INCOMPLETA.
+    // Los anteriores ya son parte de la bitácora y no se tocan.
+    // El nuevo registro entra como EN_CURSO (empieza el ciclo de nuevo).
+    // ────────────────────────────────────────────────────────────────────────────
+    const dosisYaAplicada = tratamientosAnteriores.some(
+      t => t.esquema_dosis.numero === esquemaActual!.numero
+    )
+
+    let estadoNuevoTratamiento: string
+
+    if (dosisYaAplicada) {
+      // Solo marcar como INCOMPLETA el último tratamiento EN_CURSO de esta vacuna
+      // (el más reciente que todavía estaba activo)
+      const ultimoEnCurso = tratamientosAnteriores
+        .filter(t => t.estado === StateTreatment.EN_CURSO)
+        .at(-1) // el más reciente
+
+      if (ultimoEnCurso) {
+        await prisma.tratamientos.update({
+          where: { id: ultimoEnCurso.id },
+          data: {
+            estado: 'INCOMPLETA',
+            actualizado_por: userId,
+            actualizado_en: new Date()
+          }
+        })
+      }
+
+      // El nuevo registro reinicia el ciclo
+      estadoNuevoTratamiento = StateTreatment.EN_CURSO
+
+      // ── Caso COMPLETADA ──────────────────────────────────────────────────────────
+      // Se marca COMPLETADA únicamente cuando:
+      //   1. Es la última dosis del esquema
+      //   2. Todas las dosis anteriores fueron aplicadas (existen como EN_CURSO en la bitácora)
+      //
+      // Solo el nuevo registro (la última dosis) entra como COMPLETADA.
+      // Los anteriores se quedan como EN_CURSO — son la bitácora de lo que ocurrió.
+      // ────────────────────────────────────────────────────────────────────────────
+    } else if (esUltimaDosis) {
+      // Verificar que existan registros EN_CURSO para todas las dosis anteriores
+      const numerosAplicados = new Set(
+        tratamientosAnteriores
+          .filter(t => t.estado === StateTreatment.EN_CURSO)
+          .map(t => t.esquema_dosis.numero)
+      )
+
+      const todasLasAnterioresAplicadas = todosEsquemasVacuna
+        .filter(e => e.numero < esquemaActual!.numero)
+        .every(e => numerosAplicados.has(e.numero))
+
+      // Si están todas las dosis previas → la última entra como COMPLETADA
+      // Si falta alguna dosis previa → entra igual como EN_CURSO (esquema incompleto aún)
+      estadoNuevoTratamiento = todasLasAnterioresAplicadas
+        ? StateTreatment.COMPLETADA
+        : StateTreatment.EN_CURSO
+
+      // ── Caso NORMAL (dosis intermedia) ──────────────────────────────────────────
+      // Dosis aplicada en orden, no es la última → entra como EN_CURSO.
+      // Queda en la bitácora esperando que lleguen las siguientes dosis.
+      // ────────────────────────────────────────────────────────────────────────────
+    } else {
+      estadoNuevoTratamiento = StateTreatment.EN_CURSO
+    }
+
     // 4. Crear el tratamiento
     const tratamiento = await prisma.tratamientos.create({
       data: {
         ficha_origen_id: validData.fichaOrigenId,
         esquema_id: validData.esquemaId,
-        dosis_numero: validData.dosisNumero,
-        estado: 'EN_CURSO',
+        estado: estadoNuevoTratamiento,
         fecha_aplicacion: new Date(),
         creado_por: userId
       }
     })
+
+    // 4.5. Crear cita futura si fue solicitada
+    let citaCreada = false
+    if (validData.cita) {
+      const doctorId =
+        ficha.disponibilidades?.doctores_especialidades?.doctor_id
+
+      if (!doctorId) {
+        console.warn(
+          'No se pudo obtener el doctor_id de la ficha para crear la cita'
+        )
+      } else {
+        await prisma.citas.create({
+          data: {
+            paciente_id: pacienteCi,
+            doctor_id: doctorId,
+            tratamiento_id: tratamiento.id,
+            fecha_programada: new Date(validData.cita.fechaProgramada),
+            tipo: validData.cita.tipo,
+            estado: 'PENDIENTE',
+            observaciones: validData.cita.observaciones || null,
+            creado_por: userId
+          }
+        })
+        citaCreada = true
+        console.log(
+          `Cita creada para paciente ${pacienteCi} — ${validData.cita.tipo} el ${validData.cita.fechaProgramada}`
+        )
+      }
+    }
 
     // 5. Marcar la ficha como ATENDIDA
     await prisma.fichas.update({
@@ -293,13 +450,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         success: true,
-        message: `Tratamiento registrado exitosamente — ${esquemaDosis.vacunas.nombre} (Dosis ${validData.dosisNumero})`,
+        message: `Tratamiento registrado exitosamente — ${esquemaDosis.vacunas.nombre} (Dosis ${validData.dosisNumero})${citaCreada ? ' · Cita programada' : ''}`,
         data: {
           tratamiento_id: tratamiento.id,
           paciente: `${persona.nombres} ${persona.paterno} ${persona.materno}`,
           vacuna: esquemaDosis.vacunas.nombre,
           dosis: validData.dosisNumero,
-          usuario_creado: !usuarioExistente
+          usuario_creado: !usuarioExistente,
+          cita_creada: citaCreada
         }
       },
       { status: 201 }

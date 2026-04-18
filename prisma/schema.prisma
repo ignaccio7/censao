@@ -222,7 +222,7 @@ model roles_permisos {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model tratamientos {
   id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  estado                  String
+  estado                  String           @default("EN_CURSO") // EN_CURSO, COMPLETADA, INCOMPLETA
   ficha_origen_id         String           @db.Uuid
   esquema_id              String           @db.Uuid
   fecha_aplicacion        DateTime         @default(now()) @db.Timestamptz(0) // Cuándo se aplicó realmente

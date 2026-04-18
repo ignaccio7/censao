@@ -123,6 +123,7 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
         title='Pacientes en espera'
         fichas={globalWaiting}
         noDataMessage='No hay pacientes en espera para esta especialidad.'
+        waitingMode={true}
       />
       <FichasStatusTable
         title='Pacientes atendidos'

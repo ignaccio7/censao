@@ -25,8 +25,14 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
   const { updateFicha } = useFichas(refetchInterval)
   const [modal, setModal] = useState(false)
   const [activeTab, setActiveTab] = useState<StateRecordValueType>(
-    StateRecordValue.PENDIENTE
+    StateRecordValue.ENFERMERIA
   )
+
+  const allowedTabs = [
+    StateRecordValue.ENFERMERIA,
+    StateRecordValue.ATENDIDA,
+    StateRecordValue.CANCELADA
+  ]
   const fichaId = usePatientStore(state => state.fichaId)
   const setPatient = usePatientStore(state => state.setPatient)
   const clearPatient = usePatientStore(state => state.clearPatient)
@@ -123,7 +129,7 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
       <div className='bg-white my-4 rounded-md'>
         <div className='border-b border-gray-200 flex flex-wrap items-center justify-between'>
           <div className='flex flex-wrap'>
-            {Object.values(StateRecordValue).map((state, index: number) => (
+            {allowedTabs.map((state, index: number) => (
               <button
                 key={index}
                 className={`px-4 py-3 text-step-1 font-medium transition-colors duration-200 cursor-pointer ${
@@ -186,16 +192,20 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
         isOpen={modal}
         onClose={() => setModal(false)}
       >
-        <div className='grid grid-cols-2 gap-4'>
-          <button
-            className='bg-transparent border-4 border-primary-600 text-primary-600 py-2 px-4 rounded-md hover:bg-primary-600 hover:text-white transition-colors duration-200 cursor-pointer'
-            onClick={attendPatient}
-          >
-            <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
-              Marcar como paciente atendido
-              <IconUserCheck size='36' />
-            </span>
-          </button>
+        <div
+          className={`grid ${activeTab !== StateRecordValue.ATENDIDA ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}
+        >
+          {activeTab !== StateRecordValue.ATENDIDA && (
+            <button
+              className='bg-transparent border-4 border-primary-600 text-primary-600 py-2 px-4 rounded-md hover:bg-primary-600 hover:text-white transition-colors duration-200 cursor-pointer'
+              onClick={attendPatient}
+            >
+              <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
+                Marcar como paciente atendido
+                <IconUserCheck size='36' />
+              </span>
+            </button>
+          )}
           <button
             className='bg-transparent border-4 border-cyan-800 text-cyan-800 py-2 px-4 rounded-md hover:bg-cyan-800 hover:text-white transition-colors duration-200 cursor-pointer'
             onClick={() => {
@@ -207,15 +217,17 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
               Registrar tratamiento <IconCheckupList size='36' />
             </span>
           </button>
-          <button
-            className='col-span-2 bg-transparent border-4 border-red-400 text-red-400 py-2 px-4 rounded-md hover:bg-red-400 hover:text-white transition-colors duration-200 cursor-pointer'
-            onClick={cancelPatient}
-          >
-            <span className='flex flex-row-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
-              No asistió (Cancelar ficha)
-              <IconAlertTriangle size='36' />
-            </span>
-          </button>
+          {activeTab !== StateRecordValue.ATENDIDA && (
+            <button
+              className='col-span-2 bg-transparent border-4 border-red-400 text-red-400 py-2 px-4 rounded-md hover:bg-red-400 hover:text-white transition-colors duration-200 cursor-pointer'
+              onClick={cancelPatient}
+            >
+              <span className='flex flex-row-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
+                No asistió (Cancelar ficha)
+                <IconAlertTriangle size='36' />
+              </span>
+            </button>
+          )}
         </div>
       </Modal>
     </section>

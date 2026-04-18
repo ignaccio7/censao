@@ -30,3 +30,19 @@ export const StateRecordValue = {
 export type StateRecordType = keyof typeof StateRecordValue
 export type StateRecordValueType =
   (typeof StateRecordValue)[keyof typeof StateRecordValue]
+
+export const StateTreatment = {
+  EN_CURSO: 'EN_CURSO',
+  COMPLETADA: 'COMPLETADA',
+  INCOMPLETA: 'INCOMPLETA'
+} as const
+
+export const StateTreatmentValue = {
+  EN_CURSO: 'En curso',
+  COMPLETADA: 'Completada',
+  INCOMPLETA: 'Incompleta'
+} as const
+
+export type StateTreatmentType = keyof typeof StateTreatmentValue
+export type StateTreatmentValueType =
+  (typeof StateTreatmentValue)[keyof typeof StateTreatmentValue]

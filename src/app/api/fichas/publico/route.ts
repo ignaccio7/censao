@@ -4,6 +4,7 @@
 import prisma from '@/lib/prisma/prisma'
 import { getRangoUTCBoliviaHoy, getTurnoActual } from '@/app/utils/date'
 import { NextResponse } from 'next/server'
+import { RECORD_TYPES } from '../../lib/constants'
 
 /**
  * GET /api/fichas/publico
@@ -13,7 +14,7 @@ import { NextResponse } from 'next/server'
  */
 export async function GET() {
   const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
-  const turno = getTurnoActual()
+  const turno = await getTurnoActual()
 
   try {
     // Obtener fichas PENDIENTES del turno actual, ordenadas por turno y hora de registro
@@ -26,7 +27,7 @@ export async function GET() {
         disponibilidades: {
           turno_codigo: turno
         },
-        estado: 'PENDIENTE',
+        estado: RECORD_TYPES.ENFERMERIA,
         eliminado_en: null
       },
       orderBy: [{ orden_turno: 'asc' }, { fecha_ficha: 'asc' }],

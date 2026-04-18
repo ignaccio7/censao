@@ -116,6 +116,7 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
         title='Pacientes en espera'
         fichas={globalWaiting}
         noDataMessage='No hay pacientes en espera para esta especialidad.'
+        waitingMode={true}
         onAssignDoctor={data => {
           setAssignData(data)
           openModal()
