@@ -234,7 +234,8 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
     descripcion: 'Doctor especializado en fichas médicas',
     permisos: [
       ...PERMISOS_COMUNES,
-      // FRONTEND - Solo fichas
+      // FRONTEND
+      // - Fichas
       {
         nombre: 'Gestionar Fichas',
         tipo: 'frontend',
@@ -253,7 +254,27 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         descripcion: 'Gestión completa de fichas médicas',
         modulo: 'fichas'
       },
-      // BACKEND - Solo fichas
+      // - Atención médica
+      {
+        nombre: 'Pacientes',
+        tipo: 'frontend',
+        ruta: '/dashboard/atencion/pacientes',
+        metodos: ['read', 'create', 'delete'],
+        icono: 'list',
+        descripcion: 'Gestionar pacientes asignados',
+        modulo: 'atencion'
+      },
+      {
+        nombre: 'Pacientes',
+        tipo: 'frontend',
+        ruta: '/dashboard/atencion/pacientes/:uuid',
+        metodos: ['read', 'update', 'delete'],
+        icono: 'list',
+        descripcion: 'Gestionar pacientes asignados',
+        modulo: 'atencion'
+      },
+      // BACKEND
+      // - Fichas
       {
         nombre: 'API Fichas',
         tipo: 'backend',
@@ -269,6 +290,23 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         metodos: ['POST'],
         descripcion: 'API para generar fichas de citas programadas',
         modulo: 'fichas'
+      },
+      // - Atención médica
+      {
+        nombre: 'API Atención Pacientes',
+        tipo: 'backend',
+        ruta: '/api/atencion/pacientes',
+        metodos: ['GET', 'POST'],
+        descripcion: 'API para obtener y asignar pacientes del Centro',
+        modulo: 'atencion'
+      },
+      {
+        nombre: 'API Atención Pacientes',
+        tipo: 'backend',
+        ruta: '/api/atencion/pacientes/:uuid',
+        metodos: ['GET', 'PATCH', 'DELETE'],
+        descripcion: 'API para modificar los pacientes del Centro',
+        modulo: 'atencion'
       }
     ]
   }

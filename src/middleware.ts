@@ -4,6 +4,10 @@ import { NextRequest, NextResponse } from 'next/server'
 // Secreto utilizado por NextAuth para firmar y verificar los tokens
 const secret = process.env.AUTH_SECRET
 
+// Patrón que acepta: números, números-númeroLetra, o UUID
+const PATRON_COMBINADO =
+  '(?:\\d+|\\d+-\\d+[A-Za-z]|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})'
+
 export default async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret })
   const { pathname } = req.nextUrl
@@ -27,13 +31,21 @@ export default async function middleware(req: NextRequest) {
       // Escapar las barras para la expresión regular
       const escapedRoute = route.replace(/\//g, '\\/')
 
+      // const pattern = new RegExp(
+      //   `^${escapedRoute.replace(
+      //     /:uuid/g,
+      //     '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
+      //   )}$`,
+      //   'i'
+      // )
       const pattern = new RegExp(
-        `^${escapedRoute.replace(
-          /:uuid/g,
-          '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'
-        )}$`,
+        `^${escapedRoute.replace(/:uuid/g, PATRON_COMBINADO)}$`,
         'i'
       )
+
+      console.log(`Validando: ${pathname} contra ruta: ${route}`)
+      console.log(`Regex: ${pattern}`)
+
       return pattern.test(pathname)
     }
 

@@ -7,13 +7,13 @@
 
 ## 0. Contexto de Negocio (Resumen para el Agente)
 
-| Rol              | Clave interna    | Descripción                                                                                  |
-| ---------------- | ---------------- | -------------------------------------------------------------------------------------------- |
-| Administrador    | `ADMINISTRADOR`  | Acceso total: gestiona usuarios, roles, vacunas, horarios, reportes                          |
-| Doctor de Fichas | `DOCTOR_FICHAS`  | Registra pacientes, crea fichas presenciales (ADMISION), genera lote de citas programadas    |
-| Enfermería       | `ENFERMERIA`     | Triage básico: evalúa motivo, asigna especialidad/médico, cambia estado ADMISION→ENFERMERIA  |
-| Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas en estado ENFERMERIA asignadas a él, atiende pacientes, registra tratamientos |
-| Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas y citas; nunca crea fichas                               |
+| Rol              | Clave interna    | Descripción                                                                                                                                         |
+| ---------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Administrador    | `ADMINISTRADOR`  | Acceso total: gestiona usuarios, roles, vacunas, horarios, reportes                                                                                 |
+| Doctor de Fichas | `DOCTOR_FICHAS`  | Registra pacientes, crea fichas presenciales (ADMISION), genera lote de citas programadas, ve pacientes del centro de salud y sus fichas históricas |
+| Enfermería       | `ENFERMERIA`     | Triage básico: evalúa motivo, asigna especialidad/médico, cambia estado ADMISION→ENFERMERIA                                                         |
+| Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas en estado ENFERMERIA asignadas a él, atiende pacientes, registra tratamientos                                                        |
+| Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas y citas; nunca crea fichas                                                                                      |
 
 **Flujo central:** Paciente llega → Doctor de Fichas crea Ficha (ADMISION) → Enfermería evalúa y asigna médico (ENFERMERIA) → Ficha aparece en pantalla del Doctor General y pantalla pública → Doctor General atiende → marca como ATENDIDA o registra tratamiento de vacunación.
 
@@ -87,7 +87,8 @@ censao/
     │   │   │   ├── citas/                 # Citas del paciente
     │   │   │   ├── chat/                  # Chat del paciente
     │   │   │   └── utils/                 # Utilidades compartidas
-    │   │   ├── atencion/      # Feature: Pantalla pública de atención
+    │   │   ├── atencion/      # Feature: Módulo de atención (DOCTOR_FICHAS, DOCTOR_GENERAL, ADMIN)
+    │   │   │   └── pacientes/ # Lista y detalle de pacientes del centro (fichas históricas)
     │   │   ├── tratamientos/  # Feature: Tratamientos globales (DOCTOR_GENERAL + ADMIN)
     │   │   ├── estado-doctores/ # Feature: Disponibilidad de médicos
     │   │   ├── notificaciones/ # Feature: Recordatorios
@@ -132,17 +133,19 @@ censao/
 
 ### 2.1 Mapa de API Routes
 
-| Ruta                             | Método   | Handler                     | Modelos Prisma involucrados                                                                                    | Descripción                                                                        |
-| -------------------------------- | -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `/api/auth/[...nextauth]`        | GET/POST | NextAuth handler auto       | `usuarios`, `usuarios_roles`, `roles`, `permisos`                                                              | Login/logout/session                                                               |
-| `/api/fichas`                    | GET      | `FichasService.getFichas()` | `fichas`, `disponibilidades`, `doctores_especialidades`, `doctores`, `especialidades`, `pacientes`, `personas` | Lista fichas del turno actual según rol                                            |
-| `/api/fichas`                    | POST     | `route.ts::POST`            | `personas`, `pacientes`, `disponibilidades`, `fichas`                                                          | Crea persona+paciente si no existe, verifica cupos, crea ficha con estado ADMISION |
-| `/api/fichas`                    | PATCH    | `route.ts::PATCH`           | `fichas`                                                                                                       | Actualiza estado de una ficha (ADMISION→ENFERMERIA→ATENDIDA/CANCELADA)             |
-| `/api/fichas/publico`            | GET      | `route.ts::GET`             | `fichas`, `disponibilidades`, `doctores`, `personas`                                                           | Pantalla pública de atención (sin auth, polling)                                   |
-| `/api/fichas/generar-citas-lote` | POST     | `route.ts::POST`            | `citas`, `fichas`, `disponibilidades`                                                                          | Genera fichas en lote de citas programadas del turno (DOCTOR_FICHAS)               |
-| `/api/doctor`                    | GET      | `route.ts::GET`             | `doctores`, `personas`, `doctores_especialidades`                                                              | Lista doctores disponibles                                                         |
-| `/api/especialidad`              | GET      | —                           | `especialidades`, `doctores_especialidades`, `disponibilidades`                                                | Lista especialidades con doctores y capacidades                                    |
-| `/api/estado-doctores`           | GET      | —                           | `doctores`, `disponibilidades`                                                                                 | Disponibilidad y carga de médicos (Enfermería)                                     |
+| Ruta                             | Método             | Handler                     | Modelos Prisma involucrados                                                                                    | Descripción                                                                            |
+| -------------------------------- | ------------------ | --------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/api/auth/[...nextauth]`        | GET/POST           | NextAuth handler auto       | `usuarios`, `usuarios_roles`, `roles`, `permisos`                                                              | Login/logout/session                                                                   |
+| `/api/fichas`                    | GET                | `FichasService.getFichas()` | `fichas`, `disponibilidades`, `doctores_especialidades`, `doctores`, `especialidades`, `pacientes`, `personas` | Lista fichas del turno actual según rol                                                |
+| `/api/fichas`                    | POST               | `route.ts::POST`            | `personas`, `pacientes`, `disponibilidades`, `fichas`                                                          | Crea persona+paciente si no existe, verifica cupos, crea ficha con estado ADMISION     |
+| `/api/fichas`                    | PATCH              | `route.ts::PATCH`           | `fichas`                                                                                                       | Actualiza estado de una ficha (ADMISION→ENFERMERIA→ATENDIDA/CANCELADA)                 |
+| `/api/fichas/publico`            | GET                | `route.ts::GET`             | `fichas`, `disponibilidades`, `doctores`, `personas`                                                           | Pantalla pública de atención (sin auth, polling)                                       |
+| `/api/fichas/generar-citas-lote` | POST               | `route.ts::POST`            | `citas`, `fichas`, `disponibilidades`                                                                          | Genera fichas en lote de citas programadas del turno (DOCTOR_FICHAS)                   |
+| `/api/atencion/pacientes`        | GET, POST          | —                           | `pacientes`, `personas`, `fichas`                                                                              | Lista pacientes del centro / asigna paciente (DOCTOR_FICHAS, DOCTOR_GENERAL, ADMIN)    |
+| `/api/atencion/pacientes/:uuid`  | GET, PATCH, DELETE | —                           | `pacientes`, `personas`, `fichas`                                                                              | Detalle, modificación y eliminación de paciente (DOCTOR_FICHAS, DOCTOR_GENERAL, ADMIN) |
+| `/api/doctor`                    | GET                | `route.ts::GET`             | `doctores`, `personas`, `doctores_especialidades`                                                              | Lista doctores disponibles                                                             |
+| `/api/especialidad`              | GET                | —                           | `especialidades`, `doctores_especialidades`, `disponibilidades`                                                | Lista especialidades con doctores y capacidades                                        |
+| `/api/estado-doctores`           | GET                | —                           | `doctores`, `disponibilidades`                                                                                 | Disponibilidad y carga de médicos (Enfermería)                                         |
 
 ### 2.2 Convención de Nombres
 

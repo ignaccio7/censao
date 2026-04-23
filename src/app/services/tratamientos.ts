@@ -2,7 +2,10 @@
 // oxlint-disable func-style
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from './client'
-import { TratamientoCreateData } from '../dashboard/tratamientos/schemas'
+import {
+  TratamientoCreateData,
+  TratamientoBatchCreateData
+} from '../dashboard/tratamientos/schemas'
 
 export function useTratamientos() {
   const queryClient = useQueryClient()
@@ -17,14 +20,25 @@ export function useTratamientos() {
     staleTime: 5 * 60 * 1000
   })
 
-  // Crear tratamiento
+  // Crear tratamiento (legacy — un solo tratamiento)
   const createTratamiento = useMutation({
     mutationFn: async (data: TratamientoCreateData) => {
       const response = await apiClient.post('tratamientos', data)
       return response.data
     },
     onSuccess: () => {
-      // Invalidar fichas para reflejar el cambio de estado (ATENDIDA)
+      queryClient.invalidateQueries({ queryKey: ['fichas'] })
+      queryClient.invalidateQueries({ queryKey: ['tratamientos'] })
+    }
+  })
+
+  // Crear tratamientos en BATCH — una sola transacción
+  const createTratamientoBatch = useMutation({
+    mutationFn: async (data: TratamientoBatchCreateData) => {
+      const response = await apiClient.post('tratamientos/batch', data)
+      return response.data
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fichas'] })
       queryClient.invalidateQueries({ queryKey: ['tratamientos'] })
     }
@@ -34,6 +48,7 @@ export function useTratamientos() {
     tratamientos: tratamientosQuery.data || [],
     isLoading: tratamientosQuery.isLoading,
     isError: tratamientosQuery.isError,
-    createTratamiento
+    createTratamiento,
+    createTratamientoBatch
   }
 }
