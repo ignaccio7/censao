@@ -246,7 +246,7 @@ model citas {
   tratamiento_id          String           @db.Uuid   // ← NUEVA FK (viene del tratamiento que la generó)
   fecha_programada        DateTime         @db.Timestamptz(0) // Cuándo debe volver el paciente
   tipo                    String           // "VACUNA", "CONTROL", "CONSULTA"
-  estado                  String           @default("PENDIENTE") // "PENDIENTE", "COMPLETADA", "CANCELADA", "VENCIDA"
+  estado                  String           @default("PENDIENTE") // "PENDIENTE", "GENERADA", "ABSORBIDA", "CANCELADA", "VENCIDA"
   observaciones           String?
   creado_en               DateTime         @default(now()) @db.Timestamptz(0)
   creado_por              String?
