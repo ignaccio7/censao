@@ -170,22 +170,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       where: { ci: validData.cedula }
     })
 
+    const formatedName = validData.nombre
+      .trim()
+      .split(' ')
+      .map(
+        (word: string) =>
+          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      )
+      .join(' ')
+
     if (persona) {
       // Validacion para verificar que los datos de la persona sean los mismos del formulario
       const nombrePersona =
         `${persona?.nombres} ${persona?.paterno} ${persona?.materno}`.trim()
-      const nombreFormulario = validData.nombre.trim()
       console.log(nombrePersona)
-      console.log(nombreFormulario)
+      console.log(formatedName)
 
-      if (nombrePersona !== nombreFormulario) {
+      if (nombrePersona !== formatedName) {
         return NextResponse.json({
           success: false,
           message: 'Los datos de la persona no coinciden con los del formulario'
         })
       }
     } else {
-      const nombreParts = validData.nombre.trim().split(' ')
+      const nombreParts = formatedName.split(' ')
       const [nombres = '', paterno = '', materno = ''] = nombreParts
 
       persona = await prisma.personas.create({
