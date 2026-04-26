@@ -16,6 +16,8 @@ export const RoleGroups = {
 export const StateRecord = {
   ADMISION: 'ADMISION',
   ENFERMERIA: 'ENFERMERIA',
+  EN_ESPERA: 'EN_ESPERA',
+  ATENDIENDO: 'ATENDIENDO',
   ATENDIDA: 'ATENDIDA',
   CANCELADA: 'CANCELADA'
 } as const
@@ -23,6 +25,8 @@ export const StateRecord = {
 export const StateRecordValue = {
   ADMISION: 'En Admision',
   ENFERMERIA: 'En Enfermeria',
+  EN_ESPERA: 'En Espera',
+  ATENDIENDO: 'Atendiendo',
   ATENDIDA: 'Atentidos',
   CANCELADA: 'Cancelados'
 } as const

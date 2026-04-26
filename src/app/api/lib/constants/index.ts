@@ -25,6 +25,8 @@ export const RoleGroups = {
 export const RECORD_TYPES = {
   ADMISION: 'ADMISION',
   ENFERMERIA: 'ENFERMERIA',
+  EN_ESPERA: 'EN_ESPERA',
+  ATENDIENDO: 'ATENDIENDO',
   ATENDIDA: 'ATENDIDA',
   CANCELADA: 'CANCELADA'
 } as const

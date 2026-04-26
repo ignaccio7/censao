@@ -29,10 +29,12 @@ model auditoria_log {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 
 enum EstadoFicha {
-  ADMISION
-  ENFERMERIA
-  CANCELADA
-  ATENDIDA
+  ADMISION     // Recién creada (fila física en entrada)
+  ENFERMERIA   // Enfermería los va llamando uno por uno para triage
+  EN_ESPERA    // Ya tienen médico asignado, esperan en sala de espera
+  ATENDIENDO   // El médico los llamó y están siendo atendidos
+  ATENDIDA     // Atención completada (salen del consultorio)
+  CANCELADA    // Cancelada
 }
 
 model fichas {
@@ -44,6 +46,7 @@ model fichas {
   motivo            String?
   estado            EstadoFicha?     @default(ADMISION)
   orden_turno       Int?
+  cita_origen_id    String?          @db.Uuid
   creado_en         DateTime         @default(now()) @db.Timestamptz(0)
   creado_por        String?
   actualizado_en    DateTime         @default(now()) @db.Timestamptz(0)
@@ -52,7 +55,8 @@ model fichas {
   eliminado_por     String?
   disponibilidades  disponibilidades? @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_disponibilidad_id_foreign")
   pacientes         pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_paciente_id_foreign")
-  tratamientos      tratamientos[] 
+  cita_origen       citas?           @relation("CitaToFicha", fields: [cita_origen_id], references: [id])
+  tratamientos      tratamientos[]
 
   @@unique([disponibilidad_id, fecha_ficha, orden_turno])
 }
@@ -255,6 +259,7 @@ model citas {
   eliminado_en            DateTime?        @db.Timestamptz(0)
   eliminado_por           String?
 
+  ficha_generada          fichas[]         @relation("CitaToFicha")
   pacientes               pacientes        @relation(fields: [paciente_id], references: [paciente_id])
   doctores                doctores         @relation(fields: [doctor_id], references: [doctor_id])
   tratamientos            tratamientos     @relation(fields: [tratamiento_id], references: [id])
