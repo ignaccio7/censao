@@ -351,7 +351,7 @@ function EnfermeriaRow({
             </div>
             <div>
               <h2 className='text-step-2 font-bold text-gray-800 uppercase tracking-wide font-primary'>
-                Enfermería (Triage)
+                Enfermería
               </h2>
               <p className='text-gray-500 text-step-1'>
                 Presentarse según número de ficha

@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
-import { Roles } from '@/app/api/lib/constants'
+// import { Roles } from '@/app/api/lib/constants'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   // req: Request
   try {
     const validation = await AuthService.validateApiPermission(
@@ -20,20 +20,28 @@ export async function GET() {
       )
     }
 
-    const esDoctorFichas = validation.data?.role === Roles.DOCTOR_FICHAS
-    const userId = validation.data?.id
+    const searchParams = request.nextUrl.searchParams
+    const huerfanas = searchParams.get('huerfanas') === 'true'
+
+    // const esDoctorFichas = validation.data?.role === Roles.DOCTOR_FICHAS
+    // const userId = validation.data?.id
+    console.log('Estamos entrando aqui')
+    // console.log(esDoctorFichas);
 
     const pacientes = await prisma.pacientes.findMany({
       where: {
         eliminado_en: null,
-        ...(esDoctorFichas && {
-          fichas: {
-            some: {
-              creado_por: userId,
-              eliminado_en: null
-            }
-          }
-        })
+        fichas: huerfanas
+          ? { none: { eliminado_en: null } } // al menos una
+          : { some: { eliminado_en: null } } // ninguna
+        // ...(esDoctorFichas && {
+        // fichas: {
+        //   some: {
+        //     // creado_por: userId,
+        //     eliminado_en: null
+        //   }
+        // }
+        // })
       },
       include: {
         personas: true,
@@ -43,6 +51,8 @@ export async function GET() {
       },
       orderBy: { personas: { paterno: 'asc' } }
     })
+
+    console.log(pacientes)
 
     return NextResponse.json(
       { success: true, data: pacientes },

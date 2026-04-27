@@ -182,7 +182,11 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ uuid: string }> }
 ) {
+  console.log('Eliminando')
+
   const { uuid } = await params
+  console.log(uuid)
+
   try {
     const validation = await AuthService.validateApiPermission(
       '/api/atencion/pacientes/:uuid',
@@ -197,6 +201,8 @@ export async function DELETE(
         { status: 403 }
       )
     }
+
+    console.log('Eli')
 
     const userId = validation?.data?.id || ''
 

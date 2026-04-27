@@ -12,6 +12,8 @@ import { useFichas } from '@/app/services/fichas'
 import { StateRecord } from '@/lib/constants'
 
 export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
+  console.log(fichas)
+
   const { create } = useProfileRoutes()
   const { modal, closeModal, openModal } = useModal()
 

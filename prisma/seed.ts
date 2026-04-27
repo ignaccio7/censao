@@ -337,7 +337,8 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
     descripcion: 'Personal de enfermería para triage y asignación de fichas',
     permisos: [
       ...PERMISOS_COMUNES,
-      // FRONTEND - Gestión de fichas (solo lectura y actualización)
+      // FRONTEND
+      // - Gestión de fichas (solo lectura y actualización)
       {
         nombre: 'Ver Fichas',
         tipo: 'frontend',
@@ -356,7 +357,27 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         descripcion: 'Ver disponibilidad y carga de médicos',
         modulo: 'fichas'
       },
+      // - Atención médica
+      {
+        nombre: 'Pacientes',
+        tipo: 'frontend',
+        ruta: '/dashboard/atencion/pacientes',
+        metodos: ['read', 'create', 'delete'],
+        icono: 'list',
+        descripcion: 'Gestionar pacientes asignados',
+        modulo: 'atencion'
+      },
+      {
+        nombre: 'Pacientes',
+        tipo: 'frontend',
+        ruta: '/dashboard/atencion/pacientes/:uuid',
+        metodos: ['read', 'update', 'delete'],
+        icono: 'list',
+        descripcion: 'Gestionar pacientes asignados',
+        modulo: 'atencion'
+      },
       // BACKEND - APIs para enfermería
+      // - Fichas
       {
         nombre: 'API Fichas Enfermeria',
         tipo: 'backend',
@@ -372,6 +393,23 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         metodos: ['GET'],
         descripcion: 'API para ver disponibilidad de médicos',
         modulo: 'fichas'
+      },
+      // - Atención médica
+      {
+        nombre: 'API Atención Pacientes',
+        tipo: 'backend',
+        ruta: '/api/atencion/pacientes',
+        metodos: ['GET', 'POST'],
+        descripcion: 'API para obtener y asignar pacientes del Centro',
+        modulo: 'atencion'
+      },
+      {
+        nombre: 'API Atención Pacientes',
+        tipo: 'backend',
+        ruta: '/api/atencion/pacientes/:uuid',
+        metodos: ['GET', 'PATCH', 'DELETE'],
+        descripcion: 'API para modificar los pacientes del Centro',
+        modulo: 'atencion'
       }
     ]
   }
@@ -1109,14 +1147,18 @@ async function main() {
         {
           codigo: 'AM',
           nombre: 'Mañana',
-          hora_inicio: new Date('1970-01-01T07:00:00.000Z'),
-          hora_fin: new Date('1970-01-01T12:30:00.000Z')
+          hora_inicio: new Date('1970-01-01T00:01:00.000Z'),
+          hora_fin: new Date('1970-01-01T14:00:00.000Z')
+          // hora_inicio: new Date('1970-01-01T07:00:00.000Z'),
+          // hora_fin: new Date('1970-01-01T12:30:00.000Z')
         },
         {
           codigo: 'PM',
           nombre: 'Tarde',
-          hora_inicio: new Date('1970-01-01T14:00:00.000Z'),
-          hora_fin: new Date('1970-01-01T18:00:00.000Z')
+          hora_inicio: new Date('1970-01-01T14:01:00.000Z'),
+          hora_fin: new Date('1970-01-01T23:59:00.000Z')
+          // hora_inicio: new Date('1970-01-01T14:00:00.000Z'),
+          // hora_fin: new Date('1970-01-01T18:00:00.000Z')
         }
       ],
       skipDuplicates: true // por si corres el seed más de una vez

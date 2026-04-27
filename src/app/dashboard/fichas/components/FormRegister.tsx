@@ -73,7 +73,7 @@ export default function FormRegister() {
           </span>
           <input
             {...register('cedula')}
-            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
+            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors text-step-1 ${
               errors.cedula
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                 : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
@@ -100,7 +100,7 @@ export default function FormRegister() {
           </span>
           <input
             {...register('nombre')}
-            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
+            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors text-step-1 ${
               errors.nombre
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                 : 'border-transparent focus:border-primary-600 focus:ring-primary-600'

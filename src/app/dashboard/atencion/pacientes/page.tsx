@@ -16,6 +16,7 @@ import {
   IconTrash
 } from '@/app/components/icons/icons'
 import { toast } from 'sonner'
+import Title from '@/app/components/ui/title'
 
 type Tab = 'registrados' | 'huerfanas'
 
@@ -65,6 +66,7 @@ export default function PacientesPage() {
       })
     },
     onError: (error: any) => {
+      console.log(error)
       toast.error(error.response?.data?.message || 'Error al eliminar')
     }
   })
@@ -175,7 +177,11 @@ export default function PacientesPage() {
       }),
       <button
         key={`del-h-${paciente.paciente_id}`}
-        onClick={() => eliminarHuerfana.mutate(paciente.paciente_id)}
+        onClick={() => {
+          console.log('Eliminando')
+          console.log(paciente.paciente_id)
+          eliminarHuerfana.mutate(paciente.paciente_id)
+        }}
         disabled={eliminarHuerfana.isPending}
         className='px-3 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm font-medium shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1'
         title='Eliminar registro huérfano'
@@ -186,18 +192,11 @@ export default function PacientesPage() {
     ]) || []
 
   return (
-    <div className='flex flex-col gap-6 animate-fade-in pb-8'>
-      {/* Header */}
-      <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-2'>
-        <h1 className='text-2xl font-bold text-gray-800 mb-2'>
-          Pacientes Registrados
-        </h1>
-        <p className='text-gray-600'>
-          Gestiona los pacientes que has registrado en el centro de salud.
-          Puedes editar sus datos, eliminarlos o revisar su historial de
-          atenciones.
-        </p>
-      </div>
+    <main className='pb-8'>
+      {/* Title */}
+      <Title subtitle='Gestiona los pacientes que has registrado en el centro de salud. Puedes editar sus datos, eliminarlos o revisar su historial de atenciones.'>
+        Pacientes Registrados
+      </Title>
 
       {/* Tabs */}
       <div className='flex gap-2 border-b border-gray-200'>
@@ -275,6 +274,6 @@ export default function PacientesPage() {
           <ConfirmDeletePaciente {...pacienteSeleccionado} />
         )}
       </Modal>
-    </div>
+    </main>
   )
 }
