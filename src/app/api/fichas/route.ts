@@ -314,10 +314,16 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
     const body = await request.json()
 
+    console.log(body)
+
     const validationResult = fichaUpdateSchema.safeParse(body)
     if (!validationResult.success) {
+      console.log(validationResult.error)
+
       const treeified = z.treeifyError(validationResult.error)
       const errors = treeified.properties || {}
+      console.log(errors)
+
       return NextResponse.json(
         {
           success: false,

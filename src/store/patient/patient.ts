@@ -6,6 +6,7 @@ export type PatientData = {
   pacienteNombres: string | null
   doctorNombre: string | null
   especialidadNombre: string | null
+  estadoFicha: string | null // estado actual de la ficha para modal contextual
 }
 
 interface PatientState extends PatientData {
@@ -19,6 +20,7 @@ const usePatientStore = create<PatientState>((set, _) => ({
   pacienteNombres: null,
   doctorNombre: null,
   especialidadNombre: null,
+  estadoFicha: null,
 
   setPatient: (patient: PatientData) => {
     set({
@@ -26,7 +28,8 @@ const usePatientStore = create<PatientState>((set, _) => ({
       pacienteId: patient.pacienteId,
       pacienteNombres: patient.pacienteNombres,
       doctorNombre: patient.doctorNombre,
-      especialidadNombre: patient.especialidadNombre
+      especialidadNombre: patient.especialidadNombre,
+      estadoFicha: patient.estadoFicha
     })
   },
 
@@ -36,7 +39,8 @@ const usePatientStore = create<PatientState>((set, _) => ({
       pacienteId: null,
       pacienteNombres: null,
       doctorNombre: null,
-      especialidadNombre: null
+      especialidadNombre: null,
+      estadoFicha: null
     })
   }
 }))

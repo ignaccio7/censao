@@ -30,6 +30,12 @@ export default function FormAssign({
 
   const { closeModal } = useModal()
 
+  console.log({
+    fichaId,
+    cedula,
+    nombre
+  })
+
   const {
     register,
     handleSubmit,
@@ -40,7 +46,7 @@ export default function FormAssign({
     resolver: zodResolver(fichaAssignSchema),
     defaultValues: {
       id: fichaId,
-      status: StateRecord.ENFERMERIA
+      status: StateRecord.EN_ESPERA
     }
   })
 

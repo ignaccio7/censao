@@ -36,6 +36,8 @@ export const fichaUpdateSchema = z.object({
   status: z.enum([
     StateRecord.ADMISION,
     StateRecord.ENFERMERIA,
+    StateRecord.EN_ESPERA,
+    StateRecord.ATENDIENDO,
     StateRecord.ATENDIDA,
     StateRecord.CANCELADA
   ]),

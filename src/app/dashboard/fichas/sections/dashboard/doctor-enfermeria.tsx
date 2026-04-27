@@ -10,42 +10,57 @@ import { useFichas } from '@/app/services/fichas'
 import { StateRecord } from '@/lib/constants'
 import FormAssign from '../../components/FormAssign'
 
+type FichaActionData = {
+  fichaId: string
+  cedula: string
+  nombre: string
+}
+
 export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
   // const { create } = useProfileRoutes() TODO
   const { modal, closeModal, openModal } = useModal()
 
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
-  useFichas(refetchInterval)
+  const { updateFicha } = useFichas(refetchInterval)
 
-  const [reassignData, setReassignData] = useState<{
-    fichaId: string
-    cedula: string
-    nombre: string
-  } | null>(null)
+  const [reassignData, setReassignData] = useState<FichaActionData | null>(null)
+  const [assignData, setAssignData] = useState<FichaActionData | null>(null)
 
-  const [assignData, setAssignData] = useState<{
-    fichaId: string
-    cedula: string
-    nombre: string
-  } | null>(null)
+  // ADMISION → ENFERMERIA: PATCH directo, sin modal
+  const handleCallTriage = (data: FichaActionData) => {
+    updateFicha.mutateAsync({
+      id: data.fichaId,
+      status: StateRecord.ENFERMERIA
+    })
+  }
 
-  const handleRevertToQueue = (data: {
-    fichaId: string
-    cedula: string
-    nombre: string
-  }) => {
+  // ENFERMERIA → EN_ESPERA: abre FormAssign
+  const handleAssignDoctor = (data: FichaActionData) => {
+    setReassignData(null)
+    setAssignData(data)
+    openModal()
+  }
+
+  // CANCELADA → reasignar: abre FormReassign
+  const handleRevertToQueue = (data: FichaActionData) => {
+    setAssignData(null)
     setReassignData(data)
     openModal()
   }
 
-  // TODO: const handleOpenNewFicha = () => {
-  //   setReassignData(null)
-  //   openModal()
-  // }
-
-  const globalWaiting = fichas.filter(
+  // Fichas activas (en cualquier estado no terminal)
+  const globalActive = fichas.filter(
     (f: any) =>
-      f.estado === StateRecord.ADMISION || f.estado === StateRecord.ENFERMERIA
+      f.estado === StateRecord.ADMISION ||
+      f.estado === StateRecord.ENFERMERIA ||
+      f.estado === StateRecord.EN_ESPERA
+  )
+  // Fichas específicamente en triage (para tarjeta)
+  const globalInTriage = fichas.filter(
+    (f: any) => f.estado === StateRecord.ENFERMERIA
+  )
+  const globalAssigned = fichas.filter(
+    (f: any) => f.estado === StateRecord.EN_ESPERA
   )
   const globalAttended = fichas.filter(
     (f: any) => f.estado === StateRecord.ATENDIDA
@@ -56,39 +71,47 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
 
   return (
     <section className='fichas font-secondary'>
-      {/* TARJETAS DE FICHAS GLOBALES */}
-      <div className='cards-information grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4'>
+      {/* TARJETAS DE RESUMEN */}
+      <div className='cards-information grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4'>
         <FichasStatCard
-          title='Pacientes en espera'
-          count={globalWaiting.length}
+          title='En cola (sin llamar)'
+          count={
+            fichas.filter((f: any) => f.estado === StateRecord.ADMISION).length
+          }
           icon={<IconTeam size='26' />}
-          textColorClass='text-primary-700'
+          textColorClass='text-slate-600'
         />
         <FichasStatCard
-          title='Pacientes atendidos'
+          title='En triage ahora'
+          count={globalInTriage.length}
+          icon={<IconTeam size='26' />}
+          textColorClass='text-green-600'
+        />
+        <FichasStatCard
+          title='Asignados (sala de espera)'
+          count={globalAssigned.length}
+          icon={<IconMonitor size='26' />}
+          textColorClass='text-blue-600'
+        />
+        <FichasStatCard
+          title='Atendidos hoy'
           count={globalAttended.length}
           icon={<IconMonitor size='26' />}
           textColorClass='text-secondary-600'
         />
-        <FichasStatCard
-          title='Cancelados'
-          count={globalCancelled.length}
-          icon={<IconTeam size='26' />}
-          textColorClass='text-quaternary-500'
-        />
       </div>
 
-      {/* ACTIONS Y POLLING */}
+      {/* POLLING */}
       <div className='actions flex flex-wrap gap-4 justify-end items-center my-4'>
         <div className='flex items-center gap-2'>
           <label
-            htmlFor='polling'
+            htmlFor='polling-enf'
             className='text-sm text-gray-600 font-medium'
           >
             Actualizar datos:
           </label>
           <select
-            id='polling'
+            id='polling-enf'
             className={`border rounded-md px-2 py-1 text-sm focus:outline-none cursor-pointer transition-colors duration-300 shadow-sm ${
               refetchInterval !== false
                 ? 'border-primary-500 bg-primary-50 text-primary-700 font-semibold focus:ring-2 focus:ring-primary-600'
@@ -113,14 +136,13 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
       </div>
 
       <FichasStatusTable
-        title='Pacientes en espera'
-        fichas={globalWaiting}
-        noDataMessage='No hay pacientes en espera para esta especialidad.'
+        title='Pacientes activos'
+        fichas={globalActive}
+        noDataMessage='No hay pacientes activos en este turno.'
         waitingMode={true}
-        onAssignDoctor={data => {
-          setAssignData(data)
-          openModal()
-        }}
+        onCallTriage={handleCallTriage}
+        onAssignDoctor={handleAssignDoctor}
+        onRevertToQueue={handleRevertToQueue}
       />
       <FichasStatusTable
         title='Pacientes atendidos'
@@ -135,7 +157,7 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
       />
 
       <Modal
-        title={reassignData ? 'Reasignar paciente' : 'Asignar ficha'}
+        title={reassignData ? 'Reasignar paciente' : 'Asignar ficha a médico'}
         isOpen={modal}
         onClose={() => {
           setReassignData(null)

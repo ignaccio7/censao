@@ -16,6 +16,8 @@ export default function AtencionPublicaPage() {
   const { data, isLoading, isError, refetch } =
     useFichasPublico(refetchInterval)
 
+  console.log(data)
+
   return (
     <section className='atencion-publica min-h-screen bg-gray-50 font-secondary'>
       {/* HEADER */}
@@ -121,20 +123,31 @@ export default function AtencionPublicaPage() {
           </div>
         )}
 
-        {data && data.especialidades.length === 0 && (
-          <div className='flex items-center justify-center min-h-[60vh]'>
-            <div className='text-center'>
-              <IconStethoscope
-                className='text-gray-300 mx-auto mb-4'
-                size='64'
-              />
-              <p className='text-gray-500 text-step-3 font-semibold'>
-                No hay fichas pendientes
-              </p>
-              <p className='text-gray-400 text-step-1 mt-2'>
-                En este momento no hay pacientes en espera
-              </p>
+        {data &&
+          data.especialidades.length === 0 &&
+          data.total_en_admision === 0 && (
+            <div className='flex items-center justify-center min-h-[60vh]'>
+              <div className='text-center'>
+                <IconStethoscope
+                  className='text-gray-300 mx-auto mb-4'
+                  size='64'
+                />
+                <p className='text-gray-500 text-step-3 font-semibold'>
+                  No hay fichas pendientes
+                </p>
+                <p className='text-gray-400 text-step-1 mt-2'>
+                  En este momento no hay pacientes en espera
+                </p>
+              </div>
             </div>
+          )}
+
+        {data && data.total_en_admision > 0 && (
+          <div className='mb-8'>
+            <EnfermeriaRow
+              fichas={data.fichas_en_admision}
+              total={data.total_en_admision}
+            />
           </div>
         )}
 
@@ -199,8 +212,27 @@ function EspecialidadRow({
     total_pendientes
   } = especialidad
 
-  // Cola restante (sin las 2 primeras que ya se muestran como atendiendo/siguiente)
-  const colaRestante = fichas_pendientes.slice(2)
+  // CORREGIDO: Determinar qué fichas van en cada posición
+  // Si hay "siguiente", esa ficha se muestra en el bloque "Siguiente"
+  // Si hay "atendiendo", esa ficha se muestra en el bloque "Atendiendo"
+  // El resto de fichas (excluyendo atendiendo y siguiente si existen) van a la cola
+
+  const fichasRestantes = [...fichas_pendientes]
+
+  // Remover la ficha que está siendo atendida (si existe)
+  if (atendiendo !== null) {
+    const index = fichasRestantes.indexOf(atendiendo)
+    if (index !== -1) fichasRestantes.splice(index, 1)
+  }
+
+  // Remover la ficha que es la siguiente (si existe y no es la misma que atendiendo)
+  if (siguiente !== null && siguiente !== atendiendo) {
+    const index = fichasRestantes.indexOf(siguiente)
+    if (index !== -1) fichasRestantes.splice(index, 1)
+  }
+
+  // Las fichas restantes son las que van en la cola
+  const colaRestante = fichasRestantes
 
   return (
     <article className='bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md'>
@@ -241,7 +273,7 @@ function EspecialidadRow({
           )}
 
           {/* Siguiente — Verde suave */}
-          {siguiente !== null && (
+          {siguiente !== null && siguiente !== atendiendo && (
             <div className='bg-primary-50 border-2 border-primary-300 text-primary-700 rounded-xl px-5 py-3 min-w-[120px] text-center transition-all duration-300'>
               <p className='text-primary-500 text-step-0 uppercase tracking-wider font-semibold mb-0.5'>
                 Siguiente
@@ -264,7 +296,11 @@ function EspecialidadRow({
                   className='bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 min-w-[56px] text-center transition-all duration-200 hover:border-gray-300 hover:bg-gray-100'
                 >
                   <p className='text-gray-400 text-[10px] uppercase tracking-wider font-medium leading-none mb-0.5'>
-                    #{i + 3}
+                    #
+                    {i +
+                      (atendiendo !== null ? 1 : 0) +
+                      (siguiente !== null && siguiente !== atendiendo ? 1 : 0) +
+                      1}
                   </p>
                   <span className='text-step-2 font-bold text-gray-600 block leading-none'>
                     {orden}
@@ -274,10 +310,93 @@ function EspecialidadRow({
             </div>
           )}
 
-          {/* Sin fichas */}
-          {atendiendo === null && (
+          {/* Sin fichas en cola (pero puede haber atendiendo o siguiente) */}
+          {colaRestante.length === 0 &&
+            atendiendo === null &&
+            siguiente === null && (
+              <div className='bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 text-center'>
+                <p className='text-gray-400 text-step-1'>
+                  Sin fichas pendientes
+                </p>
+              </div>
+            )}
+        </div>
+      </div>
+    </article>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Fila de Enfermería (Triage)                                                */
+/* -------------------------------------------------------------------------- */
+
+function EnfermeriaRow({
+  fichas,
+  total
+}: {
+  fichas: { turno: number; estado: string }[]
+  total: number
+}) {
+  return (
+    <article className='bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 mb-6'>
+      {/* Barra superior verde esmeralda */}
+      <div className='h-1 bg-gradient-to-r from-emerald-500 to-emerald-400' />
+
+      <div className='p-5'>
+        {/* Header: Enfermería */}
+        <div className='flex flex-wrap items-center justify-between gap-3 mb-4'>
+          <div className='flex items-center gap-3'>
+            <div className='bg-emerald-50 p-2 rounded-lg border border-emerald-100'>
+              <IconHospital className='text-emerald-600' size='20' />
+            </div>
+            <div>
+              <h2 className='text-step-2 font-bold text-gray-800 uppercase tracking-wide font-primary'>
+                Enfermería (Triage)
+              </h2>
+              <p className='text-gray-500 text-step-1'>
+                Presentarse según número de ficha
+              </p>
+            </div>
+          </div>
+          <span className='px-3 py-1 bg-gray-100 text-gray-500 rounded-full text-step-0 border border-gray-200 font-medium'>
+            {total} en espera
+          </span>
+        </div>
+
+        {/* Fichas: ADMISION (plomo) y ENFERMERIA (verde distintivo) */}
+        <div className='flex flex-wrap items-start gap-3'>
+          {fichas.length > 0 ? (
+            <div className='flex items-center gap-2 flex-wrap'>
+              {fichas.map((ficha, i) => {
+                const enTriage = ficha.estado === 'ENFERMERIA'
+                return (
+                  <div
+                    key={`enf-${ficha.turno}-${i}`}
+                    className={`border rounded-xl px-4 py-3 min-w-[80px] text-center transition-all duration-300 ${
+                      enTriage
+                        ? 'bg-emerald-600 border-emerald-700 text-white shadow-md shadow-emerald-200 scale-105'
+                        : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                    }`}
+                  >
+                    <p
+                      className={`text-[10px] uppercase tracking-wider font-bold leading-none mb-1 ${
+                        enTriage ? 'text-emerald-100' : 'text-gray-400'
+                      }`}
+                    >
+                      {enTriage ? 'ENFERMERIA' : 'ESPERANDO'}
+                    </p>
+                    <span className='text-step-4 font-bold block leading-none'>
+                      {ficha.turno}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
             <div className='bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 text-center'>
-              <p className='text-gray-400 text-step-1'>Sin fichas pendientes</p>
+              <p className='text-gray-400 text-step-1'>
+                Sin fichas pendientes para Enfermería
+              </p>
             </div>
           )}
         </div>

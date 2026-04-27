@@ -15,16 +15,18 @@
 | Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas en estado ENFERMERIA asignadas a él, atiende pacientes, registra tratamientos                                                        |
 | Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas y citas; nunca crea fichas                                                                                      |
 
-**Flujo central:** Paciente llega → Doctor de Fichas crea Ficha (ADMISION) → Enfermería evalúa y asigna médico (ENFERMERIA) → Ficha aparece en pantalla del Doctor General y pantalla pública → Doctor General atiende → marca como ATENDIDA o registra tratamiento de vacunación.
+**Flujo central:** Paciente llega → Doctor de Fichas crea Ficha (ADMISION) → Enfermería llama al paciente (ENFERMERIA, triage) → Enfermería asigna médico (EN_ESPERA) → Ficha aparece en pantalla del Doctor General y pantalla pública → Médico llama al paciente (ATENDIENDO) → Doctor General atiende y marca como ATENDIDA o registra tratamiento de vacunación.
 
-**Estados de `fichas`:** `ADMISION | ENFERMERIA | ATENDIDA | CANCELADA` (enum `EstadoFicha` en Prisma).
+**Estados de `fichas`:** `ADMISION | ENFERMERIA | EN_ESPERA | ATENDIENDO | ATENDIDA | CANCELADA` (enum `EstadoFicha` en Prisma) — **6 estados confirmados en schema.prisma**.
+
+**Relación `citas → fichas`:** `fichas.cita_origen_id` (nullable FK → `citas.id`). `NULL` = ficha presencial; valor = ficha generada en lote desde cita programada. Una cita genera máximo una ficha (`"CitaToFicha"`).
 
 **Orden de turno:** Positivo para presenciales (1, 2, 3…), negativo para citas programadas (-1, -2, -3…).
 
 **Modelo de seguridad:** Híbrido **RBAC + ABAC**:
 
 - RBAC: cada rol tiene permisos distintos almacenados en DB (`roles → roles_permisos → permisos`).
-- ABAC: validación de atributos en cada ruta (ej. Doctor General solo ve fichas en estado ENFERMERIA donde la disponibilidad está vinculada a su usuario_id; Enfermería solo ve fichas en estado ADMISION).
+- ABAC: validación de atributos en cada ruta (ej. Doctor General solo ve fichas en estado **EN_ESPERA** donde la disponibilidad está vinculada a su usuario_id; Enfermería solo ve fichas en estado **ADMISION**).
 
 ---
 
@@ -172,6 +174,8 @@ fichas
 **La ficha no guarda directamente el doctor ni la especialidad.** Se obtienen navegando por:  
 `ficha → disponibilidad → doctores_especialidades → doctor/especialidad`
 
+**Nueva relación `citas → fichas`:** `fichas.cita_origen_id` (nullable FK → `citas.id`) | `citas.ficha_generada fichas[]` (relación `"CitaToFicha"`). NULL = presencial; valor = generada en lote desde cita programada.
+
 ### 2.4 Modelo de Seguridad en DB
 
 ```
@@ -276,16 +280,27 @@ if (!validation.success) {
 
 ### 3.5 Matriz de Acciones sobre Fichas por Rol
 
-| Acción                               | DOCTOR_FICHAS | ENFERMERIA | DOCTOR_GENERAL | ADMINISTRADOR |
-| ------------------------------------ | ------------- | ---------- | -------------- | ------------- |
-| Crear ficha (ADMISION)               | ✅            | ❌         | ❌             | ✅            |
-| Generar lote citas                   | ✅            | ❌         | ❌             | ❌            |
-| Asignar médico (ADMISION→ENFERMERIA) | ❌            | ✅         | ❌             | ✅            |
-| Atender (ENFERMERIA→ATENDIDA)        | ❌            | ❌         | ✅             | ❌            |
-| Cancelar ficha                       | ✅            | ✅         | ✅             | ✅            |
-| Reasignar ficha                      | ✅            | ✅         | ❌             | ✅            |
+| Acción                                   | DOCTOR_FICHAS | ENFERMERIA | DOCTOR_GENERAL | ADMINISTRADOR |
+| ---------------------------------------- | ------------- | ---------- | -------------- | ------------- |
+| Crear ficha (ADMISION)                   | ✅            | ❌         | ❌             | ✅            |
+| Generar lote citas                       | ✅            | ❌         | ❌             | ❌            |
+| Llamar para triage (ADMISION→ENFERMERIA) | ❌            | ✅         | ❌             | ✅            |
+| Asignar médico (ENFERMERIA→EN_ESPERA)    | ❌            | ✅         | ❌             | ✅            |
+| Llamar paciente (EN_ESPERA→ATENDIENDO)   | ❌            | ❌         | ✅             | ❌            |
+| Finalizar atención (ATENDIENDO→ATENDIDA) | ❌            | ❌         | ✅             | ❌            |
+| Cancelar ficha                           | ✅            | ✅         | ✅             | ✅            |
+| Reasignar ficha                          | ✅            | ✅         | ❌             | ✅            |
 
 ---
+
+be decir:
+
+Acción DOCTOR_FICHAS ENFERMERIA DOCTOR_GENERAL ADMINISTRADOR
+Hacer triage (ADMISION→ENFERMERIA) ❌ ✅ ❌ ✅
+Asignar medico (ENFERMERIA→EN_ESPERA) ❌ ✅ ❌ ✅
+Llamar paciente (EN_ESPERA→ATENDIENDO) ❌ ❌ ✅ ❌
+Finalizar atencion (ATENDIENDO→ATENDIDA) ❌ ❌ ✅ ❌
+Nota: Enferme
 
 ## 4. Patrones de UI
 
@@ -685,13 +700,15 @@ El código `turno_catalogo` se guarda como string `'AM'` o `'PM'` en la tabla.
 
 ## 8. Deuda Técnica Identificada
 
-| Item                         | Archivo                                        | Descripción                                                                                                 |
-| ---------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Server Action duplicada      | `src/actions/fichas/create.ts`                 | Mismo lógica que POST /api/fichas. Comentario dice "ELIMINAR". Usar solo la API Route.                      |
-| `any` types                  | múltiples                                      | `formRegister.tsx`, `fichas.ts`, `service.ts` usan `any`. Debería tipificarse con DTOs.                     |
-| Datos quemados en `useUser`  | `src/hooks/useUser.ts`                         | Mapa de roles con `TODO` — si se añade un nuevo rol no se reflejaría.                                       |
-| Un solo modal global         | `src/store/modal.ts`                           | El store `isOpen` es global y singular — no soporta múltiples modales simultáneos.                          |
-| Contadores de tarjetas fijos | `doctor-fichas.tsx` línea 81                   | Los números "13", "10", "1" están hardcodeados. Debería calcularse desde `fichas`.                          |
-| Typo en servicio             | `src/app/services/fichas.ts`                   | `queryKey: ['espcialidad']` (falta la 'e') — invalidación incorrecta.                                       |
-| Estado PENDIENTE en código   | `constants`, `schemas`, `sections`, `route.ts` | El enum Prisma usa `ADMISION/ENFERMERIA`, pero el código TS aún referencia `PENDIENTE`. Requiere migración. |
-| Vista Enfermería inexistente | N/A                                            | El seed define rol/permisos de ENFERMERIA, pero no hay sección dashboard específica implementada.           |
+| Item                                      | Archivo                                        | Descripción                                                                                                                                      |
+| ----------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Server Action duplicada                   | `src/actions/fichas/create.ts`                 | Mismo lógica que POST /api/fichas. Comentario dice "ELIMINAR". Usar solo la API Route.                                                           |
+| `any` types                               | múltiples                                      | `formRegister.tsx`, `fichas.ts`, `service.ts` usan `any`. Debería tipificarse con DTOs.                                                          |
+| Datos quemados en `useUser`               | `src/hooks/useUser.ts`                         | Mapa de roles con `TODO` — si se añade un nuevo rol no se reflejaría.                                                                            |
+| Un solo modal global                      | `src/store/modal.ts`                           | El store `isOpen` es global y singular — no soporta múltiples modales simultáneos.                                                               |
+| Contadores de tarjetas fijos              | `doctor-fichas.tsx` línea 81                   | Los números "13", "10", "1" están hardcodeados. Debería calcularse desde `fichas`.                                                               |
+| Typo en servicio                          | `src/app/services/fichas.ts`                   | `queryKey: ['espcialidad']` (falta la 'e') — invalidación incorrecta.                                                                            |
+| Estado PENDIENTE en código                | `constants`, `schemas`, `sections`, `route.ts` | El enum Prisma ya usa 6 estados. Código TS puede tener filtros/tabs basados en solo 4. Requiere migración completa.                              |
+| ABAC Doctor General desactualizado        | `src/app/api/fichas/service.ts`                | Doctor General debe ver fichas en `EN_ESPERA` (no `ENFERMERIA`). Requiere actualización.                                                         |
+| `doctor-general.tsx` activeTab incorrecto | `sections/dashboard/doctor-general.tsx`        | `activeTab` inicializado en `StateRecordValue.ENFERMERIA` — debe cambiarse a `EN_ESPERA`. `allowedTabs` debe incluir `EN_ESPERA` y `ATENDIENDO`. |
+| Enfermería ABAC desactualizado            | `src/app/api/fichas/service.ts` ABAC           | Enfermería debe ver fichas en `ADMISION`. Al asignar médico, cambia a `EN_ESPERA`.                                                               |

@@ -30,7 +30,7 @@ model auditoria_log {
 
 enum EstadoFicha {
   ADMISION     // Recién creada (fila física en entrada)
-  ENFERMERIA   // Enfermería los va llamando uno por uno para triage
+  ENFERMERIA   // Enfermería los va llamando uno por uno para triage basico
   EN_ESPERA    // Ya tienen médico asignado, esperan en sala de espera
   ATENDIENDO   // El médico los llamó y están siendo atendidos
   ATENDIDA     // Atención completada (salen del consultorio)

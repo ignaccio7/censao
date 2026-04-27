@@ -16,6 +16,8 @@ export interface FichasPublicasData {
   turno: 'AM' | 'PM'
   fecha: string
   especialidades: FichaPublicaEspecialidad[]
+  fichas_en_admision: { turno: number; estado: string }[] // turnos sin médico asignado (ir a Enfermería)
+  total_en_admision: number
 }
 
 export function useFichasPublico(refetchInterval: number | false = false) {

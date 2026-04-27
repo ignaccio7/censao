@@ -88,6 +88,8 @@ Por ejemplo:
 - Consultar el estado de sus fichas:
   - Admision
   - Enfermeria
+  - En Espera
+  - Atendiendo
   - Atendida
   - Cancelada
 
@@ -139,12 +141,14 @@ Este rol corresponde al personal que registra pacientes, asigna fichas y control
 
 ## Estados de las fichas
 
-Las fichas solamente tendrán cuatro estados:
+Las fichas tendrán seis estados que reflejan el flujo real de atención:
 
-- ADMISION
-- ENFERMERIA
-- ATENDIDA
-- CANCELADA
+- ADMISION: Recién creada (fila física en entrada).
+- ENFERMERIA: Enfermería los va llamando uno por uno para realizar el triage basico y asignarle un medico.
+- EN_ESPERA: Ya tienen médico asignado y están esperando su turno en la sala de espera (O tambien las fichas generadas por citas programadas).
+- ATENDIENDO: El médico los llamó y están siendo atendidos en el consultorio.
+- ATENDIDA: Atención completada (el paciente sale del consultorio).
+- CANCELADA: Cancelada por cualquier motivo.
 
 ## Restricciones
 
@@ -173,9 +177,10 @@ Este rol es responsable de la clasificación del paciente antes de la atención 
 ## Funciones principales
 
 - Visualizar fichas en estado ADMISION (tanto presenciales como programadas).
+- Llamar a un paciente (cambia estado a ENFERMERIA).
 - Evaluar el motivo de consulta.
 - Determinar la especialidad requerida.
-- Asignar o confirmar al médico disponible y cambiar el estado a ENFERMERIA.
+- Asignar o confirmar al médico disponible y cambiar el estado a EN_ESPERA.
 - Ver carga de trabajo de médicos.
 - Reasignar fichas si es necesario.
 - Visualizar la pantalla pública.
@@ -189,15 +194,13 @@ Este rol es responsable de la clasificación del paciente antes de la atención 
 
 # Flujo típico de Enfermería
 
-1. Visualiza fichas sin asignación en estado ADMISION.
+1. Visualiza fichas en estado ADMISION.
 2. Selecciona una ficha.
 3. Evalúa el motivo del paciente.
 4. Determina la especialidad y médico disponible.
-5. Asigna la ficha.
-6. La ficha se publica automáticamente en el sistema.
-7. En caso necesario:
-
-- Puede reasignar la ficha a otro médico.
+5. Asigna la ficha a un médico y cambia el estado a EN_ESPERA.
+6. La ficha aparece en la cola del médico y en la pantalla pública.
+7. En caso necesario, puede reasignar la ficha a otro médico (permanece en EN_ESPERA).
 
 # 4. Rol: Doctor General
 
@@ -206,7 +209,8 @@ El rol Doctor General incluye médicos generales, odontólogos u otros médicos 
 ## Funciones principales
 
 - Iniciar sesión.
-- Ver sus fichas pendientes en estado ENFERMERIA.
+- Ver sus fichas pendientes en estado EN_ESPERA.
+- Llamar a un paciente (cambia estado a ATENDIENDO).
 - Ver la ficha que sigue.
 - Ver información básica del paciente.
 - Marcar una ficha como ATENDIDA o CANCELADA.
@@ -221,8 +225,8 @@ El rol Doctor General incluye médicos generales, odontólogos u otros médicos 
 ## Flujo de atención
 
 1. El médico inicia sesión.
-2. Ve el listado de fichas asignadas (ENFERMERIA).
-3. Selecciona la siguiente ficha.
+2. Ve el listado de fichas asignadas (EN_ESPERA).
+3. Cuando está listo para atender, selecciona "Llamar" y la ficha pasa a estado ATENDIENDO.
 4. Atiende al paciente.
 5. Si no necesita seguimiento:
    - Marca la ficha como "ATENDIDA".
@@ -232,6 +236,7 @@ El rol Doctor General incluye médicos generales, odontólogos u otros médicos 
    - Registra si habrá una próxima dosis.
    - Registra una futura atención (cita).
    - Crea el usuario del paciente si corresponde.
+   - La ficha cambia de estado a "ATENDIDA".
 
 ## Restricciones
 
@@ -358,6 +363,8 @@ La recomendación aplicada es mantener fichas únicamente con los estados que re
 
 - ADMISION
 - ENFERMERIA
+- EN_ESPERA
+- ATENDIENDO
 - ATENDIDA
 - CANCELADA
 
@@ -401,6 +408,8 @@ Con base en tu tabla actual, una ficha tendrá:
 - Estado:
   - ADMISION
   - ENFERMERIA
+  - EN_ESPERA
+  - ATENDIENDO
   - ATENDIDA
   - CANCELADA
 

@@ -1,25 +1,34 @@
 'use client'
 import { useState } from 'react'
 import CustomDataTable from '@/app/components/ui/dataTable'
-import { IconHistory, IconMedicineBox } from '@/app/components/icons/icons'
+import {
+  IconMedicineBox,
+  IconStethoscope,
+  IconUserCheck,
+  IconCheckupList
+} from '@/app/components/icons/icons'
 import { StatusBadge } from './statusBadge'
 import { StateRecord } from '@/lib/constants'
+
+type FichaActionData = {
+  fichaId: string
+  cedula: string
+  nombre: string
+}
 
 interface FichasStatusTableProps {
   title: string
   fichas: any[]
   noDataMessage: string
-  onAssignDoctor?: (data: {
-    fichaId: string
-    cedula: string
-    nombre: string
-  }) => void
-  onRevertToQueue?: (data: {
-    fichaId: string
-    cedula: string
-    nombre: string
-  }) => void
   waitingMode?: boolean
+  // acciones por estado
+  onAssignDoctor?: (data: FichaActionData) => void // ENFERMERIA → EN_ESPERA (abre FormAssign)
+  onRevertToQueue?: (data: FichaActionData) => void // CANCELADA → reasignar (abre FormReassign)
+  onCallTriage?: (data: FichaActionData) => void // ADMISION → ENFERMERIA (PATCH directo)
+  onCallPatient?: (data: FichaActionData) => void // EN_ESPERA → ATENDIENDO
+  onFinishAttention?: (data: FichaActionData) => void // ATENDIENDO → ATENDIDA
+  onRegisterTreatment?: (fichaId: string) => void // navega a tratamientos
+  onCancel?: (data: FichaActionData) => void // → CANCELADA
 }
 
 const columnas = [
@@ -31,13 +40,32 @@ const columnas = [
   { campo: '' }
 ]
 
+/** Devuelve la clase CSS para resaltar la fila según el estado */
+const getRowStyle = (estado: string): string => {
+  switch (estado) {
+    case StateRecord.ENFERMERIA:
+      return 'bg-green-50 !border-l-4 !border-l-green-400'
+    case StateRecord.EN_ESPERA:
+      return 'bg-blue-50 !border-l-4 !border-l-blue-400'
+    case StateRecord.ATENDIENDO:
+      return 'bg-purple-50 !border-l-4 !border-l-purple-500'
+    default:
+      return ''
+  }
+}
+
 export default function FichasStatusTable({
   title,
   fichas,
   noDataMessage,
+  waitingMode,
   onAssignDoctor,
   onRevertToQueue,
-  waitingMode
+  onCallTriage,
+  onCallPatient,
+  onFinishAttention,
+  onRegisterTreatment
+  // onCancel
 }: FichasStatusTableProps) {
   const [activeTab, setActiveTab] = useState(
     waitingMode ? StateRecord.ADMISION : 'all'
@@ -52,7 +80,10 @@ export default function FichasStatusTable({
   const filteredFichas = fichas.filter((f: any) => {
     if (waitingMode) {
       if (activeTab === StateRecord.ADMISION)
-        return f.estado === StateRecord.ADMISION
+        return (
+          f.estado === StateRecord.ADMISION ||
+          f.estado === StateRecord.ENFERMERIA
+        )
       return f.especialidad_nombre === activeTab
     }
     if (activeTab === 'all') return true
@@ -60,6 +91,12 @@ export default function FichasStatusTable({
   })
 
   const tableContent = filteredFichas.map((ficha: any, index: number) => {
+    const d: FichaActionData = {
+      fichaId: ficha.ficha_id,
+      cedula: ficha.paciente_id,
+      nombre: ficha.paciente_nombres
+    }
+
     return [
       <span
         className='font-semibold text-primary-700 text-step-1'
@@ -68,38 +105,87 @@ export default function FichasStatusTable({
         # {index + 1}
       </span>,
       ficha?.paciente_nombres,
-      ficha?.especialidad_nombre || 'Sin asignar',
-      ficha?.doctor_nombre || 'Sin asignar',
+      ficha?.especialidad_nombre || (
+        <span
+          className='text-gray-400 italic text-xs'
+          key={`especialidad-${index}`}
+        >
+          Sin asignar
+        </span>
+      ),
+      ficha?.doctor_nombre || (
+        <span className='text-gray-400 italic text-xs' key={`doctor-${index}`}>
+          Sin asignar
+        </span>
+      ),
       <StatusBadge status={ficha.estado} key={`status-${index}`} />,
-      <div className='flex items-center gap-2' key={`action-${index}`}>
-        {
-          // Para asignar doctor
-          ficha.estado === StateRecord.ADMISION && onAssignDoctor && (
-            <button
-              onClick={() =>
-                onAssignDoctor({
-                  fichaId: ficha.ficha_id,
-                  cedula: ficha.paciente_id,
-                  nombre: ficha.paciente_nombres
-                })
-              }
-              title='Asignar paciente'
-              className='text-primary-600 hover:text-primary-800 transition-colors cursor-pointer'
-            >
-              <IconHistory size='20' />
-            </button>
-          )
-        }
-        {/* // Para reasignar y que vuelva a la fila */}
+      <div className='flex items-center gap-1.5' key={`action-${index}`}>
+        {/* ADMISION → Llamar para triage (PATCH directo sin modal) */}
+        {ficha.estado === StateRecord.ADMISION && onCallTriage && (
+          <button
+            onClick={() => onCallTriage(d)}
+            title='Llamar al paciente para triage'
+            className='px-2 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition-colors font-medium cursor-pointer flex items-center gap-1'
+          >
+            <IconStethoscope size='14' />
+            Llamar
+          </button>
+        )}
+
+        {/* ENFERMERIA → Asignar médico (abre FormAssign) */}
+        {ficha.estado === StateRecord.ENFERMERIA && onAssignDoctor && (
+          <button
+            onClick={() => onAssignDoctor(d)}
+            title='Asignar médico y especialidad'
+            className='px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors font-medium cursor-pointer flex items-center gap-1'
+          >
+            <IconCheckupList size='14' />
+            Asignar médico
+          </button>
+        )}
+
+        {/* EN_ESPERA → Llamar al paciente (PATCH a ATENDIENDO) */}
+        {ficha.estado === StateRecord.EN_ESPERA && onCallPatient && (
+          <button
+            onClick={() => onCallPatient(d)}
+            title='Llamar al paciente al consultorio'
+            className='px-2 py-1 bg-purple-600 text-white text-xs rounded-md hover:bg-purple-700 transition-colors font-medium cursor-pointer flex items-center gap-1'
+          >
+            <IconUserCheck size='14' />
+            Llamar
+          </button>
+        )}
+
+        {/* ATENDIENDO → Finalizar + Tratamiento */}
+        {ficha.estado === StateRecord.ATENDIENDO && (
+          <>
+            {onFinishAttention && (
+              <button
+                onClick={() => onFinishAttention(d)}
+                title='Marcar como atendido'
+                className='px-2 py-1 bg-neutral-700 text-white text-xs rounded-md hover:bg-neutral-800 transition-colors font-medium cursor-pointer flex items-center gap-1'
+              >
+                <IconUserCheck size='14' />
+                Atendido
+              </button>
+            )}
+            {onRegisterTreatment && (
+              <button
+                onClick={() => onRegisterTreatment(ficha.ficha_id)}
+                title='Registrar tratamiento de vacunación'
+                className='px-2 py-1 bg-cyan-700 text-white text-xs rounded-md hover:bg-cyan-800 transition-colors font-medium cursor-pointer flex items-center gap-1'
+              >
+                <IconCheckupList size='14' />
+                Tratamiento
+              </button>
+            )}
+          </>
+        )}
+
+        {/* CANCELADA → Reasignar */}
         {ficha.estado === StateRecord.CANCELADA && onRevertToQueue && (
           <button
-            onClick={() =>
-              onRevertToQueue({
-                fichaId: ficha.ficha_id,
-                cedula: ficha.paciente_id,
-                nombre: ficha.paciente_nombres
-              })
-            }
+            onClick={() => onRevertToQueue(d)}
             title='Reasignar paciente'
             className='text-primary-600 hover:text-primary-800 transition-colors cursor-pointer'
           >
@@ -137,7 +223,7 @@ export default function FichasStatusTable({
               }`}
               onClick={() => setActiveTab(StateRecord.ADMISION)}
             >
-              Sin asignar
+              Sin llamar
             </button>
           )}
 
@@ -162,6 +248,9 @@ export default function FichasStatusTable({
             <CustomDataTable
               columnas={columnas}
               contenidoTabla={tableContent}
+              estilosPersonalizadosFila={(index, _fila) =>
+                getRowStyle(filteredFichas[index]?.estado ?? '')
+              }
             />
           ) : (
             <p className='text-gray-500 italic'>{noDataMessage}</p>

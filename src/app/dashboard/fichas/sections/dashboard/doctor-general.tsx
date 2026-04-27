@@ -17,45 +17,45 @@ import usePatientStore from '@/store/patient/patient'
 import { useFichas } from '@/app/services/fichas'
 import { useRouter } from 'next/navigation'
 
-export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
-  console.log(fichas)
+/** Devuelve clase CSS de fila según estado */
+const getRowStyle = (estado: string): string => {
+  switch (estado) {
+    case StateRecord.EN_ESPERA:
+      return 'bg-blue-50 !border-l-4 !border-l-blue-400'
+    case StateRecord.ATENDIENDO:
+      return 'bg-purple-50 !border-l-4 !border-l-purple-500'
+    default:
+      return ''
+  }
+}
 
+export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
   const router = useRouter()
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
   const { updateFicha } = useFichas(refetchInterval)
   const [modal, setModal] = useState(false)
   const [activeTab, setActiveTab] = useState<StateRecordValueType>(
-    StateRecordValue.ENFERMERIA
+    StateRecordValue.EN_ESPERA
   )
 
   const allowedTabs = [
-    StateRecordValue.ENFERMERIA,
+    StateRecordValue.EN_ESPERA,
     StateRecordValue.ATENDIDA,
     StateRecordValue.CANCELADA
   ]
+
   const fichaId = usePatientStore(state => state.fichaId)
+  const estadoFicha = usePatientStore(state => state.estadoFicha)
   const setPatient = usePatientStore(state => state.setPatient)
   const clearPatient = usePatientStore(state => state.clearPatient)
 
   const columnas = [
-    {
-      campo: '# Ficha'
-    },
-    {
-      campo: 'Paciente'
-    },
-    {
-      campo: 'Especialidad'
-    },
-    {
-      campo: 'Doctor Asignado'
-    },
-    {
-      campo: 'Estado'
-    },
-    {
-      campo: ''
-    }
+    { campo: '# Ficha' },
+    { campo: 'Paciente' },
+    { campo: 'Especialidad' },
+    { campo: 'Doctor Asignado' },
+    { campo: 'Estado' },
+    { campo: '' }
   ]
 
   const filteredFichas = fichas.filter((ficha: any) => {
@@ -63,6 +63,14 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
       key =>
         StateRecordValue[key as keyof typeof StateRecordValue] === activeTab
     )
+
+    if (activeTab === StateRecordValue.EN_ESPERA) {
+      return (
+        ficha.estado === StateRecord.EN_ESPERA ||
+        ficha.estado === StateRecord.ATENDIENDO
+      )
+    }
+
     return ficha.estado === StateRecord[matchedKey as keyof typeof StateRecord]
   })
 
@@ -71,33 +79,31 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
       return [
         <span
           className='font-semibold text-primary-700 text-step-1'
-          key={index}
+          key={`id-${index}`}
         >
           # {index + 1}
         </span>,
         ficha?.paciente_nombres,
         ficha?.especialidad_nombre,
         ficha?.doctor_nombre,
-        <StatusBadge status={ficha.estado} key={index} />,
-        <div key={`button-${index}`}>
+        <StatusBadge status={ficha.estado} key={`st-${index}`} />,
+        <div key={`btn-${index}`}>
           <button
             onClick={() => {
-              const patient = {
+              setPatient({
                 fichaId: ficha.ficha_id as string,
                 pacienteId: ficha.paciente_id as string,
                 pacienteNombres: ficha.paciente_nombres as string,
                 doctorNombre: ficha.doctor_nombre as string,
-                especialidadNombre: ficha.especialidad_nombre as string
-              }
-
-              setPatient(patient)
+                especialidadNombre: ficha.especialidad_nombre as string,
+                estadoFicha: ficha.estado as string
+              })
               setModal(true)
             }}
           >
             <IconStethoscope
               className='cursor-pointer border border-transparent bg-primary-600 text-white py-1 rounded-md hover:border-primary-600 hover:text-primary-600 hover:bg-transparent transition-all duration-300'
               size='32'
-              key={index}
             />
           </button>
         </div>
@@ -105,10 +111,21 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
     }
   )
 
+  // Paso 1: EN_ESPERA → ATENDIENDO (llamar al paciente)
+  const callPatient = () => {
+    updateFicha.mutateAsync({
+      id: fichaId as string,
+      status: StateRecord.ATENDIENDO
+    })
+    setModal(false)
+    clearPatient()
+  }
+
+  // Paso 2a: ATENDIENDO → ATENDIDA
   const attendPatient = () => {
     updateFicha.mutateAsync({
       id: fichaId as string,
-      status: StateRecord.ATENDIDA // status instead of state
+      status: StateRecord.ATENDIDA
     })
     setModal(false)
     clearPatient()
@@ -125,7 +142,7 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
 
   return (
     <section className='fichas font-secondary'>
-      {/* TABS */}
+      {/* TABS + POLLING */}
       <div className='bg-white my-4 rounded-md'>
         <div className='border-b border-gray-200 flex flex-wrap items-center justify-between'>
           <div className='flex flex-wrap'>
@@ -146,13 +163,13 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
 
           <div className='px-4 py-2 flex items-center gap-2'>
             <label
-              htmlFor='polling'
+              htmlFor='polling-dg'
               className='text-sm text-gray-600 font-medium'
             >
               Actualizar datos:
             </label>
             <select
-              id='polling'
+              id='polling-dg'
               className={`border rounded-md px-2 py-1 text-sm focus:outline-none cursor-pointer transition-colors duration-300 shadow-sm ${
                 refetchInterval !== false
                   ? 'border-primary-500 bg-primary-50 text-primary-700 font-semibold focus:ring-2 focus:ring-primary-600'
@@ -181,43 +198,62 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
             <CustomDataTable
               columnas={columnas}
               contenidoTabla={contenidoTabla}
+              estilosPersonalizadosFila={(index, _fila) =>
+                getRowStyle(filteredFichas[index]?.estado ?? '')
+              }
             />
           </div>
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* MODAL CONTEXTUAL */}
       <Modal
         title='Registro de consulta'
         isOpen={modal}
-        onClose={() => setModal(false)}
+        onClose={() => {
+          setModal(false)
+          clearPatient()
+        }}
       >
-        <div
-          className={`grid ${activeTab !== StateRecordValue.ATENDIDA ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}
-        >
-          {activeTab !== StateRecordValue.ATENDIDA && (
+        {/* PASO 1: ficha en EN_ESPERA → llamar al paciente */}
+        {estadoFicha === StateRecord.EN_ESPERA && (
+          <div className='grid grid-cols-1 gap-4'>
+            <button
+              className='bg-transparent border-4 border-primary-600 text-primary-600 py-2 px-4 rounded-md hover:bg-primary-600 hover:text-white transition-colors duration-200 cursor-pointer'
+              onClick={callPatient}
+            >
+              <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
+                Llamar al paciente
+                <IconUserCheck size='36' />
+              </span>
+            </button>
+          </div>
+        )}
+
+        {/* PASO 2: ficha en ATENDIENDO → finalizar */}
+        {estadoFicha === StateRecord.ATENDIENDO && (
+          <div className='grid grid-cols-2 gap-4'>
             <button
               className='bg-transparent border-4 border-primary-600 text-primary-600 py-2 px-4 rounded-md hover:bg-primary-600 hover:text-white transition-colors duration-200 cursor-pointer'
               onClick={attendPatient}
             >
               <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
-                Marcar como paciente atendido
+                Marcar como atendido
                 <IconUserCheck size='36' />
               </span>
             </button>
-          )}
-          <button
-            className='bg-transparent border-4 border-cyan-800 text-cyan-800 py-2 px-4 rounded-md hover:bg-cyan-800 hover:text-white transition-colors duration-200 cursor-pointer'
-            onClick={() => {
-              setModal(false)
-              router.push(`/dashboard/tratamientos/${fichaId}/crear`)
-            }}
-          >
-            <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
-              Registrar tratamiento <IconCheckupList size='36' />
-            </span>
-          </button>
-          {activeTab !== StateRecordValue.ATENDIDA && (
+            <button
+              className='bg-transparent border-4 border-cyan-800 text-cyan-800 py-2 px-4 rounded-md hover:bg-cyan-800 hover:text-white transition-colors duration-200 cursor-pointer'
+              onClick={() => {
+                setModal(false)
+                router.push(`/dashboard/tratamientos/${fichaId}/crear`)
+              }}
+            >
+              <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
+                Registrar tratamiento
+                <IconCheckupList size='36' />
+              </span>
+            </button>
             <button
               className='col-span-2 bg-transparent border-4 border-red-400 text-red-400 py-2 px-4 rounded-md hover:bg-red-400 hover:text-white transition-colors duration-200 cursor-pointer'
               onClick={cancelPatient}
@@ -227,8 +263,26 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
                 <IconAlertTriangle size='36' />
               </span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Ficha ya en ATENDIDA o CANCELADA (solo mostrar tratamiento) */}
+        {estadoFicha === StateRecord.ATENDIDA && (
+          <div className='grid grid-cols-1 gap-4'>
+            <button
+              className='bg-transparent border-4 border-cyan-800 text-cyan-800 py-2 px-4 rounded-md hover:bg-cyan-800 hover:text-white transition-colors duration-200 cursor-pointer'
+              onClick={() => {
+                setModal(false)
+                router.push(`/dashboard/tratamientos/${fichaId}/crear`)
+              }}
+            >
+              <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
+                Registrar tratamiento
+                <IconCheckupList size='36' />
+              </span>
+            </button>
+          </div>
+        )}
       </Modal>
     </section>
   )

@@ -40,7 +40,10 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
 
   const globalWaiting = fichas.filter(
     (f: any) =>
-      f.estado === StateRecord.ADMISION || f.estado === StateRecord.ENFERMERIA
+      f.estado === StateRecord.ADMISION ||
+      f.estado === StateRecord.ENFERMERIA ||
+      f.estado === StateRecord.EN_ESPERA ||
+      f.estado === StateRecord.ATENDIENDO
   )
   const globalAttended = fichas.filter(
     (f: any) => f.estado === StateRecord.ATENDIDA

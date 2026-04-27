@@ -52,6 +52,10 @@ export function useFichas(refetchInterval: number | false = false) {
       queryClient.invalidateQueries({ queryKey: ['espcialidad'] })
       console.log('PATCH FICHAS')
       console.log(data)
+    },
+    onError: (error: any) => {
+      console.log('Error en al actualizar')
+      console.log(error)
     }
   })
 
