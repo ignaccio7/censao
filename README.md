@@ -29,3 +29,9 @@ y
 EN TRATAMIENTOS
 estado String @default("EN_CURSO") // EN_CURSO, COMPLETADA, INCOMPLETO
 Agregamos constantes al tratamiento
+
+BUSCADOR DE COSAS IMPORTANTES EN EL PROYECTO:
+CTRL + SHIFT + F
+
+- TODO
+- IMPORTANTE

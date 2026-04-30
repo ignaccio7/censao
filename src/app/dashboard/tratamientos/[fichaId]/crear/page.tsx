@@ -4,6 +4,8 @@ import CrearTratamientoForm from './crear-tratamiento-form'
 type Params = Promise<{ fichaId: string }>
 
 export default async function Page({ params }: { params: Params }) {
+  // TODO: verificar permisos en esta ruta
+
   const { fichaId } = await params
 
   // Server Component: fetch vacunas con esquema_dosis directamente con Prisma
@@ -81,7 +83,7 @@ export default async function Page({ params }: { params: Params }) {
   const pacienteNombre =
     `${ficha.pacientes.personas.nombres} ${ficha.pacientes.personas.paterno} ${ficha.pacientes.personas.materno}`.trim()
   const especialidadNombre =
-    ficha.disponibilidades.doctores_especialidades.especialidades.nombre
+    ficha.disponibilidades?.doctores_especialidades?.especialidades?.nombre
 
   return (
     <main className='font-secondary'>
@@ -89,7 +91,7 @@ export default async function Page({ params }: { params: Params }) {
         fichaId={fichaId}
         pacienteNombre={pacienteNombre}
         pacienteCi={ficha.pacientes.personas.ci}
-        especialidadNombre={especialidadNombre}
+        especialidadNombre={especialidadNombre ?? 'Consultorio general'}
         ordenTurno={ficha.orden_turno}
         vacunas={vacunas}
       />

@@ -17,7 +17,6 @@ export interface CustomDataTableType {
   filtros?: ReactNode
   contenidoTabla: ReactNode[][]
   contenidoCuandoVacio?: ReactNode
-  paginacion?: ReactNode
   numeracion?: boolean
   // Nueva prop opcional para estilos de fila personalizados
   estilosPersonalizadosFila?: (filaIndex: number, fila: ReactNode[]) => string
@@ -33,7 +32,6 @@ export default function CustomDataTable({
   filtros,
   contenidoTabla,
   contenidoCuandoVacio,
-  paginacion,
   numeracion = false,
   estilosPersonalizadosFila
 }: CustomDataTableType) {
@@ -170,13 +168,6 @@ export default function CustomDataTable({
                 </div>
               ))}
             </div>
-
-            {/* Paginación */}
-            {paginacion && (
-              <div className='w-full px-6 py-3 border-t border-gray-200'>
-                {paginacion}
-              </div>
-            )}
           </>
         )}
       </div>

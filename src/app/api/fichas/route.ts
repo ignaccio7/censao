@@ -16,6 +16,7 @@ import { getRangoUTCBoliviaHoy, getTurnoActual } from '@/app/utils/date'
 
 // LISTAR LAS FICHAS
 export async function GET() {
+  // IMPORTANTE: DE ESTA FORMA SE ESTA VALIDANDO LOS PERMISOS QUE EL USUARIO TIENE PARA REALIZAR ACCIONES EN ESTE RECURSO
   const validation = await AuthService.validateApiPermission(
     '/api/fichas',
     'GET'

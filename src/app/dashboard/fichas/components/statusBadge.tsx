@@ -42,6 +42,11 @@ export function StatusBadge({ status }: { status: StateRecordType }) {
       color: 'border-yellow-500 bg-yellow-500/20 text-yellow-700',
       iconColor: 'text-yellow-500'
     }
+    // [StateRecord.URGENTE]: {
+    //   icon: IconAlertTriangle,
+    //   color: 'border-red-600 bg-red-600/20 text-red-800',
+    //   iconColor: 'text-red-600'
+    // }
   }
 
   const config = statusConfig[status] ?? {
