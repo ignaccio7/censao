@@ -5,11 +5,7 @@ import { IconLeft, IconRight } from '../icons/icons'
 import { generatePagination } from '@/app/api/lib/utils'
 import Link from 'next/link'
 
-export default function Pagination({
-  totalPages = 10
-}: {
-  totalPages: number
-}) {
+export default function Pagination({ totalPages }: { totalPages: number }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const currentPage = Number(searchParams.get('page') || '1')
@@ -36,42 +32,82 @@ export default function Pagination({
       aria-label='Page navigation'
       className='flex flex-row gap-2 items-center'
     >
-      <Link
+      <PaginationArrow
+        direction='left'
         href={createPageURL(currentPage - 1)}
-        className='cursor-pointer bg-gray-200 p-2 rounded-md hover:bg-gray-400 transition-colors duration-300 w-10 h-10'
-      >
-        <IconLeft />
-      </Link>
+        isDisabled={currentPage === 1}
+      />
 
       {allPages.map((page, index) => (
-        <Link
-          key={`page-${index}`}
+        <PaginationNumber
+          key={`${page}-${index}`}
           href={createPageURL(page)}
-          aria-current={page === currentPage}
-          className='cursor-pointer bg-gray-200 p-2 rounded-md hover:bg-gray-400 transition-colors duration-300 text-center w-10 h-10'
-        >
-          {page}
-        </Link>
+          isActive={page === currentPage}
+          isDisabled={page === currentPage || isNaN(Number(page))}
+          page={page}
+        />
       ))}
 
-      <Link
+      <PaginationArrow
+        direction='right'
         href={createPageURL(currentPage + 1)}
-        className='cursor-pointer bg-gray-200 p-2 rounded-md hover:bg-gray-400 transition-colors duration-300 w-10 h-10'
-      >
-        <IconRight />
-      </Link>
+        isDisabled={currentPage === totalPages}
+      />
     </nav>
   )
 }
 
-// function PaginationArrow({
-//   direction,
-//   isDisabled,
-//   href
-// }: {
-//   direction: 'left' | 'right'
-//   isDisabled: boolean
-//   href: string
-// }) {
-//   return
-// }
+function PaginationNumber({
+  page,
+  isActive,
+  href,
+  isDisabled
+}: {
+  page: number | string
+  isActive: boolean
+  href: string
+  isDisabled: boolean
+}) {
+  return (
+    <div
+      className={`grid items-center justify-center rounded-md overflow-hidden ${isDisabled || isActive ? 'cursor-not-allowed pointer-events-none' : 'cursor-pointer pointer-events-auto'}`}
+    >
+      <Link
+        href={href}
+        aria-current={isActive}
+        className={`p-2 transition-colors duration-300 text-center w-10 h-10
+        ${
+          isActive
+            ? 'bg-primary-600 text-white'
+            : 'bg-gray-200 text-black hover:bg-primary-600 hover:text-white'
+        }
+        `}
+      >
+        {page}
+      </Link>
+    </div>
+  )
+}
+
+function PaginationArrow({
+  direction,
+  isDisabled,
+  href
+}: {
+  direction: 'left' | 'right'
+  isDisabled: boolean
+  href: string
+}) {
+  return (
+    <div
+      className={`grid items-center justify-center rounded-md overflow-hidden ${isDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer pointer-events-auto'}`}
+    >
+      <Link
+        href={href}
+        className='bg-gray-200 p-2 hover:bg-primary-600 hover:text-white transition-colors duration-300 w-10 h-10'
+      >
+        {direction === 'left' ? <IconLeft /> : <IconRight />}
+      </Link>
+    </div>
+  )
+}

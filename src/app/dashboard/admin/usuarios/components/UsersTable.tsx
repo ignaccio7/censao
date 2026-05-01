@@ -1,14 +1,11 @@
-'use client'
-
-// import CustomDataTable from '@/app/components/ui/dataTable'
-import { Usuario } from '../interfaces'
-// import Pagination from '@/app/components/ui/pagination'
+import CustomDataTable from '@/app/components/ui/dataTable'
+import prisma from '@/lib/prisma/prisma'
 
 interface UsersTableProps {
-  data: Usuario[]
+  search?: string
 }
 
-export default function UsersTable({ data }: UsersTableProps) {
+export default async function UsersTable({ search }: UsersTableProps) {
   /**
    *  {
       usuario_id: 'c0ce6b09-a53c-4d5b-a879-3387e1a2b3ad',
@@ -26,6 +23,80 @@ export default function UsersTable({ data }: UsersTableProps) {
       personas: { nombres: 'Ana Sofía', paterno: 'Rojas', materno: 'Torres' }
     },
    */
+
+  // await de 2 segundos
+  await new Promise(resolve => setTimeout(resolve, 2000))
+
+  const usuarios = await prisma.usuarios.findMany({
+    include: {
+      usuarios_roles: {
+        select: {
+          roles: {
+            select: {
+              nombre: true
+            }
+          }
+        }
+      },
+      personas: {
+        select: {
+          nombres: true,
+          paterno: true,
+          materno: true
+        }
+      }
+    },
+    where: {
+      OR: [
+        {
+          personas: {
+            OR: [
+              {
+                nombres: {
+                  contains: search,
+                  mode: 'insensitive'
+                }
+              },
+              {
+                materno: {
+                  contains: search,
+                  mode: 'insensitive'
+                }
+              },
+              {
+                paterno: {
+                  contains: search,
+                  mode: 'insensitive'
+                }
+              }
+            ]
+          }
+        },
+        {
+          username: {
+            contains: search,
+            mode: 'insensitive'
+          }
+        }
+        // Para buscar por roles
+        // {
+        //   usuarios_roles: {
+        //     some: {
+        //       roles: {
+        //         nombre: {
+        //           contains: search,
+        //           mode: 'insensitive'
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
+      ]
+    }
+  })
+
+  console.log(search)
+  console.log(usuarios)
 
   // const handleEdit = (id: string) => {
   //   console.log(id)
@@ -45,34 +116,26 @@ export default function UsersTable({ data }: UsersTableProps) {
   ]
 
   console.log(columnas)
-  console.log(data)
+  console.log(usuarios)
 
-  // const contenidoTabla = data.map(usuario => [
-  //   <span>{usuario.persona_ci}</span>,
-  //   <span>{`${usuario.personas.nombres} ${usuario.personas.paterno} ${usuario.personas.materno}`}</span>,
-  //   <span>{usuario.username}</span>,
-  //   <span>{usuario.usuarios_roles.map(ur => ur.roles.nombre).join(', ')}</span>,
-  //   <span>{usuario.activo ? 'Activo' : 'Inactivo'}</span>,
-  //   <span>
-  //     <button onClick={() => handleEdit(usuario.usuario_id)}>Editar</button>
-  //     <button onClick={() => handleDelete(usuario.usuario_id)}>Eliminar</button>
-  //   </span>
-  // ])
+  const contenidoTabla = usuarios.map(usuario => [
+    <span key={`ci-${usuario.persona_ci}`}>{usuario.persona_ci}</span>,
+    <span
+      key={`nombres-${usuario.persona_ci}`}
+    >{`${usuario.personas.nombres} ${usuario.personas.paterno} ${usuario.personas.materno}`}</span>,
+    <span key={`username-${usuario.persona_ci}`}>{usuario.username}</span>,
+    <span key={`rol-${usuario.persona_ci}`}>
+      {usuario.usuarios_roles.map(ur => ur.roles.nombre).join(', ')}
+    </span>,
+    <span key={`estado-${usuario.persona_ci}`}>
+      {usuario.activo ? 'Activo' : 'Inactivo'}
+    </span>,
+    <span key={`acciones-${usuario.persona_ci}`}>
+      Editar Eliminar
+      {/* <button onClick={() => handleEdit(usuario.usuario_id)}>Editar</button>
+      <button onClick={() => handleDelete(usuario.usuario_id)}>Eliminar</button> */}
+    </span>
+  ])
 
-  return (
-    <>
-      <section className='filters'>
-        <search>
-          <input
-            type='text'
-            name='search'
-            id='search'
-            placeholder='Buscar por nombre o usuario '
-          />
-        </search>
-      </section>
-      {/* <CustomDataTable columnas={columnas} contenidoTabla={contenidoTabla} /> */}
-      {/* <Pagination /> */}
-    </>
-  )
+  return <CustomDataTable columnas={columnas} contenidoTabla={contenidoTabla} />
 }
