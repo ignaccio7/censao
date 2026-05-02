@@ -48,23 +48,29 @@ export default function CustomDataTable({
   return (
     <div className='pb-4'>
       {/* Título y acciones */}
-      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4'>
-        <div>
-          {titulo && (
-            <h2 className='text-xl font-semibold text-gray-800'>{titulo}</h2>
-          )}
-          {subtitulo && (
-            <p className='text-sm text-gray-500 mt-1'>{subtitulo}</p>
-          )}
-        </div>
-        {acciones.length > 0 && (
-          <div className='flex gap-2 mt-2 sm:mt-0 flex-wrap'>
-            {acciones.map((accion, index) => (
-              <div key={`accion-${index}`}>{accion}</div>
-            ))}
+      {titulo ||
+        subtitulo ||
+        (acciones.length > 0 && (
+          <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4'>
+            <div>
+              {titulo && (
+                <h2 className='text-xl font-semibold text-gray-800'>
+                  {titulo}
+                </h2>
+              )}
+              {subtitulo && (
+                <p className='text-sm text-gray-500 mt-1'>{subtitulo}</p>
+              )}
+            </div>
+            {acciones.length > 0 && (
+              <div className='flex gap-2 mt-2 sm:mt-0 flex-wrap'>
+                {acciones.map((accion, index) => (
+                  <div key={`accion-${index}`}>{accion}</div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        ))}
 
       {/* Filtros */}
       {filtros && <div className='mb-4 w-full'>{filtros}</div>}

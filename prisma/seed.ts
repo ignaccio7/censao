@@ -831,6 +831,8 @@ const USUARIO_ADMIN: UsuarioCompleto = {
       },
 
       // PERMISOS ADMINISTRATIVOS BÁSICOS (para futuro)
+      // ************ FRONTEND ************
+      // -> Inicio
       {
         nombre: 'Gestión de Usuarios',
         tipo: 'frontend',
@@ -840,12 +842,41 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         descripcion: 'Gestionar usuarios del sistema',
         modulo: 'administracion'
       },
+      // -> Crear
+      {
+        nombre: 'Creacion de Usuarios',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/usuarios/crear',
+        metodos: ['create'],
+        icono: 'team',
+        descripcion: 'Gestionar usuarios del sistema',
+        modulo: 'administracion'
+      },
+      // -> Editar
+      {
+        nombre: 'Edicion de Usuarios',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/usuarios/:uuid/editar',
+        metodos: ['update'],
+        icono: 'team',
+        descripcion: 'Editar usuarios del sistema',
+        modulo: 'administracion'
+      },
+      // ************ BACKEND ************
       {
         nombre: 'API Usuarios Admin',
         tipo: 'backend',
         ruta: '/api/admin/usuarios',
-        metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
+        metodos: ['GET', 'POST', 'DELETE'],
         descripcion: 'API para administrar usuarios',
+        modulo: 'administracion'
+      },
+      {
+        nombre: 'API Edicion de Usuarios',
+        tipo: 'backend',
+        ruta: '/api/admin/usuarios/:uuid',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para editar usuarios',
         modulo: 'administracion'
       }
     ]

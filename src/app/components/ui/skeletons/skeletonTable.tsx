@@ -10,7 +10,7 @@ export default function SkeletonTable({
       <div className='shadow-sm border border-gray-200'>
         {/* Vista desktop */}
         <div className='hidden md:block overflow-x-auto'>
-          <table className='w-full'>
+          <table className='w-full rounded-lg overflow-hidden'>
             <thead className='bg-primary-700'>
               <tr>
                 {[...Array(columns)].map((_, i) => (

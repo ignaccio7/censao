@@ -179,9 +179,11 @@ export default class AuthService {
                     },
                     NOT: {
                       permisos: {
-                        ruta: {
-                          contains: '/:uuid'
-                        }
+                        OR: [
+                          { ruta: { contains: '/:uuid' } },
+                          { ruta: { contains: '/crear' } },
+                          { ruta: { contains: '/editar' } }
+                        ]
                       }
                     }
                   },
