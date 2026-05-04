@@ -1,0 +1,135 @@
+// src/app/services/usuarios.ts
+// oxlint-disable prefer-default-export
+// oxlint-disable func-style
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import apiClient from './client'
+import type { CreateUsuarioFormData } from '@/app/dashboard/admin/usuarios/schemas'
+
+// ─── Tipos de respuesta ───────────────────────────────────────────────────────
+export interface UsuarioListItem {
+  usuario_id: string
+  persona_ci: string
+  username: string
+  activo: boolean
+  creado_en: string
+  personas: {
+    ci: string
+    nombres: string
+    paterno: string | null
+    materno: string | null
+    correo: string | null
+    telefono: string | null
+  }
+  usuarios_roles: Array<{
+    rol_id: string
+    roles: {
+      id: string
+      nombre: string
+    }
+  }>
+}
+
+export interface UsuariosMeta {
+  total: number
+  page: number
+  numberPerPage: number
+  totalPages: number
+}
+
+// ─── Hook principal ───────────────────────────────────────────────────────────
+export function useUsuarios(params?: {
+  search?: string
+  page?: number
+  limit?: number
+}) {
+  const queryClient = useQueryClient()
+
+  const queryParams = new URLSearchParams()
+  if (params?.search) queryParams.set('search', params.search)
+  if (params?.page) queryParams.set('page', String(params.page))
+  if (params?.limit) queryParams.set('limit', String(params.limit))
+
+  // ── Listar usuarios ────────────────────────────────────────────────────────
+  const usuariosQuery = useQuery({
+    queryKey: ['usuarios', params],
+    queryFn: async () => {
+      const response = await apiClient.get(
+        `/admin/usuarios?${queryParams.toString()}`
+      )
+      return response.data as { data: UsuarioListItem[]; meta: UsuariosMeta }
+    },
+    staleTime: 5 * 60 * 1000
+  })
+
+  const errorMessage = usuariosQuery.error
+    ? ((usuariosQuery.error as any)?.response?.data?.message ??
+      (usuariosQuery.error as any)?.response?.data?.error ??
+      usuariosQuery.error.message ??
+      'Error desconocido')
+    : null
+
+  // ── Crear usuario ──────────────────────────────────────────────────────────
+  const createUsuario = useMutation({
+    mutationFn: async (
+      data: Omit<CreateUsuarioFormData, 'confirmar_password'>
+    ) => {
+      const response = await apiClient.post('/admin/usuarios', data)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+    },
+    onError: (error: any) => {
+      console.error('[createUsuario]', error)
+    }
+  })
+
+  // ── Eliminar usuario (soft delete) ─────────────────────────────────────────
+  const deleteUsuario = useMutation({
+    mutationFn: async (usuario_id: string) => {
+      const response = await apiClient.delete(`/admin/usuarios/${usuario_id}`)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+    },
+    onError: (error: any) => {
+      console.error('[deleteUsuario]', error)
+    }
+  })
+
+  // ── Activar / Desactivar usuario ───────────────────────────────────────────
+  const toggleUsuario = useMutation({
+    mutationFn: async ({
+      usuario_id,
+      activo
+    }: {
+      usuario_id: string
+      activo: boolean
+    }) => {
+      const response = await apiClient.patch(`/admin/usuarios/${usuario_id}`, {
+        activo
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+    }
+  })
+
+  return {
+    // Query
+    usuarios: usuariosQuery.data?.data ?? [],
+    meta: usuariosQuery.data?.meta,
+    isLoading: usuariosQuery.isLoading,
+    isError: usuariosQuery.isError,
+    isSuccess: usuariosQuery.isSuccess,
+    error: usuariosQuery.error,
+    errorMessage,
+    refetch: usuariosQuery.refetch,
+    // Mutations
+    createUsuario,
+    deleteUsuario,
+    toggleUsuario
+  }
+}

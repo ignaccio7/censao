@@ -832,6 +832,7 @@ const USUARIO_ADMIN: UsuarioCompleto = {
 
       // PERMISOS ADMINISTRATIVOS BÁSICOS (para futuro)
       // ************ FRONTEND ************
+      // ************ USUARIOS
       // -> Inicio
       {
         nombre: 'Gestión de Usuarios',
@@ -862,7 +863,19 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         descripcion: 'Editar usuarios del sistema',
         modulo: 'administracion'
       },
+      // ************ VACUNAS
+      // -> Inicio
+      {
+        nombre: 'Gestión de Vacunas',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/vacunas',
+        metodos: ['read', 'create', 'update', 'delete'],
+        icono: 'vaccine',
+        descripcion: 'Gestionar vacunas del sistema',
+        modulo: 'administracion'
+      },
       // ************ BACKEND ************
+      // ************ USUARIOS
       {
         nombre: 'API Usuarios Admin',
         tipo: 'backend',
@@ -877,6 +890,15 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         ruta: '/api/admin/usuarios/:uuid',
         metodos: ['GET', 'PATCH'],
         descripcion: 'API para editar usuarios',
+        modulo: 'administracion'
+      },
+      // ************ VACUNAS
+      {
+        nombre: 'API Vacunas Admin',
+        tipo: 'backend',
+        ruta: '/api/admin/vacunas',
+        metodos: ['GET', 'POST', 'DELETE'],
+        descripcion: 'API para administrar vacunas',
         modulo: 'administracion'
       }
     ]
