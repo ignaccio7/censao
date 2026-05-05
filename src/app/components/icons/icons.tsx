@@ -652,6 +652,26 @@ const IconEye = ({ className = '', size = '24' }: IconProps) => (
   </svg>
 )
 
+const IconEyeOff = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M10.585 10.587a2 2 0 0 0 2.829 2.828' />
+    <path d='M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87' />
+    <path d='M3 3l18 18' />
+  </svg>
+)
+
 const IconSendMessage = ({ className = '', size = '24' }: IconProps) => (
   <svg
     xmlns='http://www.w3.org/2000/svg'
@@ -895,10 +915,234 @@ const IconRight = ({ className = '', size = '24' }: IconProps) => (
   </svg>
 )
 
+const IconUserCog = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0' />
+    <path d='M6 21v-2a4 4 0 0 1 4 -4h2.5' />
+    <path d='M17.001 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' />
+    <path d='M19.001 15.5v1.5' />
+    <path d='M19.001 21v1.5' />
+    <path d='M22.032 17.25l-1.299 .75' />
+    <path d='M17.27 20l-1.3 .75' />
+    <path d='M15.97 17.25l1.3 .75' />
+    <path d='M20.733 20l1.3 .75' />
+  </svg>
+)
+
+const IconUserHeart = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0' />
+    <path d='M6 21v-2a4 4 0 0 1 4 -4h.5' />
+    <path d='M18 22l3.35 -3.284a2.143 2.143 0 0 0 .005 -3.071a2.242 2.242 0 0 0 -3.129 -.006l-.224 .22l-.223 -.22a2.242 2.242 0 0 0 -3.128 -.006a2.143 2.143 0 0 0 -.006 3.071l3.355 3.296' />
+  </svg>
+)
+
+const IconUserShield = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M6 21v-2a4 4 0 0 1 4 -4h2' />
+    <path d='M22 16c0 4 -2.5 6 -3.5 6s-3.5 -2 -3.5 -6c1 0 2.5 -.5 3.5 -1.5c1 1 2.5 1.5 3.5 1.5' />
+    <path d='M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0' />
+  </svg>
+)
+
+const IconShieldCheck = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M11.46 20.846a12 12 0 0 1 -7.96 -14.846a12 12 0 0 0 8.5 -3a12 12 0 0 0 8.5 3a12 12 0 0 1 -.09 7.06' />
+    <path d='M15 19l2 2l4 -4' />
+  </svg>
+)
+
+const IconLock = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6' />
+    <path d='M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0' />
+    <path d='M8 11v-4a4 4 0 1 1 8 0v4' />
+  </svg>
+)
+
+const IconPhone = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2' />
+  </svg>
+)
+
+const IconLocation = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0' />
+    <path d='M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0' />
+  </svg>
+)
+
+const IconAlertCircle = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0' />
+    <path d='M12 8v4' />
+    <path d='M12 16h.01' />
+  </svg>
+)
+
+const IconCircleCheck = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='currentColor'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z' />
+  </svg>
+)
+
+const IconCircleX = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='currentColor'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-6.489 5.8a1 1 0 0 0 -1.218 1.567l1.292 1.293l-1.292 1.293l-.083 .094a1 1 0 0 0 1.497 1.32l1.293 -1.292l1.293 1.292l.094 .083a1 1 0 0 0 1.32 -1.497l-1.292 -1.293l1.292 -1.293l.083 -.094a1 1 0 0 0 -1.497 -1.32l-1.293 1.292l-1.293 -1.292l-.094 -.083z' />
+  </svg>
+)
+
+const IconGenderBigender = ({ className = '', size = '24' }: IconProps) => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className={className}
+  >
+    <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+    <path d='M7 11a4 4 0 1 0 8 0a4 4 0 1 0 -8 0' />
+    <path d='M19 3l-5 5' />
+    <path d='M15 3h4v4' />
+    <path d='M11 16v6' />
+    <path d='M8 19h6' />
+  </svg>
+)
+
 // const Icon = ({ className = '', size = '24' }: IconProps) => (
 
 // )
 export {
+  IconGenderBigender,
+  IconCircleCheck,
+  IconCircleX,
+  IconEyeOff,
+  IconAlertCircle,
+  IconPhone,
+  IconLocation,
+  IconShieldCheck,
+  IconLock,
+  IconUserCog,
+  IconUserHeart,
+  IconUserShield,
   IconLeft,
   IconRight,
   IconTrash,

@@ -2,15 +2,24 @@ export const Roles = {
   ADMINISTRADOR: 'ADMINISTRADOR',
   PACIENTE: 'PACIENTE',
   DOCTOR_FICHAS: 'DOCTOR_FICHAS',
-  DOCTOR_GENERAL: 'DOCTOR_GENERAL'
+  DOCTOR_GENERAL: 'DOCTOR_GENERAL',
+  ENFERMERIA: 'ENFERMERIA'
 } as const
 
 export type RoleType = (typeof Roles)[keyof typeof Roles]
 
 export const RoleGroups = {
-  DOCTOR: [Roles.DOCTOR_FICHAS, Roles.DOCTOR_GENERAL],
+  DOCTOR: [Roles.DOCTOR_FICHAS, Roles.DOCTOR_GENERAL, Roles.ENFERMERIA],
   PACIENTE: [Roles.PACIENTE],
   ADMINISTRADOR: [Roles.ADMINISTRADOR]
+} as const
+
+export const RoleValue = {
+  [Roles.DOCTOR_FICHAS]: 'Doctor Admision',
+  [Roles.DOCTOR_GENERAL]: 'Doctor General',
+  [Roles.ENFERMERIA]: 'Enfermeria',
+  [Roles.ADMINISTRADOR]: 'Administrador',
+  [Roles.PACIENTE]: 'Paciente'
 } as const
 
 export const StateRecord = {

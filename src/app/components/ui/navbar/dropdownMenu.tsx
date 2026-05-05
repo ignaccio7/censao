@@ -58,10 +58,9 @@ export default function DropdownMenu() {
           Cambiar de rol
         </Link>
         <hr className='border-gray-500' />
-        {/* <form className='w-full' action={signout}> */}
         <form onSubmit={handleSubmit}>
           <button
-            className='p-3 flex flex-row items-center gap-1 hover:bg-gray-300 transition-colors duration-200 w-full'
+            className='p-3 flex cursor-pointer flex-row items-center gap-1 hover:bg-gray-300 transition-colors duration-200 w-full'
             type='submit'
           >
             <IconSignOut size='20' />

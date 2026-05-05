@@ -130,9 +130,14 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  const idUser = validation.data?.id
+
   try {
     const body = await req.json()
     const parsed = createUsuarioSchema.safeParse(body)
+
+    console.log(body)
+    console.log(parsed)
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -181,6 +186,7 @@ export async function POST(req: NextRequest) {
     ])
 
     if (personaExistente) {
+      console.log('Ya existe persona')
       return NextResponse.json(
         {
           success: false,
@@ -191,6 +197,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (usernameExistente) {
+      console.log('Ya existe usuario')
       return NextResponse.json(
         { success: false, message: 'El nombre de usuario ya está en uso' },
         { status: 409 }
@@ -215,7 +222,7 @@ export async function POST(req: NextRequest) {
           correo,
           telefono: telefono || null,
           direccion: direccion || null,
-          creado_por: validation.user?.username ?? 'sistema'
+          creado_por: idUser ?? 'sistema'
         }
       })
       // TODO ver esto flujo usuarios
@@ -228,7 +235,7 @@ export async function POST(req: NextRequest) {
           username,
           password_hash,
           activo: true,
-          creado_por: validation.user?.username ?? 'sistema'
+          creado_por: idUser ?? 'sistema'
         }
       })
 
@@ -237,7 +244,7 @@ export async function POST(req: NextRequest) {
         data: {
           usuario_id: usuario.usuario_id,
           rol_id,
-          creado_por: validation.user?.username ?? 'sistema'
+          creado_por: idUser ?? 'sistema'
         }
       })
 
@@ -247,7 +254,7 @@ export async function POST(req: NextRequest) {
           data: {
             doctor_id: ci,
             matricula,
-            creado_por: validation.user?.username ?? 'sistema'
+            creado_por: idUser ?? 'sistema'
           }
         })
       }
@@ -262,7 +269,7 @@ export async function POST(req: NextRequest) {
               : null,
             sexo: sexo || null,
             grupo_sanguineo: grupo_sanguineo || null,
-            creado_por: validation.user?.username ?? 'sistema'
+            creado_por: idUser ?? 'sistema'
           }
         })
       }

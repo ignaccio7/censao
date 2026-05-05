@@ -77,8 +77,9 @@ export const stepRolSchema = z.object({
 
 // ─── Schema completo (para el submit final) ────────────────────────────────
 export const createUsuarioSchema = stepPersonaSchema
-  .merge(stepCredencialesSchema.omit({ confirmar_password: true }))
+  .merge(stepCredencialesSchema)
   .merge(stepRolSchema)
+// .merge(stepCredencialesSchema.omit({ confirmar_password: true }))
 
 // ─── Tipos inferidos ───────────────────────────────────────────────────────
 export type StepPersonaData = z.infer<typeof stepPersonaSchema>

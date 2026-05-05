@@ -80,6 +80,7 @@ export function useUsuarios(params?: {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
     },
     onError: (error: any) => {
+      console.log('viene aqui con error')
       console.error('[createUsuario]', error)
     }
   })

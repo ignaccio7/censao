@@ -29,7 +29,7 @@ export default async function CrearUsuarioPage() {
         Crear usuario
       </Title>
 
-      <section className='max-w-2xl mx-auto'>
+      <section className='w-full'>
         <FormCreateUser roles={roles} />
       </section>
     </main>

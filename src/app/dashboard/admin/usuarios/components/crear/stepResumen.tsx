@@ -2,6 +2,12 @@
 
 import { UseFormReturn } from 'react-hook-form'
 import { CreateUsuarioFormData } from '../../schemas'
+import {
+  IconAlertTriangle,
+  IconLock,
+  IconShieldCheck,
+  IconUser
+} from '@/app/components/icons/icons'
 
 interface StepResumenProps {
   form: UseFormReturn<CreateUsuarioFormData>
@@ -70,6 +76,7 @@ function Section({
 
 export default function StepResumen({ form, rolNombre }: StepResumenProps) {
   const values = form.getValues()
+  console.log(values)
 
   const SEXO_MAP: Record<string, string> = {
     M: 'Masculino',
@@ -91,25 +98,7 @@ export default function StepResumen({ form, rolNombre }: StepResumenProps) {
       </div>
 
       {/* Sección 1: Datos personales */}
-      <Section
-        title='Datos personales'
-        color='blue'
-        icon={
-          <svg
-            className='w-4 h-4'
-            fill='none'
-            viewBox='0 0 24 24'
-            stroke='currentColor'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-            />
-          </svg>
-        }
-      >
+      <Section title='Datos personales' color='blue' icon={<IconUser />}>
         <InfoRow label='Cédula' value={values.ci} />
         <InfoRow label='Nombres' value={values.nombres} />
         <InfoRow label='Apellido Paterno' value={values.paterno} />
@@ -125,46 +114,14 @@ export default function StepResumen({ form, rolNombre }: StepResumenProps) {
       <Section
         title='Credenciales de acceso'
         color='purple'
-        icon={
-          <svg
-            className='w-4 h-4'
-            fill='none'
-            viewBox='0 0 24 24'
-            stroke='currentColor'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
-            />
-          </svg>
-        }
+        icon={<IconLock />}
       >
         <InfoRow label='Nombre de usuario' value={values.username} />
         <InfoRow label='Contraseña' value='••••••••' />
       </Section>
 
       {/* Sección 3: Rol */}
-      <Section
-        title='Rol asignado'
-        color='orange'
-        icon={
-          <svg
-            className='w-4 h-4'
-            fill='none'
-            viewBox='0 0 24 24'
-            stroke='currentColor'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'
-            />
-          </svg>
-        }
-      >
+      <Section title='Rol asignado' color='orange' icon={<IconShieldCheck />}>
         <div className='col-span-2'>
           <InfoRow label='Rol' value={rolNombre ?? 'No seleccionado'} />
         </div>
@@ -198,17 +155,7 @@ export default function StepResumen({ form, rolNombre }: StepResumenProps) {
 
       {/* Aviso final */}
       <div className='flex gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-xs'>
-        <svg
-          className='w-4 h-4 shrink-0 mt-0.5'
-          fill='currentColor'
-          viewBox='0 0 20 20'
-        >
-          <path
-            fillRule='evenodd'
-            d='M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z'
-            clipRule='evenodd'
-          />
-        </svg>
+        <IconAlertTriangle size='18' />
         <span>
           Al confirmar, se creará el usuario con acceso inmediato al sistema.
           Asegúrese de que los datos sean correctos.

@@ -14,6 +14,11 @@ import StepPersona from './stepPersona'
 import StepCredenciales from './stepCredenciales'
 import StepRol from './stepRol'
 import StepResumen from './stepResumen'
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconUserCheck
+} from '@/app/components/icons/icons'
 
 // ── Definición de pasos ────────────────────────────────────────────────────
 const { useStepper } = defineStepper(
@@ -44,7 +49,7 @@ const STEP_FIELDS: Record<string, (keyof CreateUsuarioFormData)[]> = {
 }
 
 interface FormCreateUserProps {
-  roles: Array<{ id: string; nombre: string; descripcion?: string }>
+  roles: Array<{ id: string; nombre: string; descripcion?: string | null }>
 }
 
 // ── Componente principal ───────────────────────────────────────────────────
@@ -92,7 +97,9 @@ export default function FormCreateUser({ roles }: FormCreateUserProps) {
   )
 
   // ── Avanzar al siguiente paso (validando solo los campos del paso actual) ─
-  const handleNext = async () => {
+  const handleNext = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     const fields = STEP_FIELDS[stepper.state.current.data.id]
     const valid = await form.trigger(fields)
     if (valid) stepper.navigation.next()
@@ -106,27 +113,28 @@ export default function FormCreateUser({ roles }: FormCreateUserProps) {
         toast.success(result.message ?? 'Usuario creado exitosamente')
         router.push('/dashboard/admin/usuarios')
       } else {
+        console.log('error aqui')
+
         toast.error(result.message ?? 'Error al crear el usuario')
       }
     } catch (error: any) {
+      console.log('error aqui')
       const msg = error?.response?.data?.message ?? 'Error interno del servidor'
       toast.error(msg)
     }
   }
 
   // Obtener nombre del rol seleccionado para pasarlo al resumen
-  // (viene del watch; el componente StepRol ya carga la lista, pero para el resumen
-  //  lo resolvemos con un fetch simple o lo derivamos del formulario)
   const rolId = form.watch('rol_id')
   const rolNombre = roles.find(r => r.id === rolId)?.nombre || ''
 
   return (
-    <div className='w-full max-w-2xl mx-auto'>
+    <div className='w-full '>
       {/* Indicador de progreso */}
       <StepperIndicator steps={steps} currentIndex={currentIndex} />
 
       {/* Contenido del paso actual */}
-      <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8'>
+      <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-6'>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {stepper.state.current.data.id === 'persona' && (
             <StepPersona form={form} />
@@ -151,21 +159,9 @@ export default function FormCreateUser({ roles }: FormCreateUserProps) {
               type='button'
               onClick={() => stepper.navigation.prev()}
               disabled={stepper.state.isFirst}
-              className='flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed'
+              className='flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer'
             >
-              <svg
-                className='w-4 h-4'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M15 19l-7-7 7-7'
-                />
-              </svg>
+              <IconChevronLeft />
               Atrás
             </button>
 
@@ -174,7 +170,7 @@ export default function FormCreateUser({ roles }: FormCreateUserProps) {
               <button
                 type='submit'
                 disabled={createUsuario.isPending}
-                className='flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm'
+                className='flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer'
               >
                 {createUsuario.isPending ? (
                   <>
@@ -183,19 +179,7 @@ export default function FormCreateUser({ roles }: FormCreateUserProps) {
                   </>
                 ) : (
                   <>
-                    <svg
-                      className='w-4 h-4'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M5 13l4 4L19 7'
-                      />
-                    </svg>
+                    <IconUserCheck />
                     Confirmar y crear usuario
                   </>
                 )}
@@ -204,22 +188,10 @@ export default function FormCreateUser({ roles }: FormCreateUserProps) {
               <button
                 type='button'
                 onClick={handleNext}
-                className='flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors shadow-sm'
+                className='flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors shadow-sm cursor-pointer'
               >
                 Siguiente
-                <svg
-                  className='w-4 h-4'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                  stroke='currentColor'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M9 5l7 7-7 7'
-                  />
-                </svg>
+                <IconChevronRight />
               </button>
             )}
           </div>
