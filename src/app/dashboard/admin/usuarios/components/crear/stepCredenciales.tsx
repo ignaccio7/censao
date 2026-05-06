@@ -9,11 +9,16 @@ import {
 } from '@/app/components/ui/form/field-password'
 import { FieldInput } from '@/app/components/ui/form/field-input'
 
+// TODO ver si esto en los steps se mantiene con CreateUsuarioFormData ya que en edicion sera otra y ver si esta funcionando del todo o cambiar el nombre del schema en todo caso
 interface StepCredencialesProps {
   form: UseFormReturn<CreateUsuarioFormData>
+  isEdit?: boolean
 }
 
-export default function StepCredenciales({ form }: StepCredencialesProps) {
+export default function StepCredenciales({
+  form,
+  isEdit = false
+}: StepCredencialesProps) {
   const password = form.watch('password') ?? ''
 
   return (
@@ -36,6 +41,7 @@ export default function StepCredenciales({ form }: StepCredencialesProps) {
           required
           icon={<IconUser size='18' />}
           form={form}
+          disabled={isEdit}
         />
 
         {/* Password */}
@@ -59,12 +65,18 @@ export default function StepCredenciales({ form }: StepCredencialesProps) {
       </div>
 
       {/* Info box */}
-      <div className='flex gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-xs'>
-        <IconAlertCircle size='18' />
-        <span>
-          La contraseña será encriptada al guardarse. El usuario podrá cambiarla
-          cuando inicie sesión.
-        </span>
+      <div
+        className={`flex gap-2 p-3 rounded-lg text-sm ${!isEdit ? 'text-blue-700 bg-blue-50 border border-blue-200' : 'text-amber-700 bg-amber-50 border border-amber-200'}`}
+      >
+        <IconAlertCircle size='20' />
+        {!isEdit ? (
+          <span>
+            La contraseña será encriptada al guardarse. El usuario podrá
+            cambiarla cuando inicie sesión.
+          </span>
+        ) : (
+          <span>Deja en blanco si no deseas cambiar la contraseña.</span>
+        )}
       </div>
     </div>
   )

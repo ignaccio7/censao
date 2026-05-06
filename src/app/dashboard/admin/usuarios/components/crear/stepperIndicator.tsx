@@ -1,5 +1,7 @@
 'use client'
 
+import { IconCheck } from '@/app/components/icons/icons'
+
 interface Step {
   id: string
   title: string
@@ -55,23 +57,7 @@ export default function StepperIndicator({
                       : 'bg-white border-gray-300 text-gray-400'
                 }`}
               >
-                {isCompleted ? (
-                  <svg
-                    className='w-5 h-5'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2.5}
-                      d='M5 13l4 4L19 7'
-                    />
-                  </svg>
-                ) : (
-                  <span>{index + 1}</span>
-                )}
+                {isCompleted ? <IconCheck /> : <span>{index + 1}</span>}
               </div>
 
               {/* Texto del paso */}

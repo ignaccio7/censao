@@ -13,9 +13,13 @@ import { FieldInput } from '@/app/components/ui/form/field-input'
 
 interface StepPersonaProps {
   form: UseFormReturn<CreateUsuarioFormData>
+  isEdit?: boolean
 }
 
-export default function StepPersona({ form }: StepPersonaProps) {
+export default function StepPersona({
+  form,
+  isEdit = false
+}: StepPersonaProps) {
   return (
     <div className='space-y-5'>
       <div>
@@ -34,6 +38,7 @@ export default function StepPersona({ form }: StepPersonaProps) {
           required
           icon={<IconCredential />}
           form={form}
+          disabled={isEdit}
         />
 
         {/* Nombres */}

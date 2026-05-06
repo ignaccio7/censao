@@ -88,3 +88,35 @@ export type StepRolData = z.infer<typeof stepRolSchema>
 export type CreateUsuarioFormData = z.infer<typeof createUsuarioSchema> & {
   confirmar_password: string
 }
+
+export const updateUsuarioSchema = z
+  .object({
+    nombres: z.string().min(2).max(100),
+    paterno: z.string().max(50).optional().or(z.literal('')),
+    materno: z.string().max(50).optional().or(z.literal('')),
+    correo: z.string().email().max(255),
+    telefono: z.string().max(20).optional().or(z.literal('')),
+    direccion: z.string().max(255).optional().or(z.literal('')),
+    // Contraseña opcional en edición
+    password: z.string().min(8).max(100).optional().or(z.literal('')),
+    confirmar_password: z.string().optional().or(z.literal('')),
+    // Rol — sí se puede cambiar en edición
+    rol_id: z.string().uuid(),
+    // Campos por rol (siempre opcionales en edición)
+    matricula: z.string().optional().or(z.literal('')),
+    fecha_nacimiento: z.string().optional().or(z.literal('')),
+    sexo: z.enum(['M', 'F', 'O']).optional().or(z.literal('')),
+    grupo_sanguineo: z
+      .enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
+      .optional()
+      .or(z.literal(''))
+  })
+  .refine(
+    d => {
+      if (!d.password || d.password === '') return true
+      return d.password === d.confirmar_password
+    },
+    { message: 'Las contraseñas no coinciden', path: ['confirmar_password'] }
+  )
+
+export type UpdateUsuarioFormData = z.infer<typeof updateUsuarioSchema>

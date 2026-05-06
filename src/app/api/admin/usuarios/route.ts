@@ -303,3 +303,51 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+
+// ─── DELETE /api/admin/usuarios/[id] ─────────────────────────────────────────
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const validation = await AuthService.validateApiPermission(
+    '/api/admin/usuarios',
+    'DELETE'
+  )
+  if (!validation.success) {
+    return NextResponse.json(
+      { success: false, message: 'No autorizado' },
+      { status: 403 }
+    )
+  }
+
+  try {
+    const usuario = await prisma.usuarios.findUnique({
+      where: { usuario_id: params.id, eliminado_en: null }
+    })
+    if (!usuario) {
+      return NextResponse.json(
+        { success: false, message: 'Usuario no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    await prisma.usuarios.update({
+      where: { usuario_id: params.id },
+      data: {
+        eliminado_en: new Date(),
+        eliminado_por: validation.data?.id ?? 'sistema'
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Usuario eliminado correctamente'
+    })
+  } catch (error) {
+    console.error('[DELETE /api/admin/usuarios/[id]]', error)
+    return NextResponse.json(
+      { success: false, message: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}

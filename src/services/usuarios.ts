@@ -91,6 +91,9 @@ export class UserssService {
     const usuarios = await prisma.usuarios.findMany({
       include: {
         usuarios_roles: {
+          where: {
+            eliminado_en: null
+          },
           select: {
             roles: {
               select: {

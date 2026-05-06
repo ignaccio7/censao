@@ -3,7 +3,10 @@
 // oxlint-disable func-style
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from './client'
-import type { CreateUsuarioFormData } from '@/app/dashboard/admin/usuarios/schemas'
+import type {
+  CreateUsuarioFormData,
+  UpdateUsuarioFormData
+} from '@/app/dashboard/admin/usuarios/schemas'
 
 // ─── Tipos de respuesta ───────────────────────────────────────────────────────
 export interface UsuarioListItem {
@@ -85,39 +88,6 @@ export function useUsuarios(params?: {
     }
   })
 
-  // ── Eliminar usuario (soft delete) ─────────────────────────────────────────
-  const deleteUsuario = useMutation({
-    mutationFn: async (usuario_id: string) => {
-      const response = await apiClient.delete(`/admin/usuarios/${usuario_id}`)
-      return response.data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
-    },
-    onError: (error: any) => {
-      console.error('[deleteUsuario]', error)
-    }
-  })
-
-  // ── Activar / Desactivar usuario ───────────────────────────────────────────
-  const toggleUsuario = useMutation({
-    mutationFn: async ({
-      usuario_id,
-      activo
-    }: {
-      usuario_id: string
-      activo: boolean
-    }) => {
-      const response = await apiClient.patch(`/admin/usuarios/${usuario_id}`, {
-        activo
-      })
-      return response.data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
-    }
-  })
-
   return {
     // Query
     usuarios: usuariosQuery.data?.data ?? [],
@@ -129,8 +99,31 @@ export function useUsuarios(params?: {
     errorMessage,
     refetch: usuariosQuery.refetch,
     // Mutations
-    createUsuario,
-    deleteUsuario,
-    toggleUsuario
+    createUsuario
   }
+}
+
+// Hook para un usuario individual (edición)
+export function useUsuario(uuid: string) {
+  const queryClient = useQueryClient()
+
+  const updateUsuario = useMutation({
+    mutationFn: async (data: UpdateUsuarioFormData) => {
+      // Quitar confirmar_password antes de enviar
+      const { confirmar_password, ...payload } = data
+      console.log(confirmar_password) // TODO: quitar error linter de no usar variables no usadas
+
+      // Si password vacío, no enviarlo
+      if (!payload.password || payload.password === '') {
+        delete (payload as any).password
+      }
+      const response = await apiClient.patch(`/admin/usuarios/${uuid}`, payload)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+    }
+  })
+
+  return { updateUsuario }
 }

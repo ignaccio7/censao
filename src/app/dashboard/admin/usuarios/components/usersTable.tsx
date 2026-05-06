@@ -2,7 +2,9 @@ import { IconPencil } from '@/app/components/icons/icons'
 import CustomDataTable from '@/app/components/ui/dataTable'
 import { UserssService } from '@/services/usuarios'
 import Link from 'next/link'
-import { DeleteButton } from './buttonDelete'
+// import { DeleteButton } from './buttonDelete'
+// import { ToggleSwitch } from '@/app/components/ui/toggle-switch'
+import { SwitchState } from './switchState'
 
 interface UsersTableProps {
   search?: string
@@ -16,7 +18,7 @@ export default async function UsersTable({
   numberPerPage = 5
 }: UsersTableProps) {
   // await de 2 segundos
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  // await new Promise(resolve => setTimeout(resolve, 2000))
 
   const usuarios = await UserssService.getAllUsers({
     search,
@@ -53,14 +55,16 @@ export default async function UsersTable({
     <span key={`ci-${usuario.persona_ci}`}>{usuario.persona_ci}</span>,
     <span
       key={`nombres-${usuario.persona_ci}`}
-    >{`${usuario.personas.nombres} ${usuario.personas.paterno} ${usuario.personas.materno}`}</span>,
+    >{`${usuario.personas.nombres} ${usuario.personas.paterno ?? ''} ${usuario.personas.materno ?? ''}`}</span>,
     <span key={`username-${usuario.persona_ci}`}>{usuario.username}</span>,
     <span key={`rol-${usuario.persona_ci}`}>
       {usuario.usuarios_roles.map(ur => ur.roles.nombre).join(', ')}
     </span>,
-    <span key={`estado-${usuario.persona_ci}`}>
-      {usuario.activo ? 'Activo' : 'Inactivo'}
-    </span>,
+    <SwitchState
+      key={`estado-${usuario.usuario_id}`}
+      activo={usuario.activo}
+      usuarioId={usuario.usuario_id}
+    />,
     <div
       key={`acciones-${usuario.persona_ci}`}
       className='flex flex-row gap-2 items-center'
@@ -92,7 +96,7 @@ export default async function UsersTable({
         <IconPencil />
       </Link>
       {/* ---------------------  Eliminar --------------------- */}
-      <DeleteButton id={usuario.usuario_id} />
+      {/* <DeleteButton id={usuario.usuario_id} /> */}
     </div>
   ])
 

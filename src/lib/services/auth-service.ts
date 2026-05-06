@@ -21,6 +21,9 @@ export default class AuthService {
         }
       })
 
+      console.log(username)
+      console.log(password)
+
       if (!user) {
         return null
       }

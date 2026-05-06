@@ -17,7 +17,7 @@ export const Roles = {
 export type RoleType = (typeof Roles)[keyof typeof Roles]
 
 export const RoleGroups = {
-  DOCTOR: [Roles.DOCTOR_FICHAS, Roles.DOCTOR_GENERAL],
+  DOCTOR: [Roles.DOCTOR_FICHAS, Roles.DOCTOR_GENERAL, Roles.ENFERMERIA],
   PACIENTE: [Roles.PACIENTE],
   ADMINISTRADOR: [Roles.ADMINISTRADOR]
 } as const

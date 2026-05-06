@@ -10,6 +10,7 @@ interface FieldProps<T extends FieldValues> {
   type?: string
   form: UseFormReturn<T>
   className?: string
+  disabled?: boolean
 }
 
 export function FieldInput<T extends FieldValues>({
@@ -20,7 +21,8 @@ export function FieldInput<T extends FieldValues>({
   icon,
   type = 'text',
   form,
-  className = ''
+  className = '',
+  disabled = false
 }: FieldProps<T>) {
   const error = form.formState.errors[id]
 
@@ -48,7 +50,10 @@ export function FieldInput<T extends FieldValues>({
           error
             ? 'border-red-400 focus:border-red-500 focus:ring-red-500 bg-red-50'
             : 'border-gray-200 focus:border-primary-600 focus:ring-primary-600'
-        }`}
+        }
+        ${disabled ? 'cursor-not-allowed opacity-50 pointer-events-none' : ''}
+        `}
+        disabled={disabled}
       />
       {error && (
         <span className='text-red-500 text-xs flex items-center gap-1'>
