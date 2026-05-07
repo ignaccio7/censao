@@ -863,6 +863,40 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         descripcion: 'Editar usuarios del sistema',
         modulo: 'administracion'
       },
+      // ************ DOCTORES
+      // -> Inicio
+      {
+        nombre: 'Gestión de Doctores',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/doctores',
+        metodos: ['read', 'create', 'update', 'delete'],
+        icono: 'hospital',
+        descripcion:
+          'Gestionar especialidades y disponibilidades de los doctores en el sistema',
+        modulo: 'administracion'
+      },
+      // -> Crear
+      {
+        nombre: 'Asignacion para el Doctor',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/doctores/crear',
+        metodos: ['create'],
+        icono: 'hospital',
+        descripcion:
+          'Asignaciones de especialidades y disponibilidades a los doctores',
+        modulo: 'administracion'
+      },
+      // -> Editar
+      {
+        nombre: 'Edicion de Asignaciones',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/doctores/:uuid/editar',
+        metodos: ['update'],
+        icono: 'hospital',
+        descripcion:
+          'Editar asignaciones de especialidades y disponibilidades a los doctores',
+        modulo: 'administracion'
+      },
       // ************ VACUNAS
       // -> Inicio
       {
@@ -872,6 +906,26 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         metodos: ['read', 'create', 'update', 'delete'],
         icono: 'vaccine',
         descripcion: 'Gestionar vacunas del sistema',
+        modulo: 'administracion'
+      },
+      // -> Crear
+      {
+        nombre: 'Creacion de Vacunas',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/vacunas/crear',
+        metodos: ['create'],
+        icono: 'vaccine',
+        descripcion: 'Gestionar vacunas del sistema',
+        modulo: 'administracion'
+      },
+      // -> Editar
+      {
+        nombre: 'Edicion de Vacunas',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/vacunas/:uuid/editar',
+        metodos: ['update'],
+        icono: 'vaccine',
+        descripcion: 'Editar vacunas del sistema',
         modulo: 'administracion'
       },
       // ************ BACKEND ************
@@ -892,6 +946,25 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         descripcion: 'API para editar usuarios',
         modulo: 'administracion'
       },
+      // ************ DOCTORES
+      {
+        nombre: 'API Asignaciones de  Doctor',
+        tipo: 'backend',
+        ruta: '/api/admin/doctores',
+        metodos: ['GET', 'POST', 'DELETE'],
+        descripcion:
+          'API para administrar asignaciones de especialidades y disponibilidades a los doctores',
+        modulo: 'administracion'
+      },
+      {
+        nombre: 'API Edicion de Asignaciones para el Doctor',
+        tipo: 'backend',
+        ruta: '/api/admin/doctores/:uuid',
+        metodos: ['GET', 'PATCH'],
+        descripcion:
+          'API para editar asignaciones de especialidades y disponibilidades a los doctores',
+        modulo: 'administracion'
+      },
       // ************ VACUNAS
       {
         nombre: 'API Vacunas Admin',
@@ -899,6 +972,14 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         ruta: '/api/admin/vacunas',
         metodos: ['GET', 'POST', 'DELETE'],
         descripcion: 'API para administrar vacunas',
+        modulo: 'administracion'
+      },
+      {
+        nombre: 'API Edicion de Vacunas',
+        tipo: 'backend',
+        ruta: '/api/admin/vacunas/:uuid',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para editar vacunas',
         modulo: 'administracion'
       }
     ]

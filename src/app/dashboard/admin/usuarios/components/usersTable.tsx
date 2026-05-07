@@ -5,6 +5,8 @@ import Link from 'next/link'
 // import { DeleteButton } from './buttonDelete'
 // import { ToggleSwitch } from '@/app/components/ui/toggle-switch'
 import { SwitchState } from './switchState'
+import { RoleType, RoleValue } from '@/lib/constants'
+import ViewUserSummary from './viewUserSummary'
 
 interface UsersTableProps {
   search?: string
@@ -58,7 +60,9 @@ export default async function UsersTable({
     >{`${usuario.personas.nombres} ${usuario.personas.paterno ?? ''} ${usuario.personas.materno ?? ''}`}</span>,
     <span key={`username-${usuario.persona_ci}`}>{usuario.username}</span>,
     <span key={`rol-${usuario.persona_ci}`}>
-      {usuario.usuarios_roles.map(ur => ur.roles.nombre).join(', ')}
+      {usuario.usuarios_roles
+        .map(ur => RoleValue[ur.roles.nombre as RoleType])
+        .join(', ')}
     </span>,
     <SwitchState
       key={`estado-${usuario.usuario_id}`}
@@ -69,6 +73,7 @@ export default async function UsersTable({
       key={`acciones-${usuario.persona_ci}`}
       className='flex flex-row gap-2 items-center'
     >
+      <ViewUserSummary usuario={usuario} />
       {/* ---------------------  Editar --------------------- */}
       {/* Ahora esta funcionando con un param id */}
       {/* /dashboard/admin/usuarios/editar?id=${usuario.usuario_id}*/}

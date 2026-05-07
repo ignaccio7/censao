@@ -20,7 +20,8 @@ import {
   IconSend,
   IconSystem,
   IconEmail,
-  IconNotification
+  IconNotification,
+  IconHospital
 } from '@/app/components/icons/icons'
 
 const Icons: Record<string, React.FC<{ className?: string; size?: string }>> = {
@@ -39,6 +40,7 @@ const Icons: Record<string, React.FC<{ className?: string; size?: string }>> = {
   schedule: IconSchedule,
   medicineBox: IconMedicineBox,
   team: IconTeam,
+  hospital: IconHospital,
   security: IconSecurity,
   history: IconHistory,
   send: IconSend,

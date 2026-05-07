@@ -9,11 +9,11 @@ import { toast } from 'sonner'
 import { createUsuarioSchema, CreateUsuarioFormData } from '../../schemas'
 import { useUsuarios } from '@/app/services/usuarios'
 
-import StepperIndicator from './stepperIndicator'
-import StepPersona from './stepPersona'
-import StepCredenciales from './stepCredenciales'
-import StepRol from './stepRol'
-import StepResumen from './stepResumen'
+import StepperIndicator from '../multistep/stepperIndicator'
+import StepPersona from '../multistep/stepPersona'
+import StepCredenciales from '../multistep/stepCredenciales'
+import StepRol from '../multistep/stepRol'
+import StepResumen from '../multistep/stepResumen'
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -102,6 +102,9 @@ export default function FormCreateUser({ roles }: FormCreateUserProps) {
     e.stopPropagation()
     const fields = STEP_FIELDS[stepper.state.current.data.id]
     const valid = await form.trigger(fields)
+    console.log(valid)
+    console.log(fields)
+
     if (valid) stepper.navigation.next()
   }
 

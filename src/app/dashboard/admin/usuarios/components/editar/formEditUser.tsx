@@ -9,12 +9,12 @@ import { toast } from 'sonner'
 import { updateUsuarioSchema, UpdateUsuarioFormData } from '../../schemas'
 import { useUsuario } from '@/app/services/usuarios'
 
-import StepperIndicator from '../crear/stepperIndicator'
+import StepperIndicator from '../multistep/stepperIndicator'
 // ↓ Reutilizando los mismos steps de creación
-import StepPersona from '../crear/stepPersona'
-import StepCredenciales from '../crear/stepCredenciales'
-import StepRol from '../crear/stepRol'
-import StepResumen from '../crear/stepResumen'
+import StepPersona from '../multistep/stepPersona'
+import StepCredenciales from '../multistep/stepCredenciales'
+import StepRol from '../multistep/stepRol'
+import StepResumen from '../multistep/stepResumen'
 import {
   IconChevronLeft,
   IconChevronRight

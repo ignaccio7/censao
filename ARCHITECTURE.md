@@ -1,7 +1,7 @@
 # Guía de Referencia Técnica — Proyecto Censao
 
 > Centro de Salud Alto Obrajes · Sistema de Gestión de Fichas Médicas y Monitoreo de Vacunación  
-> **Stack:** Next.js 15 · NextAuth v5 (beta.29) · Prisma v6 · PostgreSQL · TanStack Query · Zustand · Zod v4 · Sonner
+> **Stack:** Next.js 15 · NextAuth v5 (beta.29) · Prisma v6 · PostgreSQL · TanStack Query · Zustand · Zod v4 · Sonner · @stepperize/react
 
 ---
 
@@ -50,13 +50,18 @@ censao/
     │   ├── (inicio)/          # Ruta pública del inicio de sesión (sin layout de dashboard)
     │   ├── api/               # API ROUTES — comunicación cliente→servidor
     │   │   ├── auth/          # Handler de NextAuth ([...nextauth]/route.ts)
+    │   │   ├── admin/         # APIs administrativas (solo ADMINISTRADOR)
+    │   │   │   └── usuarios/  # CRUD de usuarios del sistema
+    │   │   │       ├── route.ts       # GET (lista paginada+search), POST (crear), DELETE (soft delete)
+    │   │   │       └── [uuid]/
+    │   │   │           └── route.ts   # PATCH (actualizar usuario, rol, datos condicionales)
     │   │   ├── fichas/        # route.ts + service.ts — CRUD de fichas
     │   │   │   └── publico/   # route.ts — pantalla pública (sin auth)
     │   │   ├── doctor/        # route.ts — listado de doctores
     │   │   ├── especialidad/  # API de especialidades y disponibilidades
     │   │   ├── tratamientos/  # API de tratamientos
     │   │   └── lib/
-    │   │       └── constants/ # Enums Roles, RECORD_TYPES compartidos entre API y front
+    │   │       └── constants/ # Enums Roles, RoleValue, RoleGroups, RECORD_TYPES compartidos
     │   │
     │   ├── components/        # Componentes REUTILIZABLES globales
     │   │   ├── icons/         # Íconos SVG como componentes React
@@ -64,6 +69,10 @@ censao/
     │   │       ├── dataTable.tsx      # CustomDataTable — tabla principal del sistema
     │   │       ├── modal/modal.tsx    # Modal basado en <dialog> nativo HTML
     │   │       ├── form/custom-input.tsx
+    │   │       ├── pagination.tsx     # Paginación con searchParams (Server Component)
+    │   │       ├── inputSearch.tsx    # Buscador con debounce vía searchParams
+    │   │       ├── skeletons/         # Componentes skeleton para Suspense
+    │   │       │   └── skeletonTable.tsx
     │   │       ├── navbar/
     │   │       ├── sidebar/
     │   │       ├── aside/
@@ -91,6 +100,32 @@ censao/
     │   │   │   └── utils/                 # Utilidades compartidas
     │   │   ├── atencion/      # Feature: Módulo de atención (DOCTOR_FICHAS, DOCTOR_GENERAL, ADMIN)
     │   │   │   └── pacientes/ # Lista y detalle de pacientes del centro (fichas históricas)
+    │   │   ├── admin/         # Feature: Módulo de administración (solo ADMINISTRADOR)
+    │   │   │   ├── usuarios/  # CRUD completo de usuarios con formulario multipaso
+    │   │   │   │   ├── page.tsx              # Lista paginada con search (Server Component)
+    │   │   │   │   ├── schemas/index.ts      # createUsuarioSchema, updateUsuarioSchema (Zod multipaso)
+    │   │   │   │   ├── interfaces/index.ts   # Tipo Usuario
+    │   │   │   │   ├── crear/
+    │   │   │   │   │   └── page.tsx          # Página de creación (carga roles desde DB)
+    │   │   │   │   ├── [uuid]/
+    │   │   │   │   │   └── editar/
+    │   │   │   │   │       └── page.tsx      # Página de edición (carga usuario + roles)
+    │   │   │   │   └── components/
+    │   │   │   │       ├── usersTable.tsx     # Tabla de usuarios (Server Component)
+    │   │   │   │       ├── switchState.tsx    # Toggle activo/inactivo
+    │   │   │   │       ├── buttonDelete.tsx   # Botón de eliminar
+    │   │   │   │       ├── crear/
+    │   │   │   │       │   └── formCreateUser.tsx  # Form multipaso con @stepperize/react
+    │   │   │   │       ├── editar/
+    │   │   │   │       │   └── formEditUser.tsx    # Form multipaso edición (reutiliza steps)
+    │   │   │   │       └── multistep/         # Componentes compartidos del wizard
+    │   │   │   │           ├── stepperIndicator.tsx  # Indicador visual de progreso
+    │   │   │   │           ├── stepPersona.tsx       # Paso 1: Datos personales (CI, nombre...)
+    │   │   │   │           ├── stepCredenciales.tsx  # Paso 2: Username y password
+    │   │   │   │           ├── stepRol.tsx           # Paso 3: Rol + campos condicionales
+    │   │   │   │           └── stepResumen.tsx       # Paso 4: Resumen antes de confirmar
+    │   │   │   └── vacunas/   # Feature: Gestión de vacunas (placeholder)
+    │   │   │       └── page.tsx
     │   │   ├── tratamientos/  # Feature: Tratamientos globales (DOCTOR_GENERAL + ADMIN)
     │   │   ├── estado-doctores/ # Feature: Disponibilidad de médicos
     │   │   ├── notificaciones/ # Feature: Recordatorios
@@ -99,6 +134,7 @@ censao/
     │   ├── services/          # CAPA DE SERVICIO FRONTEND (TanStack Query hooks)
     │   │   ├── client.ts      # Instancia de Axios configurada con baseURL=/api/
     │   │   ├── fichas.ts      # useFichas() — queries y mutations para /api/fichas
+    │   │   ├── usuarios.ts    # useUsuarios(), useUsuario(uuid) — mutations para /api/admin/usuarios
     │   │   └── disponibilidad/
     │   │       └── especialidades.ts # useEspecialidades()
     │   │
@@ -120,11 +156,14 @@ censao/
     │   ├── profile-routes.ts  # { routes, setRoutes, hasPermission, clearRoutes }
     │   └── patient/patient.ts # { fichaId, pacienteId, pacienteNombres, ... }
     │
+    ├── services/              # CAPA DE SERVICIO SERVIDOR (acceso directo a Prisma)
+    │   └── usuarios.ts        # UserssService — getAllUsers(), countUsers() para Server Components
+    │
     └── lib/                   # UTILIDADES DE SERVIDOR
         ├── prisma/prisma.ts   # Singleton del PrismaClient
         ├── services/
         │   └── auth-service.ts # AuthService — validación de credenciales y permisos API
-        └── constants/index.ts # StateRecord, StateRecordValue, Roles
+        └── constants/index.ts # StateRecord, StateRecordValue, Roles, RoleValue, RoleGroups
 ```
 
 > **Nota sobre `src/actions/fichas/create.ts`:** Este archivo tiene un comentario `// ELIMINAR ESTO YA QUE ES UN ENDPOINT DE LA API`. La funcionalidad real de crear fichas se delegó a la API Route `POST /api/fichas`. El Server Action existe como versión alternativa pero no es el flujo activo.
@@ -145,6 +184,13 @@ censao/
 | `/api/fichas/generar-citas-lote` | POST               | `route.ts::POST`            | `citas`, `fichas`, `disponibilidades`                                                                          | Genera fichas en lote de citas programadas del turno (DOCTOR_FICHAS)                   |
 | `/api/atencion/pacientes`        | GET, POST          | —                           | `pacientes`, `personas`, `fichas`                                                                              | Lista pacientes del centro / asigna paciente (DOCTOR_FICHAS, DOCTOR_GENERAL, ADMIN)    |
 | `/api/atencion/pacientes/:uuid`  | GET, PATCH, DELETE | —                           | `pacientes`, `personas`, `fichas`                                                                              | Detalle, modificación y eliminación de paciente (DOCTOR_FICHAS, DOCTOR_GENERAL, ADMIN) |
+| `/api/admin/usuarios`            | GET                | `route.ts::GET`             | `usuarios`, `personas`, `usuarios_roles`, `roles`                                                              | Lista usuarios paginada con búsqueda (solo ADMIN)                                      |
+| `/api/admin/usuarios`            | POST               | `route.ts::POST`            | `personas`, `usuarios`, `usuarios_roles`, `roles`, `doctores`, `pacientes`                                     | Crea usuario completo en transacción (persona+usuario+rol+datos condicionales)         |
+| `/api/admin/usuarios`            | DELETE             | `route.ts::DELETE`          | `usuarios`                                                                                                     | Soft delete de usuario (solo ADMIN)                                                    |
+| `/api/admin/usuarios/:uuid`      | PATCH              | `route.ts::PATCH`           | `personas`, `usuarios`, `usuarios_roles`, `roles`, `doctores`, `pacientes`                                     | Actualiza usuario en transacción (persona+password+rol+datos condicionales)            |
+| `/api/admin/doctores`            | GET                | `DoctoresService`           | `doctores`, `personas`, `doctores_especialidades`, `especialidades`, `disponibilidades`                        | Lista doctores DOCTOR_GENERAL con especialidades y disponibilidades (solo ADMIN)       |
+| `/api/admin/doctores/:uuid`      | GET                | `route.ts::GET`             | `doctores`, `personas`, `doctores_especialidades`, `especialidades`, `disponibilidades`, `turnos_catalogo`     | Detalle del doctor con todas sus asignaciones (solo ADMIN)                             |
+| `/api/admin/doctores/:uuid`      | PATCH              | `route.ts::PATCH`           | `doctores`, `doctores_especialidades`, `disponibilidades`                                                      | Actualiza matrícula + sincroniza especialidades y disponibilidades (inactivación)      |
 | `/api/doctor`                    | GET                | `route.ts::GET`             | `doctores`, `personas`, `doctores_especialidades`                                                              | Lista doctores disponibles                                                             |
 | `/api/especialidad`              | GET                | —                           | `especialidades`, `doctores_especialidades`, `disponibilidades`                                                | Lista especialidades con doctores y capacidades                                        |
 | `/api/estado-doctores`           | GET                | —                           | `doctores`, `disponibilidades`                                                                                 | Disponibilidad y carga de médicos (Enfermería)                                         |
@@ -152,6 +198,7 @@ censao/
 ### 2.2 Convención de Nombres
 
 - Las rutas siguen el patrón de **recursos en español y snake_case** internamente en la DB, pero los endpoints usan **inglés/español simple** (`/api/fichas`, `/api/doctor`).
+- Las rutas administrativas están bajo `/api/admin/` (ej. `/api/admin/usuarios`).
 - Todas las rutas de la API están bajo `/api/` (prefijo de Next.js App Router).
 - Las API Routes NO usan dinamic segments `[id]` todavía — los IDs se pasan en el body del PATCH.
 
@@ -159,12 +206,12 @@ censao/
 
 ```
 fichas
- └─► disponibilidades  (disponibilidad_id)
+ └─► disponibilidades  (disponibilidad_id, estado: Boolean)
       ├─► turnos_catalogo  (turno_codigo: 'AM' | 'PM')
       └─► doctores_especialidades  (doctor_especialidad_id)
            ├─► doctores  (doctor_id)
            │    └─► personas  (doctor_id = personas.ci)
-           └─► especialidades  (especialidad_id)
+           └─► especialidades  (especialidad_id, estado: Boolean)
  └─► pacientes  (paciente_id = personas.ci)
       └─► personas  (paciente_id)
  └─► tratamientos (Contenedor del seguimiento, ej: "Esquema COVID")
@@ -173,6 +220,20 @@ fichas
 
 **La ficha no guarda directamente el doctor ni la especialidad.** Se obtienen navegando por:  
 `ficha → disponibilidad → doctores_especialidades → doctor/especialidad`
+
+### 2.3.1 Campo `estado: Boolean` — Inactivación Lógica
+
+| Tabla              | Campo    | `true`                                      | `false`                                                    |
+| ------------------ | -------- | ------------------------------------------- | ---------------------------------------------------------- |
+| `disponibilidades` | `estado` | Activa — recibe fichas nuevas               | Inactiva — NO recibe fichas nuevas pero conserva historial |
+| `especialidades`   | `estado` | Activa — se puede asignar a nuevos doctores | Inactiva — NO aparece en selects de nuevas asignaciones    |
+
+**Reglas:**
+
+- Al desactivar una disponibilidad, NO se elimina — solo `estado = false`
+- Los doctores que YA tenían una especialidad inactiva conservan sus registros históricos
+- Enfermería al asignar médico filtra `disponibilidades.estado = true`
+- Admin al agregar especialidad a un doctor filtra `especialidades.estado = true`
 
 **Nueva relación `citas → fichas`:** `fichas.cita_origen_id` (nullable FK → `citas.id`) | `citas.ficha_generada fichas[]` (relación `"CitaToFicha"`). NULL = presencial; valor = generada en lote desde cita programada.
 
@@ -293,14 +354,14 @@ if (!validation.success) {
 
 ---
 
-be decir:
+### 3.6 Permisos Administrativos del ADMINISTRADOR
 
-Acción DOCTOR_FICHAS ENFERMERIA DOCTOR_GENERAL ADMINISTRADOR
-Hacer triage (ADMISION→ENFERMERIA) ❌ ✅ ❌ ✅
-Asignar medico (ENFERMERIA→EN_ESPERA) ❌ ✅ ❌ ✅
-Llamar paciente (EN_ESPERA→ATENDIENDO) ❌ ❌ ✅ ❌
-Finalizar atencion (ATENDIENDO→ATENDIDA) ❌ ❌ ✅ ❌
-Nota: Enferme
+| Recurso             | Frontend                                 | Backend                           | Métodos            |
+| ------------------- | ---------------------------------------- | --------------------------------- | ------------------ |
+| Gestión de Usuarios | `/dashboard/admin/usuarios`              | `/api/admin/usuarios`             | CRUD completo      |
+| Crear Usuario       | `/dashboard/admin/usuarios/crear`        | `/api/admin/usuarios` POST        | create             |
+| Editar Usuario      | `/dashboard/admin/usuarios/:uuid/editar` | `/api/admin/usuarios/:uuid` PATCH | update             |
+| Gestión de Vacunas  | `/dashboard/admin/vacunas`               | `/api/admin/vacunas`              | CRUD (placeholder) |
 
 ## 4. Patrones de UI
 
@@ -409,6 +470,101 @@ const onSubmit = async (data: FichaFormData) => {
 ```
 
 **Notificaciones:** siempre con `sonner` (`toast.success` / `toast.error`).
+
+### 4.8 Formularios Multipaso — `@stepperize/react`
+
+**Dependencia:** `@stepperize/react` (librería de stepper declarativo)
+
+**Patrón implementado en:** `src/app/dashboard/admin/usuarios/`
+
+```typescript
+// 1. Definir pasos con defineStepper()
+import { defineStepper } from '@stepperize/react'
+
+const { useStepper } = defineStepper(
+  { id: 'persona', title: 'Datos Personales', description: 'Identificación' },
+  { id: 'credenciales', title: 'Credenciales', description: 'Acceso al sistema' },
+  { id: 'rol', title: 'Rol', description: 'Permisos' },
+  { id: 'resumen', title: 'Confirmar', description: 'Revisión final' }
+)
+
+// 2. Validación parcial por paso con form.trigger()
+const STEP_FIELDS: Record<string, (keyof FormData)[]> = {
+  persona: ['ci', 'nombres', 'paterno', ...],
+  credenciales: ['username', 'password', 'confirmar_password'],
+  rol: ['rol_id'],
+  resumen: []
+}
+
+const handleNext = async (e: React.MouseEvent) => {
+  e.preventDefault()
+  const fields = STEP_FIELDS[stepper.state.current.data.id]
+  const valid = await form.trigger(fields) // Valida SOLO campos del paso actual
+  if (valid) stepper.navigation.next()
+}
+
+// 3. Schema compuesto con merge + superRefine
+const createUsuarioSchema = stepPersonaSchema
+  .merge(stepCredencialesSchema)
+  .merge(stepRolSchema)
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmar_password) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: '...', path: ['confirmar_password'] })
+    }
+  })
+
+// 4. Renderizado condicional por paso
+{stepper.state.current.data.id === 'persona' && <StepPersona form={form} />}
+{stepper.state.current.data.id === 'credenciales' && <StepCredenciales form={form} />}
+
+// 5. Navegación: stepper.navigation.next(), stepper.navigation.prev()
+// 6. Estado: stepper.state.isFirst, stepper.state.isLast
+```
+
+**Reutilización Crear→Editar:** Los componentes de cada paso (`StepPersona`, `StepCredenciales`, `StepRol`, `StepResumen`) aceptan prop `isEdit` para adaptar campos (ej. CI deshabilitado en edición, password opcional).
+
+**Campos condicionales por rol:** `StepRol` muestra campos extra según el rol seleccionado:
+
+- Roles con "DOCTOR": campo `matricula`
+- Rol "PACIENTE": campos `fecha_nacimiento`, `sexo`, `grupo_sanguineo`
+
+### 4.9 Server Components con Auth Directa en Page
+
+**Patrón en páginas administrativas (Server Components):**
+
+```typescript
+// page.tsx — Server Component (NO 'use client')
+export default async function UsuariosPage({ searchParams }) {
+  // Validación de permisos directa en la página
+  const validation = await AuthService.validateApiPermission(
+    '/api/admin/usuarios',
+    'GET'
+  )
+  if (!validation.success) redirect('/dashboard')
+
+  // Datos cargados en servidor con Prisma directo o servicio
+  const usuarios = await UserssService.getAllUsers({
+    search,
+    page,
+    numberPerPage
+  })
+
+  return (
+    <Suspense fallback={<SkeletonTable columns={5} rows={5} />}>
+      <UsersTable search={search} page={page} />
+    </Suspense>
+  )
+}
+```
+
+**Diferencia con el patrón de fichas:** Las páginas admin usan Server Components con `Suspense` + `SkeletonTable` en vez de TanStack Query en el cliente. La data se carga directamente en el servidor vía `UserssService` (Prisma directo).
+
+### 4.10 Servicios Servidor vs Cliente
+
+| Capa         | Ubicación                      | Patrón                                                          | Usado por                            |
+| ------------ | ------------------------------ | --------------------------------------------------------------- | ------------------------------------ |
+| **Servidor** | `src/services/usuarios.ts`     | Clase estática con métodos Prisma (`getAllUsers`, `countUsers`) | Server Components (pages, tables)    |
+| **Cliente**  | `src/app/services/usuarios.ts` | Hooks TanStack Query (`useUsuarios`, `useUsuario`)              | Client Components (forms, mutations) |
 
 ### 4.4 Zustand Stores — Estado Global del Cliente
 
@@ -703,7 +859,7 @@ El código `turno_catalogo` se guarda como string `'AM'` o `'PM'` en la tabla.
 | Item                                      | Archivo                                        | Descripción                                                                                                                                      |
 | ----------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Server Action duplicada                   | `src/actions/fichas/create.ts`                 | Mismo lógica que POST /api/fichas. Comentario dice "ELIMINAR". Usar solo la API Route.                                                           |
-| `any` types                               | múltiples                                      | `formRegister.tsx`, `fichas.ts`, `service.ts` usan `any`. Debería tipificarse con DTOs.                                                          |
+| `any` types                               | múltiples                                      | `formRegister.tsx`, `fichas.ts`, `service.ts`, `formEditUser.tsx` usan `any`. Debería tipificarse con DTOs.                                      |
 | Datos quemados en `useUser`               | `src/hooks/useUser.ts`                         | Mapa de roles con `TODO` — si se añade un nuevo rol no se reflejaría.                                                                            |
 | Un solo modal global                      | `src/store/modal.ts`                           | El store `isOpen` es global y singular — no soporta múltiples modales simultáneos.                                                               |
 | Contadores de tarjetas fijos              | `doctor-fichas.tsx` línea 81                   | Los números "13", "10", "1" están hardcodeados. Debería calcularse desde `fichas`.                                                               |
@@ -712,3 +868,6 @@ El código `turno_catalogo` se guarda como string `'AM'` o `'PM'` en la tabla.
 | ABAC Doctor General desactualizado        | `src/app/api/fichas/service.ts`                | Doctor General debe ver fichas en `EN_ESPERA` (no `ENFERMERIA`). Requiere actualización.                                                         |
 | `doctor-general.tsx` activeTab incorrecto | `sections/dashboard/doctor-general.tsx`        | `activeTab` inicializado en `StateRecordValue.ENFERMERIA` — debe cambiarse a `EN_ESPERA`. `allowedTabs` debe incluir `EN_ESPERA` y `ATENDIENDO`. |
 | Enfermería ABAC desactualizado            | `src/app/api/fichas/service.ts` ABAC           | Enfermería debe ver fichas en `ADMISION`. Al asignar médico, cambia a `EN_ESPERA`.                                                               |
+| Typo en nombre de servicio                | `src/services/usuarios.ts`                     | Clase se llama `UserssService` (doble 's'). Debería ser `UsersService`.                                                                          |
+| Console.logs en producción                | `admin/usuarios/` múltiples archivos           | Múltiples `console.log` de depuración en page.tsx, usersTable.tsx, route.ts. Limpiar antes de producción.                                        |
+| Vacunas admin placeholder                 | `dashboard/admin/vacunas/page.tsx`             | Página vacía de 66 bytes. Pendiente de implementar.                                                                                              |

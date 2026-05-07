@@ -40,26 +40,25 @@ export const stepPersonaSchema = z.object({
 })
 
 // ─── Paso 2: Credenciales ──────────────────────────────────────────────────
-export const stepCredencialesSchema = z
-  .object({
-    username: z
-      .string()
-      .min(4, 'El usuario debe tener al menos 4 caracteres')
-      .max(50, 'El usuario no puede exceder 50 caracteres')
-      .regex(
-        /^[a-zA-Z0-9._-]+$/,
-        'Solo se permiten letras, números, puntos, guiones y guiones bajos'
-      ),
-    password: z
-      .string()
-      .min(8, 'La contraseña debe tener al menos 8 caracteres')
-      .max(30, 'La contraseña no puede exceder 30 caracteres'),
-    confirmar_password: z.string().min(1, 'Confirme la contraseña')
-  })
-  .refine(data => data.password === data.confirmar_password, {
-    message: 'Las contraseñas no coinciden',
-    path: ['confirmar_password']
-  })
+export const stepCredencialesSchema = z.object({
+  username: z
+    .string()
+    .min(4, 'El usuario debe tener al menos 4 caracteres')
+    .max(50, 'El usuario no puede exceder 50 caracteres')
+    .regex(
+      /^[a-zA-Z0-9._-]+$/,
+      'Solo se permiten letras, números, puntos, guiones y guiones bajos'
+    ),
+  password: z
+    .string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .max(30, 'La contraseña no puede exceder 30 caracteres'),
+  confirmar_password: z.string().min(1, 'Confirme la contraseña')
+})
+// .refine(data => data.password === data.confirmar_password, { pasamos esta validacion al esquema completo mediante un superRefine ya que no era capaz de validar el metodo trigger
+//   message: 'Las contraseñas no coinciden',
+//   path: ['confirmar_password']
+// })
 
 // ─── Paso 3: Rol y tipo de cuenta ─────────────────────────────────────────
 export const stepRolSchema = z.object({
@@ -79,7 +78,35 @@ export const stepRolSchema = z.object({
 export const createUsuarioSchema = stepPersonaSchema
   .merge(stepCredencialesSchema)
   .merge(stepRolSchema)
-// .merge(stepCredencialesSchema.omit({ confirmar_password: true }))
+  .superRefine((data, ctx) => {
+    // Validación de contraseñas coincidentes
+    if (data.password !== data.confirmar_password) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Las contraseñas no coinciden',
+        path: ['confirmar_password']
+      })
+    }
+
+    // Opcional: Validaciones condicionales por rol
+    // Si rol es doctor (ajusta el ID según tu base de datos)
+    // if (data.rol_id === 'doctor-id-aqui' && !data.matricula) {
+    //   ctx.addIssue({
+    //     code: z.ZodIssueCode.custom,
+    //     message: 'La matrícula es requerida para doctores',
+    //     path: ['matricula']
+    //   });
+    // }
+
+    // Si rol es paciente
+    // if (data.rol_id === 'paciente-id-aqui' && !data.fecha_nacimiento) {
+    //   ctx.addIssue({
+    //     code: z.ZodIssueCode.custom,
+    //     message: 'La fecha de nacimiento es requerida',
+    //     path: ['fecha_nacimiento']
+    //   });
+    // }
+  })
 
 // ─── Tipos inferidos ───────────────────────────────────────────────────────
 export type StepPersonaData = z.infer<typeof stepPersonaSchema>

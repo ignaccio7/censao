@@ -61,23 +61,24 @@ model fichas {
   @@unique([disponibilidad_id, fecha_ficha, orden_turno])
 }
 
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model disponibilidades {
-  id                      String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  turno_codigo            String
-  cupos                   Int                     @default(0)
-  observacion             String?
-  creado_en               DateTime                @default(now()) @db.Timestamptz(0)
-  creado_por              String?
-  actualizado_en          DateTime                @default(now()) @db.Timestamptz(0)
-  actualizado_por         String?
-  eliminado_en            DateTime?               @db.Timestamptz(0)
-  eliminado_por           String?
-  doctor_especialidad_id  String                  @db.Uuid
-  fichas                  fichas[]
-  doctores_especialidades doctores_especialidades @relation(fields: [doctor_especialidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  turnos_catalogo         turnos_catalogo         @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_turno_codigo_foreign")
-}
+  /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+  model disponibilidades {
+    id                      String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    turno_codigo            String
+    cupos                   Int                     @default(0)
+    observacion             String?
+    estado                  Boolean                 @default(true)  // true = activo, false = inactivo/eliminado
+    creado_en               DateTime                @default(now()) @db.Timestamptz(0)
+    creado_por              String?
+    actualizado_en          DateTime                @default(now()) @db.Timestamptz(0)
+    actualizado_por         String?
+    eliminado_en            DateTime?               @db.Timestamptz(0)
+    eliminado_por           String?
+    doctor_especialidad_id  String                  @db.Uuid
+    fichas                  fichas[]
+    doctores_especialidades doctores_especialidades @relation(fields: [doctor_especialidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    turnos_catalogo         turnos_catalogo         @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_turno_codigo_foreign")
+  }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model doctores {
@@ -363,6 +364,7 @@ model especialidades {
   id                      String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   nombre                  String
   descripcion             String?
+  estado                  Boolean                   @default(true)  // true = activo, false = inactivo/eliminado
   creado_en               DateTime                  @default(now()) @db.Timestamptz(0)
   creado_por              String?
   actualizado_en          DateTime                  @default(now()) @db.Timestamptz(0)
