@@ -875,20 +875,9 @@ const USUARIO_ADMIN: UsuarioCompleto = {
           'Gestionar especialidades y disponibilidades de los doctores en el sistema',
         modulo: 'administracion'
       },
-      // -> Crear
+      // -> Asignar
       {
-        nombre: 'Asignacion para el Doctor',
-        tipo: 'frontend',
-        ruta: '/dashboard/admin/doctores/crear',
-        metodos: ['create'],
-        icono: 'hospital',
-        descripcion:
-          'Asignaciones de especialidades y disponibilidades a los doctores',
-        modulo: 'administracion'
-      },
-      // -> Editar
-      {
-        nombre: 'Edicion de Asignaciones',
+        nombre: 'Asignaciones de especialidades y disponibilidades a doctores',
         tipo: 'frontend',
         ruta: '/dashboard/admin/doctores/:uuid/editar',
         metodos: ['update'],

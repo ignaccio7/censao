@@ -35,7 +35,7 @@ export default async function DoctoresPage({
   const estado = params?.estado ?? ''
   const especialidad = params?.especialidad ?? ''
 
-  const numberPerPage = 1
+  const numberPerPage = 10
   const totalResults = await DoctoresService.countDoctores({
     search,
     estado,

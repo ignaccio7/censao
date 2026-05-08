@@ -44,7 +44,8 @@ export async function GET() {
                   codigo: {
                     equals: turno
                   }
-                }
+                },
+                estado: true
               }
             }
           },
@@ -67,7 +68,8 @@ export async function GET() {
                   codigo: {
                     equals: turno
                   }
-                }
+                },
+                estado: true
               },
               select: {
                 cupos: true,

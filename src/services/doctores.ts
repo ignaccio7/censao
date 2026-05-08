@@ -121,6 +121,14 @@ export class DoctoresService {
           }
         },
         doctores_especialidades: {
+          where: {
+            disponibilidades: {
+              some: {
+                estado: true,
+                eliminado_en: null
+              }
+            }
+          },
           include: {
             especialidades: {
               select: { id: true, nombre: true, estado: true }

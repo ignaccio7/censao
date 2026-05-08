@@ -134,7 +134,7 @@ export async function GET() {
       const espNombre = docEsp?.especialidades?.nombre
       const docPersona = docEsp?.doctores?.personas
       const docNombre =
-        `${docPersona?.nombres} ${docPersona?.paterno} ${docPersona?.materno}`.trim()
+        `${docPersona?.nombres} ${docPersona?.paterno || ''} ${docPersona?.materno || ''}`.trim()
       const key = `${docEsp?.especialidad_id}-${docNombre}`
 
       if (!agrupado.has(key)) {
@@ -158,7 +158,7 @@ export async function GET() {
       const espNombre = docEsp?.especialidades?.nombre
       const docPersona = docEsp?.doctores?.personas
       const docNombre =
-        `${docPersona?.nombres} ${docPersona?.paterno} ${docPersona?.materno}`.trim()
+        `${docPersona?.nombres} ${docPersona?.paterno || ''} ${docPersona?.materno || ''}`.trim()
       const key = `${docEsp?.especialidad_id}-${docNombre}`
 
       if (!agrupado.has(key)) {

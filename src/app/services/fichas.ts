@@ -49,7 +49,7 @@ export function useFichas(refetchInterval: number | false = false) {
 
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['fichas'] })
-      queryClient.invalidateQueries({ queryKey: ['espcialidad'] })
+      queryClient.invalidateQueries({ queryKey: ['especialidad'] })
       console.log('PATCH FICHAS')
       console.log(data)
     },

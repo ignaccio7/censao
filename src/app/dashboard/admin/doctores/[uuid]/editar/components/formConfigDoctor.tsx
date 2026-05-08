@@ -14,6 +14,7 @@ import {
   IconTrash,
   IconAlertCircle
 } from '@/app/components/icons/icons'
+import { useDoctor } from '@/app/services/doctores'
 
 interface Especialidad {
   id: string
@@ -43,6 +44,7 @@ export default function FormConfigDoctor({
   turnosDisponibles
 }: Props) {
   const router = useRouter()
+  const { assignAvailabilitiesAndSpecialties } = useDoctor(doctorId)
 
   const form = useForm<ConfigDoctorFormData>({
     resolver: zodResolver(configDoctorSchema),
@@ -69,12 +71,8 @@ export default function FormConfigDoctor({
 
   const onSubmit = async (data: ConfigDoctorFormData) => {
     try {
-      const res = await fetch(`/api/admin/doctores/${doctorId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      const result = await res.json()
+      const result = await assignAvailabilitiesAndSpecialties.mutateAsync(data)
+      console.log(result)
 
       if (result.success) {
         toast.success(result.message ?? 'Configuración del doctor actualizada')
@@ -271,6 +269,8 @@ function EspecialidadCard({
   }[] = form.watch(`especialidades.${index}.disponibilidades`) ?? []
 
   const errors = form.formState.errors?.especialidades?.[index]
+
+  console.log('render')
 
   return (
     <div className='p-4 border border-gray-200 rounded-xl bg-gray-50 space-y-3'>

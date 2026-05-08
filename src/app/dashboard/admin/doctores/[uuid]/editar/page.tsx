@@ -1,6 +1,5 @@
 import Title from '@/app/components/ui/title'
-import AuthService from '@/lib/services/auth-service'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { IconChevronLeft } from '@/app/components/icons/icons'
 import prisma from '@/lib/prisma/prisma'
@@ -11,14 +10,6 @@ interface Props {
 }
 
 export default async function ConfigurarDoctorPage({ params }: Props) {
-  const validation = await AuthService.validateApiPermission(
-    '/api/admin/doctores/:uuid',
-    'PATCH'
-  )
-  if (!validation.success) {
-    redirect('/dashboard')
-  }
-
   const { uuid } = await params
 
   // Cargar doctor con sus especialidades y disponibilidades
@@ -29,6 +20,14 @@ export default async function ConfigurarDoctorPage({ params }: Props) {
         select: { ci: true, nombres: true, paterno: true, materno: true }
       },
       doctores_especialidades: {
+        where: {
+          disponibilidades: {
+            some: {
+              estado: true,
+              eliminado_en: null
+            }
+          }
+        },
         include: {
           especialidades: {
             select: { id: true, nombre: true, estado: true }
@@ -49,6 +48,8 @@ export default async function ConfigurarDoctorPage({ params }: Props) {
   if (!doctor) {
     notFound()
   }
+
+  console.log(doctor)
 
   // Especialidades activas para nuevas asignaciones
   const especialidades = await prisma.especialidades.findMany({
@@ -75,6 +76,8 @@ export default async function ConfigurarDoctorPage({ params }: Props) {
       }))
     }))
   }
+
+  console.log(defaultValues)
 
   const nombreCompleto = [
     doctor.personas.nombres,

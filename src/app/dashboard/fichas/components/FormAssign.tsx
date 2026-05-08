@@ -36,6 +36,8 @@ export default function FormAssign({
     nombre
   })
 
+  console.log(especialidades)
+
   const {
     register,
     handleSubmit,

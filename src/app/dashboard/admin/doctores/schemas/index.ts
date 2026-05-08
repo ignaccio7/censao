@@ -3,7 +3,7 @@ import { z } from 'zod'
 const disponibilidadSchema = z.object({
   turno_codigo: z.string().min(1, 'Seleccione un turno'),
   cupos: z.number().int().min(0, 'Los cupos deben ser 0 o más'),
-  estado: z.boolean().default(true)
+  estado: z.boolean()
 })
 
 const especialidadAsignacionSchema = z.object({

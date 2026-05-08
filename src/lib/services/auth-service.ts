@@ -239,7 +239,7 @@ export default class AuthService {
     return {
       id: user.usuario_id,
       username: user.username,
-      name: `${user?.personas?.nombres} ${user?.personas?.paterno} ${user?.personas?.materno}`,
+      name: `${user?.personas?.nombres} ${user?.personas?.paterno || ''} ${user?.personas?.materno || ''}`,
       role: primaryRole?.nombre || '',
       roleDescription: primaryRole?.descripcion || '',
       permisos
