@@ -1305,10 +1305,7 @@ async function main() {
         descripcion: 'Atención general de pacientes'
       },
       { nombre: 'Odontología', descripcion: 'Atención odontológica' },
-      {
-        nombre: 'Enfermería',
-        descripcion: 'Personal de enfermería para triage'
-      }
+      { nombre: 'Pediatría', descripcion: 'Atención a pacientes pediátricos' }
     ]
 
     const especialidades = []
@@ -1327,13 +1324,9 @@ async function main() {
     const doctorOdonto2 = await prisma.doctores.findUnique({
       where: { doctor_id: '33333333' }
     })
-    const enfermeriaDoctor = await prisma.doctores.findUnique({
-      where: { doctor_id: '44444444' }
-    })
 
     const espGeneral = especialidades.find(e => e.nombre === 'Medicina General')
     const espOdonto = especialidades.find(e => e.nombre === 'Odontología')
-    const espEnfermeria = especialidades.find(e => e.nombre === 'Enfermería')
 
     // Relación doctor general → medicina general
     const doctorEspGeneral = await prisma.doctores_especialidades.create({
@@ -1355,14 +1348,6 @@ async function main() {
       data: {
         doctor_id: doctorOdonto2!.doctor_id,
         especialidad_id: espOdonto!.id
-      }
-    })
-
-    // Relación enfermería - enfermería
-    const doctorEspEnfermeria = await prisma.doctores_especialidades.create({
-      data: {
-        doctor_id: enfermeriaDoctor!.doctor_id,
-        especialidad_id: espEnfermeria!.id
       }
     })
 
@@ -1403,22 +1388,6 @@ async function main() {
         //   doctor_especialidad_id: doctorEspOdonto2.id,
         //   turno_codigo: 'PM'
         // }
-      ]
-    })
-
-    // Enfermeria -> (turno mañana y tarde)
-    await prisma.disponibilidades.createMany({
-      data: [
-        {
-          doctor_especialidad_id: doctorEspEnfermeria.id,
-          turno_codigo: 'AM',
-          cupos: 0 // Cupos ilimitados para enfermería
-        },
-        {
-          doctor_especialidad_id: doctorEspEnfermeria.id,
-          turno_codigo: 'PM',
-          cupos: 0
-        }
       ]
     })
 

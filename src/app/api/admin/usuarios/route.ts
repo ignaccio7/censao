@@ -5,6 +5,7 @@ import AuthService from '@/lib/services/auth-service'
 import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { RoleGroups } from '../../lib/constants'
 
 // ─── Schema de validación para crear usuario ──────────────────────────────────
 const createUsuarioSchema = z.object({
@@ -208,7 +209,7 @@ export async function POST(req: NextRequest) {
     const password_hash = await bcrypt.hash(password, 12)
 
     // Determinar tipo de rol para crear registros adicionales
-    const rolNombre = rol.nombre.toUpperCase()
+    const rolNombre = rol.nombre
 
     // Transacción: crear todo en cadena
     const resultado = await prisma.$transaction(async tx => {
@@ -249,18 +250,18 @@ export async function POST(req: NextRequest) {
       })
 
       // 4. Crear doctor si aplica
-      if (rolNombre.includes('DOCTOR') && matricula) {
+      if (RoleGroups.DOCTOR.includes(rolNombre as any)) {
         await tx.doctores.create({
           data: {
             doctor_id: ci,
-            matricula,
+            matricula: matricula || null,
             creado_por: idUser ?? 'sistema'
           }
         })
       }
 
       // 5. Crear paciente si aplica
-      if (rolNombre === 'PACIENTE') {
+      if (RoleGroups.PACIENTE.includes(rolNombre as any)) {
         await tx.pacientes.create({
           data: {
             paciente_id: ci,

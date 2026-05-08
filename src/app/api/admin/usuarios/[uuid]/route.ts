@@ -1,4 +1,4 @@
-import { RoleGroups, Roles } from '@/app/api/lib/constants'
+import { RoleGroups } from '@/app/api/lib/constants'
 import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
 import bcrypt from 'bcryptjs'
@@ -141,17 +141,20 @@ export async function PATCH(
       const rolNombreNuevo = rolNuevo?.nombre
 
       // 5. Datos de doctor — actualizar si ya existe, crear si no existe
-      // if (rolNombreNuevo.includes('DOCTOR') && matricula) {
-      if (RoleGroups.DOCTOR.includes(rolNombreNuevo as any) && matricula) {
+      if (RoleGroups.DOCTOR.includes(rolNombreNuevo as any)) {
         await tx.doctores.upsert({
           where: { doctor_id: ci },
-          update: { matricula, actualizado_por: idUser },
-          create: { doctor_id: ci, matricula, creado_por: idUser }
+          update: { matricula: matricula || null, actualizado_por: idUser },
+          create: {
+            doctor_id: ci,
+            matricula: matricula || null,
+            creado_por: idUser
+          }
         })
       }
 
       // 6. Datos de paciente — upsert igual
-      if (rolNombreNuevo === Roles.PACIENTE) {
+      if (RoleGroups.PACIENTE.includes(rolNombreNuevo as any)) {
         await tx.pacientes.upsert({
           where: { paciente_id: ci },
           update: {
