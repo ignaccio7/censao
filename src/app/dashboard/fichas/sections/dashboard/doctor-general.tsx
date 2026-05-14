@@ -16,6 +16,7 @@ import Modal from '@/app/components/ui/modal/modal'
 import usePatientStore from '@/store/patient/patient'
 import { useFichas } from '@/app/services/fichas'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 /** Devuelve clase CSS de fila según estado */
 const getRowStyle = (estado: string): string => {
@@ -100,6 +101,7 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
               })
               setModal(true)
             }}
+            data-testid={`btn-abrir-consulta-${index}`}
           >
             <IconStethoscope
               className='cursor-pointer border border-transparent bg-primary-600 text-white py-1 rounded-md hover:border-primary-600 hover:text-primary-600 hover:bg-transparent transition-all duration-300'
@@ -123,10 +125,18 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
 
   // Paso 2a: ATENDIENDO → ATENDIDA
   const attendPatient = () => {
-    updateFicha.mutateAsync({
-      id: fichaId as string,
-      status: StateRecord.ATENDIDA
-    })
+    updateFicha
+      .mutateAsync({
+        id: fichaId as string,
+        status: StateRecord.ATENDIDA
+      })
+      .then(() => {
+        toast.success('Ficha atendida exitosamente.')
+      })
+      .catch((error: any) => {
+        console.log(error)
+        toast.error('Error al atender la ficha.')
+      })
     setModal(false)
     clearPatient()
   }
@@ -221,6 +231,7 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
             <button
               className='bg-transparent border-4 border-primary-600 text-primary-600 py-2 px-4 rounded-md hover:bg-primary-600 hover:text-white transition-colors duration-200 cursor-pointer'
               onClick={callPatient}
+              data-testid='btn-llamar-paciente'
             >
               <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
                 Llamar al paciente
@@ -236,6 +247,7 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
             <button
               className='bg-transparent border-4 border-primary-600 text-primary-600 py-2 px-4 rounded-md hover:bg-primary-600 hover:text-white transition-colors duration-200 cursor-pointer'
               onClick={attendPatient}
+              data-testid='btn-marcar-atendido'
             >
               <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
                 Marcar como atendido

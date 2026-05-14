@@ -85,6 +85,7 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
             <button
               className='flex gap-2 items-center bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer'
               onClick={handleOpenNewFicha}
+              data-testid='btn-abrir-modal-crear-ficha'
             >
               <IconPlus />
               Registrar nueva ficha

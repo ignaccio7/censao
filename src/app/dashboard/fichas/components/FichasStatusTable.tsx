@@ -126,6 +126,7 @@ export default function FichasStatusTable({
             onClick={() => onCallTriage(d)}
             title='Llamar al paciente para triage'
             className='px-2 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition-colors font-medium cursor-pointer flex items-center gap-1'
+            data-testid={`btn-llamar-triage-${ficha.ficha_id}`}
           >
             <IconStethoscope size='14' />
             Llamar

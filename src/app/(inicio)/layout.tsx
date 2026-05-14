@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import NavbarIndex from '../components/ui/navbar/navbar-index'
 
 export const metadata: Metadata = {
-  description: 'Description of the page',
-  title: 'Page Title'
+  description: 'Centro de salud para atencion medica de pacientes',
+  title: 'CENSAO - Centro de salud Alto Obrajes'
 }
 
 export default function Layout({

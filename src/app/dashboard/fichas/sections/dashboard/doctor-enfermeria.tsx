@@ -27,8 +27,8 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
   const [assignData, setAssignData] = useState<FichaActionData | null>(null)
 
   // ADMISION → ENFERMERIA: PATCH directo, sin modal
-  const handleCallTriage = (data: FichaActionData) => {
-    updateFicha.mutateAsync({
+  const handleCallTriage = async (data: FichaActionData) => {
+    await updateFicha.mutateAsync({
       id: data.fichaId,
       status: StateRecord.ENFERMERIA
     })

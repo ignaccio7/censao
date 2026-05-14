@@ -419,7 +419,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       {
         success: true,
         message: validData.especialidad
-          ? 'Ficha reasignada exitosamente'
+          ? 'Ficha asignada exitosamente'
           : 'Ficha actualizada exitosamente'
       },
       {

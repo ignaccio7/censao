@@ -214,6 +214,7 @@ export default function FormAssign({
           type='submit'
           disabled={updateFicha.isPending}
           className='w-full bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer flex gap-2 items-center justify-center col-span-1 md:col-span-2 disabled:opacity-50 disabled:cursor-not-allowed'
+          data-testid='btn-asignar-ficha'
         >
           {updateFicha.isPending ? (
             <>
