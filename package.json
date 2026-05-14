@@ -27,6 +27,7 @@
     "test:funcional": "playwright test tests/funcionales",
     "test:e2e": "playwright test tests/e2e",
     "test:regresion": "playwright test",
+    "test:unit": "vitest run",
     "prepare": "husky",
     "lint-staged": "lint-staged",
     "commit": "cz"
@@ -76,7 +77,8 @@
     "prisma": "6.15.0",
     "tailwindcss": "4",
     "tsx": "4.20.5",
-    "typescript": "5"
+    "typescript": "5",
+    "vitest": "^4.1.6"
   },
   "config": {
     "commitizen": {

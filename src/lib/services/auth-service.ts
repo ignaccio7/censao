@@ -21,8 +21,8 @@ export default class AuthService {
         }
       })
 
-      console.log(username)
-      console.log(password)
+      // console.log(username)
+      // console.log(password)
 
       if (!user) {
         return null
@@ -39,14 +39,14 @@ export default class AuthService {
         user.usuario_id
       )
 
-      console.log(
-        '*****************************************************************************************'
-      )
-      console.log('PERMISOS DEL USUARIO')
-      console.log(JSON.stringify(userWithPermissionsForJWT, null, 2))
+      // console.log(
+      //   '*****************************************************************************************'
+      // )
+      // console.log('PERMISOS DEL USUARIO')
+      // console.log(JSON.stringify(userWithPermissionsForJWT, null, 2))
 
       const d = this.formatUserData(userWithPermissionsForJWT, true)
-      console.log(d)
+      // console.log(d)
 
       return d
     } catch (error) {
@@ -76,10 +76,10 @@ export default class AuthService {
 
   static async validateApiPermission(route: string, method: string) {
     const session = await auth()
-    console.log(
-      '-------------------------------------------------------------------SESION PARA VALIDAR API'
-    )
-    console.log(session)
+    // console.log(
+    //   '-------------------------------------------------------------------SESION PARA VALIDAR API'
+    // )
+    // console.log(session)
 
     if (!session || !session.user.id) {
       return {
@@ -214,10 +214,10 @@ export default class AuthService {
   private static formatUserData(user: any, isJWT = false) {
     // oxlint-disable-next-line no-magic-numbers
 
-    console.log(
-      '-----------------------------------------------------------------------------------------------------------------'
-    )
-    console.log(JSON.stringify(user, null, 2))
+    // console.log(
+    //   '-----------------------------------------------------------------------------------------------------------------'
+    // )
+    // console.log(JSON.stringify(user, null, 2))
 
     const primaryRole = user.usuarios_roles[0]?.roles
     let permisos = []
