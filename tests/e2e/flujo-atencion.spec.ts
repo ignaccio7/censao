@@ -31,14 +31,17 @@ test('Flujo completo: ficha presencial de ADMISION a ATENDIDA', async ({
   // ============================================
   await loginWithUser(page, 'enfermeria')
   await page.goto('http://localhost:3000/dashboard/fichas')
+  // Espera a que la página termine TODAS las peticiones de red. Esto es importante para asegurarnos de que la tabla de fichas esté completamente cargada antes de interactuar con ella.
   await page.waitForLoadState('networkidle')
 
   // Un solo click usando posición en tabla
-  const primeraFila = page.locator('tbody tr').first()
-  await expect(primeraFila.getByRole('button').first()).toBeVisible({
+  const primeraFila = page.locator('table tbody tr').first()
+  await expect(
+    primeraFila.getByRole('button', { name: 'Llamar' }).first()
+  ).toBeVisible({
     timeout: 10000
   })
-  await primeraFila.getByRole('button').first().click()
+  await primeraFila.getByRole('button', { name: 'Llamar' }).first().click()
 
   // Espera que el botón cambie a "Asignar médico"
   const btnAsignar = page
@@ -50,37 +53,40 @@ test('Flujo completo: ficha presencial de ADMISION a ATENDIDA', async ({
   // ============================================
   // PASO 3: Asigna especialidad y doctor
   // ============================================
-  await expect(
-    page.getByRole('heading', { name: 'Asignar ficha a médico' })
-  ).toBeVisible()
+  await expect(page.getByTestId('modal-title')).toHaveText(
+    'Asignar ficha a médico'
+  )
 
-  await page.locator('#especialidad').selectOption({ index: 1 })
-  await expect(page.locator('#doctor')).toBeEnabled({ timeout: 10000 })
-  await page.locator('#doctor').selectOption({ index: 1 })
+  const formAssign = page.getByTestId('form-assign-record')
+  await expect(formAssign).toBeVisible()
+  await formAssign.locator('#especialidad').selectOption({ index: 1 })
+  await expect(formAssign.locator('#doctor')).toBeEnabled({ timeout: 10000 })
+  await formAssign.locator('#doctor').selectOption({ index: 1 })
 
   // Verifica que el data-testid existe antes de hacer click
-  await page.getByTestId('btn-asignar-ficha').click()
-  await expect(page.getByText('Ficha asignada')).toBeVisible({ timeout: 10000 })
+  await formAssign.getByTestId('btn-asignar-ficha').click()
+  await expect(page.getByText('Ficha asignada')).toBeVisible({ timeout: 15000 })
 
   // ============================================
   // PASO 4: Doctor General llama y atiende
   // ============================================
-  await loginWithUser(page, 'odontologa') // o doctor.general según tu usuario
+  await loginWithUser(page, 'doctor.general') // o doctor.general según tu usuario
   await page.goto('http://localhost:3000/dashboard/fichas')
   await page.waitForLoadState('networkidle')
 
   // Busca en la primera tabla (tab En Espera activo por defecto)
-  const tablaActiva = page.locator('tbody').first()
+  const tablaActiva = page.locator('table tbody').first()
   const btnConsulta = tablaActiva
-    .locator('[data-testid^="btn-abrir-consulta-"]')
+    .locator('[data-testid^="btn-doctor-abrir-modal-consulta-"]')
     .first()
   await expect(btnConsulta).toBeVisible()
   await btnConsulta.click()
 
   // Modal muestra "Llamar al paciente" — ficha está en EN_ESPERA
-  await expect(
-    page.getByRole('heading', { name: 'Registro de consulta' })
-  ).toBeVisible()
+  await expect(page.getByTestId('modal-title')).toHaveText(
+    'Registro de consulta'
+  )
+
   await page.getByTestId('btn-llamar-paciente').click()
 
   // Modal se cierra, fila cambia a ATENDIENDO

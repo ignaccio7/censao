@@ -101,7 +101,7 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
               })
               setModal(true)
             }}
-            data-testid={`btn-abrir-consulta-${index}`}
+            data-testid={`btn-doctor-abrir-modal-consulta-${index}`}
           >
             <IconStethoscope
               className='cursor-pointer border border-transparent bg-primary-600 text-white py-1 rounded-md hover:border-primary-600 hover:text-primary-600 hover:bg-transparent transition-all duration-300'

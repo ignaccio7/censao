@@ -96,10 +96,12 @@ export default function FormAssign({
       <form
         className='my-2 md:my-4 grid grid-cols-1 md:grid-cols-2 gap-4'
         onSubmit={handleSubmit(onSubmit)}
+        id='form-assign-record'
+        data-testid='form-assign-record'
       >
         {/* Cédula */}
         <label
-          htmlFor='reassign-cedula'
+          htmlFor='assign-cedula'
           className='text-step-0 w-full flex flex-col gap-1'
         >
           <span className='font-semibold flex gap-1 items-center'>
@@ -109,7 +111,7 @@ export default function FormAssign({
           <input
             className='p-2 border rounded-md bg-gray-100 text-gray-500 cursor-not-allowed border-transparent'
             type='text'
-            id='reassign-cedula'
+            id='assign-cedula'
             value={cedula}
             disabled
           />
@@ -117,7 +119,7 @@ export default function FormAssign({
 
         {/* Nombre */}
         <label
-          htmlFor='reassign-nombre'
+          htmlFor='assign-nombre'
           className='text-step-0 w-full flex flex-col gap-1'
         >
           <span className='font-semibold flex gap-1 items-center'>
@@ -127,7 +129,7 @@ export default function FormAssign({
           <input
             className='p-2 border rounded-md bg-gray-100 text-gray-500 cursor-not-allowed border-transparent'
             type='text'
-            id='reassign-nombre'
+            id='assign-nombre'
             value={nombre}
             disabled
           />
