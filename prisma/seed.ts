@@ -376,6 +376,34 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         descripcion: 'Gestionar pacientes asignados',
         modulo: 'atencion'
       },
+      // - Tratamientos de vacunas
+      {
+        nombre: 'Tratamientos',
+        tipo: 'frontend',
+        ruta: '/dashboard/tratamientos',
+        metodos: ['read', 'create', 'update', 'delete'],
+        icono: 'history',
+        descripcion: 'Gestionar tratamientos de vacunas de pacientes',
+        modulo: 'tratamientos'
+      },
+      {
+        nombre: 'Detalle Tratamiento de vacuna',
+        tipo: 'frontend',
+        ruta: '/dashboard/tratamientos/:uuid',
+        metodos: ['read', 'update', 'delete'],
+        icono: 'history',
+        descripcion: 'Gestionar detalle de tratamiento de vacuna',
+        modulo: 'tratamientos'
+      },
+      {
+        nombre: 'Crear Tratamientos de vacuna',
+        tipo: 'frontend',
+        ruta: '/dashboard/tratamientos/:uuid/crear',
+        metodos: ['create'],
+        icono: 'history',
+        descripcion: 'Crear tratamientos de vacunas de pacientes',
+        modulo: 'tratamientos'
+      },
       // BACKEND - APIs para enfermería
       // - Fichas
       {
@@ -410,6 +438,31 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         metodos: ['GET', 'PATCH', 'DELETE'],
         descripcion: 'API para modificar los pacientes del Centro',
         modulo: 'atencion'
+      },
+      // - Tratamientos
+      {
+        nombre: 'API Tratamientos',
+        tipo: 'backend',
+        ruta: '/api/tratamientos',
+        metodos: ['GET', 'POST'],
+        descripcion: 'API para gestión de tratamientos',
+        modulo: 'tratamientos'
+      },
+      {
+        nombre: 'API Tratamientos Paciente',
+        tipo: 'backend',
+        ruta: '/api/tratamientos/paciente/:uuid',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para tratamientos específicos de paciente',
+        modulo: 'tratamientos'
+      },
+      {
+        nombre: 'API Detalle Tratamiento Paciente',
+        tipo: 'backend',
+        ruta: '/api/tratamientos/paciente/:uuid/detalle/:uuid',
+        metodos: ['GET', 'PATCH', 'DELETE'],
+        descripcion: 'API para detalle de tratamiento específico',
+        modulo: 'tratamientos'
       }
     ]
   }
@@ -469,38 +522,38 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         descripcion: 'Gestionar citas médicas',
         modulo: 'atencion'
       },
-      // FRONTEND - Tratamientos (como doctor)
+      // FRONTEND - Consultas (como doctor)
       {
-        nombre: 'Tratamientos',
+        nombre: 'Consultas',
         tipo: 'frontend',
-        ruta: '/dashboard/tratamientos',
+        ruta: '/dashboard/consultas',
         metodos: ['read', 'create', 'update', 'delete'],
         icono: 'history',
-        descripcion: 'Gestionar tratamientos de pacientes',
-        modulo: 'tratamientos'
+        descripcion: 'Gestionar consultas de pacientes',
+        modulo: 'consultas'
       },
       {
-        nombre: 'Detalle Tratamiento',
+        nombre: 'Detalle Consulta',
         tipo: 'frontend',
-        ruta: '/dashboard/tratamientos/:uuid',
+        ruta: '/dashboard/consultas/:uuid',
         metodos: ['read', 'update', 'delete'],
         icono: 'history',
-        descripcion: 'Gestionar detalle de tratamiento',
-        modulo: 'tratamientos'
+        descripcion: 'Gestionar detalle de consulta',
+        modulo: 'consultas'
       },
       {
-        nombre: 'Crear Tratamientos',
+        nombre: 'Crear Consulta',
         tipo: 'frontend',
-        ruta: '/dashboard/tratamientos/:uuid/crear',
+        ruta: '/dashboard/consultas/:uuid/crear',
         metodos: ['create'],
         icono: 'history',
-        descripcion: 'Crear tratamientos de pacientes',
-        modulo: 'tratamientos'
+        descripcion: 'Crear consultas de pacientes',
+        modulo: 'consultas'
       },
       // {
-      //   nombre: 'Editar Tratamientos',
+      //   nombre: 'Editar Consultas',
       //   tipo: 'frontend',
-      //   ruta: '/dashboard/tratamientos/:uuid/editar',
+      //   ruta: '/dashboard/consultas/:uuid/editar',
       //   metodos: ['update'],
       //   icono: 'history',
       //   descripcion: 'Editar tratamientos de pacientes',
@@ -551,22 +604,6 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'atencion'
       },
       {
-        nombre: 'API Tratamientos',
-        tipo: 'backend',
-        ruta: '/api/tratamientos',
-        metodos: ['GET', 'POST'],
-        descripcion: 'API para gestión de tratamientos',
-        modulo: 'tratamientos'
-      },
-      {
-        nombre: 'API Tratamientos Paciente',
-        tipo: 'backend',
-        ruta: '/api/tratamientos/paciente/:uuid',
-        metodos: ['GET', 'PATCH'],
-        descripcion: 'API para tratamientos específicos de paciente',
-        modulo: 'tratamientos'
-      },
-      {
         nombre: 'API Notificaciones Médicas',
         tipo: 'backend',
         ruta: '/api/notificaciones/medicas',
@@ -583,20 +620,28 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'atencion'
       },
       {
-        nombre: 'API Tratamientos de Paciente',
+        nombre: 'API Consultas',
         tipo: 'backend',
-        ruta: '/api/paciente/:uuid/tratamientos',
-        metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestionar tratamientos de pacientes',
-        modulo: 'tratamientos'
+        ruta: '/api/consultas',
+        metodos: ['GET', 'POST'],
+        descripcion: 'API para gestión de consultas',
+        modulo: 'consultas'
       },
       {
-        nombre: 'API Detalle Tratamiento Paciente',
+        nombre: 'API Consulta Paciente',
         tipo: 'backend',
-        ruta: '/api/paciente/:uuid/tratamientos/:uuid',
+        ruta: '/api/consultas/paciente/:uuid',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para consulta específica de paciente',
+        modulo: 'consultas'
+      },
+      {
+        nombre: 'API Detalle Consulta Paciente',
+        tipo: 'backend',
+        ruta: '/api/consultas/paciente/:uuid/detalle/:uuid',
         metodos: ['GET', 'PATCH', 'DELETE'],
-        descripcion: 'API para detalle de tratamiento específico',
-        modulo: 'tratamientos'
+        descripcion: 'API para detalle de consulta específico',
+        modulo: 'consultas'
       }
     ]
   }

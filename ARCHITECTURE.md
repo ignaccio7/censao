@@ -11,11 +11,15 @@
 | ---------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Administrador    | `ADMINISTRADOR`  | Acceso total: gestiona usuarios, roles, vacunas, horarios, reportes                                                                                 |
 | Doctor de Fichas | `DOCTOR_FICHAS`  | Registra pacientes, crea fichas presenciales (ADMISION), genera lote de citas programadas, ve pacientes del centro de salud y sus fichas históricas |
-| Enfermería       | `ENFERMERIA`     | Triage básico: evalúa motivo, asigna especialidad/médico, cambia estado ADMISION→ENFERMERIA                                                         |
-| Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas en estado ENFERMERIA asignadas a él, atiende pacientes, registra tratamientos                                                        |
+| Enfermería       | `ENFERMERIA`     | Triage básico, asigna médico Y aplica vacunas (orden flexible), gestiona tratamientos de vacunación                                                  |
+| Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas asignadas a él, atiende pacientes, registra consultas médicas (NO vacunas)                                                           |
 | Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas y citas; nunca crea fichas                                                                                      |
 
-**Flujo central:** Paciente llega → Doctor de Fichas crea Ficha (ADMISION) → Enfermería llama al paciente (ENFERMERIA, triage) → Enfermería asigna médico (EN_ESPERA) → Ficha aparece en pantalla del Doctor General y pantalla pública → Médico llama al paciente (ATENDIENDO) → Doctor General atiende y marca como ATENDIDA o registra tratamiento de vacunación.
+**Flujo central:** Paciente llega → Doctor de Fichas crea Ficha (ADMISION) → Enfermería llama al paciente (ENFERMERIA, triage) → Enfermería asigna médico y/o aplica vacunas (orden flexible) → Ficha pasa a EN_ESPERA → Ficha aparece en pantalla del Doctor General y pantalla pública → Médico llama al paciente (ATENDIENDO) → Doctor General atiende, registra consulta si corresponde, y marca como ATENDIDA.
+
+**Fichas programadas (lote):** Citas VACUNA → ficha en ADMISION (pasa por Enfermería). Citas CONTROL/CONSULTA → ficha en EN_ESPERA con disponibilidad_id del doctor original (directo a cola médica).
+
+**Identificación física:** El paciente recibe un cartón en Admisión con su número de ficha. Si hay reasignación, el número no cambia — solo cambia bajo qué médico aparece en la pantalla pública.
 
 **Estados de `fichas`:** `ADMISION | ENFERMERIA | EN_ESPERA | ATENDIENDO | ATENDIDA | CANCELADA` (enum `EstadoFicha` en Prisma) — **6 estados confirmados en schema.prisma**.
 
@@ -194,6 +198,9 @@ censao/
 | `/api/doctor`                    | GET                | `route.ts::GET`             | `doctores`, `personas`, `doctores_especialidades`                                                              | Lista doctores disponibles                                                             |
 | `/api/especialidad`              | GET                | —                           | `especialidades`, `doctores_especialidades`, `disponibilidades`                                                | Lista especialidades con doctores y capacidades                                        |
 | `/api/estado-doctores`           | GET                | —                           | `doctores`, `disponibilidades`                                                                                 | Disponibilidad y carga de médicos (Enfermería)                                         |
+| `/api/tratamientos`              | GET, POST          | —                           | `tratamientos`, `fichas`, `esquema_dosis`, `citas`                                                             | Gestión de tratamientos de vacunación (ENFERMERIA)                                     |
+| `/api/consultas`                 | GET, POST          | —                           | `consultas`, `fichas`, `citas`                                                                                 | Gestión de consultas médicas (DOCTOR_GENERAL) — **NUEVO v4**                           |
+| `/api/consultas/paciente/:uuid`  | GET, PATCH         | —                           | `consultas`, `fichas`, `pacientes`                                                                             | Consultas de un paciente específico (DOCTOR_GENERAL) — **NUEVO v4**                    |
 
 ### 2.2 Convención de Nombres
 
@@ -214,9 +221,13 @@ fichas
            └─► especialidades  (especialidad_id, estado: Boolean)
  └─► pacientes  (paciente_id = personas.ci)
       └─► personas  (paciente_id)
- └─► tratamientos (Contenedor del seguimiento, ej: "Esquema COVID")
-      └─► citas[] (Lista de dosis programadas: Dosis 2, Dosis 3, etc.)
+ └─► tratamientos[] (Seguimiento vacunación — registrado por ENFERMERIA)
+      └─► citas[] (Dosis programadas: Dosis 2, Dosis 3, etc.)
+ └─► consultas[] (Consultas médicas — registrado por DOCTOR_GENERAL)
+      └─► citas[] (Citas de retorno: control, consulta)
 ```
+
+> **Cambio v4:** `citas` tiene doble FK opcional: `tratamiento_id` (vacunas) O `consulta_id` (consultas) — nunca ambos.
 
 **La ficha no guarda directamente el doctor ni la especialidad.** Se obtienen navegando por:  
 `ficha → disponibilidad → doctores_especialidades → doctor/especialidad`
@@ -347,10 +358,14 @@ if (!validation.success) {
 | Generar lote citas                       | ✅            | ❌         | ❌             | ❌            |
 | Llamar para triage (ADMISION→ENFERMERIA) | ❌            | ✅         | ❌             | ✅            |
 | Asignar médico (ENFERMERIA→EN_ESPERA)    | ❌            | ✅         | ❌             | ✅            |
+| Aplicar vacunas / Registrar tratamiento  | ❌            | ✅         | ❌             | ❌            |
 | Llamar paciente (EN_ESPERA→ATENDIENDO)   | ❌            | ❌         | ✅             | ❌            |
+| Registrar consulta médica                | ❌            | ❌         | ✅             | ❌            |
 | Finalizar atención (ATENDIENDO→ATENDIDA) | ❌            | ❌         | ✅             | ❌            |
 | Cancelar ficha                           | ✅            | ✅         | ✅             | ✅            |
 | Reasignar ficha                          | ✅            | ✅         | ❌             | ✅            |
+
+> **Cambio v4:** Enfermería gana "Aplicar vacunas / Registrar tratamiento". Doctor General gana "Registrar consulta médica" y pierde acceso directo a tratamientos de vacunación.
 
 ---
 
@@ -780,18 +795,27 @@ const createFicha = useMutation({
     ▼
 [ENFERMERÍA] Enfermera ve ficha en cola ADMISION
     → Evalúa motivo de consulta
+    → Si requiere vacunación:
+        → Aplica vacuna y registra Tratamiento (vinculado a ficha vía ficha_origen_id)
+        → Registra Cita(s) futuras de dosis (vinculadas al tratamiento)
     → Determina especialidad y médico disponible
-    → Asigna médico → estado: ENFERMERIA
+    → Asigna médico → estado: EN_ESPERA
+    (Nota: vacunación y asignación pueden ocurrir en cualquier orden)
     │
     ▼
-[DOCTOR GENERAL] Médico ve ficha en su cola ENFERMERIA
+[DOCTOR GENERAL] Médico ve ficha en su cola EN_ESPERA
+    → Llama al paciente → estado: ATENDIENDO
     → Atiende al paciente
     → Si no requiere seguimiento → estado: ATENDIDA
-    → Si requiere vacunación:
-        → Crea Tratamiento (vinculado a ficha vía ficha_origen_id)
-        → Registra Cita(s) futuras (vinculadas al tratamiento)
+    → Si requiere consulta de retorno:
+        → Crea Consulta (vinculada a ficha vía ficha_origen_id)
+        → Registra Cita(s) de retorno (vinculadas a la consulta)
         → Opcionalmente crea usuario del paciente
         → estado: ATENDIDA
+
+[FICHAS PROGRAMADAS — Generación en Lote]
+    → Citas tipo VACUNA → ficha en ADMISION (pasa por Enfermería)
+    → Citas tipo CONTROL/CONSULTA → ficha en EN_ESPERA con disponibilidad_id original
 ```
 
 ---
@@ -871,3 +895,8 @@ El código `turno_catalogo` se guarda como string `'AM'` o `'PM'` en la tabla.
 | Typo en nombre de servicio                | `src/services/usuarios.ts`                     | Clase se llama `UserssService` (doble 's'). Debería ser `UsersService`.                                                                          |
 | Console.logs en producción                | `admin/usuarios/` múltiples archivos           | Múltiples `console.log` de depuración en page.tsx, usersTable.tsx, route.ts. Limpiar antes de producción.                                        |
 | Vacunas admin placeholder                 | `dashboard/admin/vacunas/page.tsx`             | Página vacía de 66 bytes. Pendiente de implementar.                                                                                              |
+| **v4** Módulo consultas no existe         | `dashboard/consultas/` + `api/consultas/`      | Crear páginas, API routes, schemas y service para el nuevo módulo de consultas médicas (DOCTOR_GENERAL).                                         |
+| **v4** Tratamientos cambian de dueño      | `dashboard/tratamientos/` + `api/tratamientos/`| Los tratamientos pasan de DOCTOR_GENERAL a ENFERMERIA. Revisar ABAC y UI.                                                                        |
+| **v4** generar-citas-lote sin diferenciar | `api/fichas/generar-citas-lote`                | La generación en lote debe diferenciar citas VACUNA (→ADMISION) vs CONTROL/CONSULTA (→EN_ESPERA con disponibilidad_id).                          |
+| **v4** observaciones en tratamientos      | `api/tratamientos/`                            | Campo `observaciones` agregado al modelo — revisar formularios y API para incluirlo.                                                             |
+

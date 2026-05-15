@@ -20,7 +20,7 @@ export function useTratamientos() {
     staleTime: 5 * 60 * 1000
   })
 
-  // Crear tratamiento (legacy — un solo tratamiento)
+  // Crear tratamiento (legacy — un solo tratamiento - ya no esta siendo utilizado)
   const createTratamiento = useMutation({
     mutationFn: async (data: TratamientoCreateData) => {
       const response = await apiClient.post('tratamientos', data)
