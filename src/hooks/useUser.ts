@@ -1,5 +1,6 @@
 'use client'
 
+import { RoleType, RoleValue } from '@/lib/constants'
 import { useSession } from 'next-auth/react'
 
 export default function useUser() {
@@ -8,19 +9,8 @@ export default function useUser() {
   console.log(session)
   console.log(status)
 
-  // TODO ver como arreglar esto ya que esta con datos quemados y en caso de aumentar roles tocaria ver como mapear o determinar el rol que se mostrara en al sistema
-  const roles = {
-    ['ADMINISTRADOR']: 'Administrador',
-    ['PACIENTE']: 'Paciente',
-    ['DOCTOR_FICHAS']: 'Doctor',
-    ['DOCTOR_GENERAL']: 'Doctor',
-    ['ENFERMERIA']: 'Enfermeria'
-  } as const
-
-  type RoleKey = keyof typeof roles
-
   const roleName = session?.user.role
-    ? roles[session?.user.role as RoleKey]
+    ? RoleValue[session?.user.role as RoleType]
     : 'user'
 
   const user = {

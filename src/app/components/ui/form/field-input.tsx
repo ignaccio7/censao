@@ -4,7 +4,7 @@ import { IconAlertCircle } from '../../icons/icons'
 interface FieldProps<T extends FieldValues> {
   id: Path<T>
   label: string
-  placeholder: string
+  placeholder?: string
   required?: boolean
   icon?: React.ReactNode
   type?: string

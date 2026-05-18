@@ -30,7 +30,17 @@ const useProfileRoutesStore = create<ProfileRoutesState>((set, get) => ({
     }
 
     const routeParameterMatch = routes.find(perm => {
+      console.log(
+        '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||'
+      )
+      console.log('entrando aqui')
+      console.log(perm)
+
+      console.log('1')
+
       if (perm.link.includes(':')) {
+        console.log('1.1')
+        console.log('2')
         const pattern = new RegExp(
           // oxlint-disable-next-line prefer-template
           '^' +
@@ -41,6 +51,13 @@ const useProfileRoutesStore = create<ProfileRoutesState>((set, get) => ({
             '$',
           'i'
         )
+        console.log(
+          '------------------------------------------------------------------------------------------------------------------'
+        )
+        const response = pattern.test(route)
+
+        console.log(response)
+
         return pattern.test(route)
       }
       return false

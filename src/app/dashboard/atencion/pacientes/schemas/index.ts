@@ -7,12 +7,22 @@ export const editarPacienteSchema = z.object({
     .max(15, 'El CI no puede exceder 15 caracteres'),
   nombres: z.string().min(2, 'Mínimo 2 caracteres').max(100),
   paterno: z.string().min(2, 'Mínimo 2 caracteres').max(100),
-  materno: z.string().max(100).optional().nullable(),
-  telefono: z.string().min(7, 'Mínimo 7 dígitos').max(15),
+  materno: z.string().max(100).optional().or(z.literal('')),
+  telefono: z
+    .string()
+    .min(7, 'Mínimo 7 dígitos')
+    .max(15)
+    .optional()
+    .or(z.literal('')),
   correo: z.string().email('Correo inválido').optional().or(z.literal('')),
-  direccion: z.string().min(3, 'Mínimo 3 caracteres').max(200),
-  sexo: z.enum(['M', 'F', 'O']).optional().nullable(),
-  grupo_sanguineo: z.string().max(5).optional().nullable()
+  direccion: z
+    .string()
+    .min(3, 'Mínimo 3 caracteres')
+    .max(200)
+    .optional()
+    .or(z.literal('')),
+  sexo: z.enum(['M', 'F', 'O']).optional().or(z.literal('')),
+  grupo_sanguineo: z.string().max(5).optional().or(z.literal(''))
 })
 
 export type EditarPacienteFormData = z.infer<typeof editarPacienteSchema>

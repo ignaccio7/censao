@@ -37,3 +37,7 @@ CTRL + SHIFT + F
 - IMPORTANTE
 
 https://nextjs.org/learn/dashboard-app/mutating-data
+
+## TODO: hacer que el doctor de fichas no pueda registrar tratamientos ni ver los que tiene.
+
+TODO: completar reasignacion de fichas en doctor fichas y enfermeria

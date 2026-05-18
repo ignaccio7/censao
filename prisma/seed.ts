@@ -259,7 +259,7 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         nombre: 'Pacientes',
         tipo: 'frontend',
         ruta: '/dashboard/atencion/pacientes',
-        metodos: ['read', 'create', 'delete'],
+        metodos: ['read', 'create', 'update'],
         icono: 'list',
         descripcion: 'Gestionar pacientes asignados',
         modulo: 'atencion'
@@ -268,7 +268,7 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         nombre: 'Pacientes',
         tipo: 'frontend',
         ruta: '/dashboard/atencion/pacientes/:uuid',
-        metodos: ['read', 'update', 'delete'],
+        metodos: ['read'],
         icono: 'list',
         descripcion: 'Gestionar pacientes asignados',
         modulo: 'atencion'
@@ -362,7 +362,7 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         nombre: 'Pacientes',
         tipo: 'frontend',
         ruta: '/dashboard/atencion/pacientes',
-        metodos: ['read', 'create', 'delete'],
+        metodos: ['read', 'create', 'update'],
         icono: 'list',
         descripcion: 'Gestionar pacientes asignados',
         modulo: 'atencion'
@@ -380,29 +380,19 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         nombre: 'Pacientes',
         tipo: 'frontend',
         ruta: '/dashboard/atencion/pacientes/:uuid',
-        metodos: ['read', 'update', 'delete'],
+        metodos: ['read', 'create'],
         icono: 'list',
         descripcion: 'Gestionar pacientes asignados',
         modulo: 'atencion'
       },
-      // - Tratamientos de vacunas
-      {
-        nombre: 'Tratamientos',
-        tipo: 'frontend',
-        ruta: '/dashboard/tratamientos',
-        metodos: ['read', 'create', 'update', 'delete'],
-        icono: 'history',
-        descripcion: 'Gestionar tratamientos de vacunas de pacientes',
-        modulo: 'tratamientos'
-      },
       {
         nombre: 'Detalle Tratamiento de vacuna',
         tipo: 'frontend',
-        ruta: '/dashboard/tratamientos/:uuid',
-        metodos: ['read', 'update', 'delete'],
+        ruta: '/dashboard/atencion/pacientes/:uuid/detalle/:uuid',
+        metodos: ['read', 'create', 'update', 'delete'],
         icono: 'history',
         descripcion: 'Gestionar detalle de tratamiento de vacuna',
-        modulo: 'tratamientos'
+        modulo: 'atencion'
       },
       {
         nombre: 'Crear Tratamientos de vacuna',

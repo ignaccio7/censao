@@ -31,7 +31,9 @@ export async function GET(
           include: {
             esquema_dosis: {
               include: {
-                vacunas: { select: { nombre: true, fabricante: true } }
+                vacunas: {
+                  select: { id: true, nombre: true, fabricante: true }
+                }
               }
             }
           },
@@ -106,6 +108,7 @@ export async function PATCH(
       sexo,
       grupo_sanguineo
     } = body
+    console.log(body)
 
     // Transaction
     await prisma.$transaction(async tx => {
@@ -142,12 +145,12 @@ export async function PATCH(
         await tx.personas.update({
           where: { ci: uuid },
           data: {
-            nombres,
-            paterno,
-            materno,
-            telefono,
-            correo,
-            direccion,
+            nombres: nombres,
+            paterno: paterno,
+            materno: materno || null,
+            telefono: telefono || null,
+            correo: correo || null,
+            direccion: direccion || null,
             actualizado_por: userId,
             actualizado_en: new Date()
           }

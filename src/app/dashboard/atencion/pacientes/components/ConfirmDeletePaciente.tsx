@@ -2,6 +2,7 @@
 
 import { toast } from 'sonner'
 import useModal from '@/hooks/useModal'
+import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '@/app/services/client'
 
@@ -15,6 +16,7 @@ export default function ConfirmDeletePaciente({
   nombreCompleto
 }: ConfirmDeletePacienteProps) {
   const { closeModal } = useModal()
+  const router = useRouter()
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
@@ -28,6 +30,7 @@ export default function ConfirmDeletePaciente({
       queryClient.invalidateQueries({ queryKey: ['atencion-pacientes'] })
       toast.success('Paciente eliminado exitosamente')
       closeModal()
+      router.refresh()
     },
     onError: (error: any) => {
       toast.error(

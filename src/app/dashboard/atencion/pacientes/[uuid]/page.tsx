@@ -7,10 +7,15 @@ import CustomDataTable from '@/app/components/ui/dataTable'
 import { StatusBadge } from '@/app/dashboard/fichas/components/statusBadge'
 import Link from 'next/link'
 import {
+  IconChevronLeft,
   IconCredential,
   IconEmail,
+  IconHistory,
   IconVaccine
 } from '@/app/components/icons/icons'
+// import useProfileRoutes from '@/hooks/useProfileRoutes'
+import useUser from '@/hooks/useUser'
+import { Roles } from '@/lib/constants'
 
 const ESTADO_TRATAMIENTO: Record<string, { label: string; color: string }> = {
   EN_CURSO: {
@@ -48,6 +53,8 @@ function EstadoTratamientoBadge({ estado }: { estado: string }) {
 export default function PacienteDetallePage() {
   const params = useParams()
   const uuid = params.uuid as string
+  const { user } = useUser()
+  // const { create } = useProfileRoutes()
 
   const {
     data: paciente,
@@ -133,46 +140,82 @@ export default function PacienteDetallePage() {
       </span>
     ]) || []
 
+  // ── Agrupar tratamientos por vacuna ──
+  const tratamientosAgrupados = paciente.tratamientos?.reduce(
+    (acc: any, t: any) => {
+      const vacunaId = t.esquema_dosis?.vacunas?.id
+      if (!vacunaId) return acc
+
+      if (!acc[vacunaId]) {
+        acc[vacunaId] = {
+          vacunaId,
+          vacunaNombre: t.esquema_dosis.vacunas.nombre,
+          dosisAplicadas: 1,
+          ultimoTratamiento: t
+        }
+      } else {
+        acc[vacunaId].dosisAplicadas += 1
+        // Actualizar si este tratamiento es más reciente
+        if (
+          new Date(t.fecha_aplicacion) >
+          new Date(acc[vacunaId].ultimoTratamiento.fecha_aplicacion)
+        ) {
+          acc[vacunaId].ultimoTratamiento = t
+        }
+      }
+      return acc
+    },
+    {}
+  )
+
+  const tratamientosList = Object.values(tratamientosAgrupados || {})
+
   // ── Columnas de tratamientos ──
   const columnasTratamientos = [
     { campo: 'Vacuna' },
-    { campo: 'Dosis' },
-    { campo: 'Fecha Aplicación' },
-    { campo: 'Observaciones' },
-    { campo: 'Estado' }
+    { campo: 'Dosis Aplicadas' },
+    { campo: 'Última Aplicación' },
+    { campo: 'Estado Actual' },
+    { campo: 'Acciones' }
   ]
 
   const contenidoTratamientos =
-    paciente.tratamientos?.map((t: any) => [
-      <span key={`vac-${t.id}`} className='flex items-center gap-1.5'>
-        <IconVaccine className='text-primary-600 shrink-0' size='16' />
-        <span>{t.esquema_dosis?.vacunas?.nombre || '-'}</span>
-      </span>,
-      <span key={`dos-${t.id}`} className='font-semibold text-primary-700'>
-        Dosis #{t.esquema_dosis?.numero}
-        {t.esquema_dosis?.notas && (
-          <span className='block text-step--2 font-normal text-gray-500'>
-            {t.esquema_dosis.notas}
-          </span>
-        )}
-      </span>,
-      <span key={`fecha-${t.id}`} className='text-gray-600'>
-        {new Date(t.fecha_aplicacion).toLocaleDateString('es-BO', {
-          timeZone: 'America/La_Paz',
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        })}
-      </span>,
-      <span
-        key={`obs-${t.id}`}
-        className='text-gray-500 text-step--2 truncate max-w-[200px]'
-        title={t.observaciones || ''}
-      >
-        {t.observaciones || '-'}
-      </span>,
-      <EstadoTratamientoBadge key={`est-${t.id}`} estado={t.estado} />
-    ]) || []
+    tratamientosList.map((agrupado: any) => {
+      const t = agrupado.ultimoTratamiento
+      return [
+        <span
+          key={`vac-${t.id}`}
+          className='flex items-center gap-1.5 font-medium'
+        >
+          <IconVaccine className='text-primary-600 shrink-0' size='16' />
+          <span>{agrupado.vacunaNombre}</span>
+        </span>,
+        <span
+          key={`dos-${t.id}`}
+          className='font-semibold text-primary-700 bg-primary-50 px-3 py-1 rounded-full text-sm inline-block'
+        >
+          {agrupado.dosisAplicadas}{' '}
+          {agrupado.dosisAplicadas === 1 ? 'dosis' : 'dosis'}
+        </span>,
+        <span key={`fecha-${t.id}`} className='text-gray-600'>
+          {new Date(t.fecha_aplicacion).toLocaleDateString('es-BO', {
+            timeZone: 'America/La_Paz',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })}
+        </span>,
+        <EstadoTratamientoBadge key={`est-${t.id}`} estado={t.estado} />,
+        <Link
+          key={`action-${t.id}`}
+          href={`/dashboard/atencion/pacientes/${uuid}/detalle/${agrupado.vacunaId}`}
+          className='px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors text-sm font-medium rounded-lg flex items-center justify-center gap-2 border border-gray-200 hover:border-primary-200'
+        >
+          <IconHistory size='16' />
+          Ver Detalle
+        </Link>
+      ]
+    }) || []
 
   return (
     <div className='flex flex-col gap-6 animate-fade-in pb-8'>
@@ -181,20 +224,8 @@ export default function PacienteDetallePage() {
           href='/dashboard/atencion/pacientes'
           className='text-primary-600 hover:text-primary-800 transition-colors font-semibold flex items-center gap-1 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100 hover:bg-primary-100'
         >
-          <svg
-            className='w-4 h-4'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M10 19l-7-7m0 0l7-7m-7 7h18'
-            />
-          </svg>
-          Volver a Pacientes
+          <IconChevronLeft />
+          Volver al listado de Pacientes
         </Link>
       </div>
 
@@ -287,39 +318,53 @@ export default function PacienteDetallePage() {
         </div>
       </div>
 
-      {/* Tratamientos del paciente */}
-      <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
-        <div className='flex items-center justify-between mb-4'>
-          <div>
-            <h3 className='text-lg font-bold text-gray-800 flex items-center gap-2'>
-              <IconVaccine className='text-emerald-600' size='22' />
-              Tratamientos (Vacunas)
-            </h3>
-            <p className='text-sm text-gray-500'>
-              {paciente.tratamientos?.length || 0} tratamiento(s) registrado(s)
-            </p>
+      {/* Tratamientos del paciente - ENFERMERIA */}
+      {user.role === Roles.ENFERMERIA && (
+        <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
+          <div className='flex items-center justify-between mb-4'>
+            <div>
+              <h3 className='text-lg font-bold text-gray-800 flex items-center gap-2'>
+                <IconVaccine className='text-emerald-600' size='22' />
+                Tratamientos (Vacunas)
+              </h3>
+              <p className='text-sm text-gray-500'>
+                {paciente.tratamientos?.length || 0} tratamiento(s)
+                registrado(s)
+              </p>
+            </div>
+            {
+              // Solo si es rol enfemeria y tiene permiso para crear un tratamiento
+              // create &&
+            }
+            <Link
+              href={`/dashboard/tratamientos/${uuid}/crear`}
+              className='px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm cursor-pointer flex items-center gap-2'
+            >
+              <IconVaccine size='18' />
+              Registrar tratamiento
+            </Link>
           </div>
-          <Link
-            href={`/dashboard/tratamientos/${uuid}/crear`}
-            className='px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm cursor-pointer flex items-center gap-2'
-          >
-            <IconVaccine size='18' />
-            Registrar tratamiento
-          </Link>
+          <CustomDataTable
+            columnas={columnasTratamientos}
+            contenidoTabla={contenidoTratamientos}
+            numeracion={true}
+            contenidoCuandoVacio='Este paciente aún no tiene tratamientos registrados.'
+          />
         </div>
-        <CustomDataTable
-          columnas={columnasTratamientos}
-          contenidoTabla={contenidoTratamientos}
-          numeracion={true}
-          contenidoCuandoVacio='Este paciente aún no tiene tratamientos registrados.'
-        />
-      </div>
+      )}
 
       {/* Fichas del paciente */}
       <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
+        <div className='flex flex-col mb-4'>
+          <h3 className='text-lg font-bold text-gray-800 flex items-center gap-2'>
+            <IconHistory className='text-emerald-600' size='22' />
+            Fichas del Paciente
+          </h3>
+          <p className='text-sm text-gray-500'>
+            {paciente.fichas?.length || 0} ficha(s) registrada(s)
+          </p>
+        </div>
         <CustomDataTable
-          titulo='Fichas del Paciente'
-          subtitulo={`Mostrando ${paciente.fichas?.length || 0} atenciones registradas`}
           columnas={columnasFichas}
           contenidoTabla={contenidoFichas}
           numeracion={true}

@@ -4,6 +4,7 @@ import AuthService from '@/lib/services/auth-service'
 import { crearPacienteSchema } from '@/app/dashboard/atencion/pacientes/schemas'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { Roles } from '../../lib/constants'
 // import { Roles } from '@/app/api/lib/constants'
 
 export async function GET(request: NextRequest) {
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
 
       // 4. Buscar rol PACIENTE y asignar
       const rolPaciente = await tx.roles.findUnique({
-        where: { nombre: 'PACIENTE' }
+        where: { nombre: Roles.PACIENTE }
       })
 
       if (rolPaciente) {
