@@ -4,9 +4,9 @@ import CrearTratamientoForm from './crear-tratamiento-form'
 type Params = Promise<{ fichaId: string }>
 
 export default async function Page({ params }: { params: Params }) {
-  // TODO: verificar permisos en esta ruta
-
-  const { fichaId } = await params
+  // fichaId aquí en realidad es el paciente_id (CI)
+  // Mantenemos el nombre del param dinámico por compatibilidad de rutas TODO: urgente cambiar
+  const { fichaId: pacienteId } = await params
 
   // Server Component: fetch vacunas con esquema_dosis directamente con Prisma
   const vacunas = await prisma.vacunas.findMany({
@@ -31,49 +31,31 @@ export default async function Page({ params }: { params: Params }) {
     orderBy: { nombre: 'asc' }
   })
 
-  // Fetch datos básicos de la ficha para mostrar contexto
-  const ficha = await prisma.fichas.findUnique({
-    where: { id: fichaId },
+  // Fetch datos básicos del paciente
+  const paciente = await prisma.pacientes.findUnique({
+    where: { paciente_id: pacienteId },
     select: {
-      id: true,
-      orden_turno: true,
-      estado: true,
-      pacientes: {
+      paciente_id: true,
+      personas: {
         select: {
-          paciente_id: true,
-          personas: {
-            select: {
-              nombres: true,
-              paterno: true,
-              materno: true,
-              ci: true
-            }
-          }
-        }
-      },
-      disponibilidades: {
-        select: {
-          doctores_especialidades: {
-            select: {
-              especialidades: {
-                select: { nombre: true }
-              }
-            }
-          }
+          nombres: true,
+          paterno: true,
+          materno: true,
+          ci: true
         }
       }
     }
   })
 
-  if (!ficha) {
+  if (!paciente) {
     return (
       <main className='font-secondary p-4'>
         <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center'>
           <h2 className='text-step-2 font-bold text-red-700'>
-            Ficha no encontrada
+            Paciente no encontrado
           </h2>
           <p className='text-red-600 mt-2'>
-            La ficha solicitada no existe o fue eliminada.
+            El paciente solicitado no existe o fue eliminado.
           </p>
         </div>
       </main>
@@ -81,18 +63,14 @@ export default async function Page({ params }: { params: Params }) {
   }
 
   const pacienteNombre =
-    `${ficha.pacientes.personas.nombres} ${ficha.pacientes.personas.paterno} ${ficha.pacientes.personas.materno}`.trim()
-  const especialidadNombre =
-    ficha.disponibilidades?.doctores_especialidades?.especialidades?.nombre
+    `${paciente.personas.nombres} ${paciente.personas.paterno} ${paciente.personas.materno}`.trim()
 
   return (
     <main className='font-secondary'>
       <CrearTratamientoForm
-        fichaId={fichaId}
+        pacienteId={pacienteId}
         pacienteNombre={pacienteNombre}
-        pacienteCi={ficha.pacientes.personas.ci}
-        especialidadNombre={especialidadNombre ?? 'Consultorio general'}
-        ordenTurno={ficha.orden_turno}
+        pacienteCi={paciente.personas.ci}
         vacunas={vacunas}
       />
     </main>

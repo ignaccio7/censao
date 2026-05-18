@@ -9,14 +9,15 @@ import Modal from '@/app/components/ui/modal/modal'
 import useModal from '@/hooks/useModal'
 import FormEditPaciente from './components/FormEditPaciente'
 import ConfirmDeletePaciente from './components/ConfirmDeletePaciente'
-import Link from 'next/link'
 import {
   IconHistory,
   IconPencil,
-  IconTrash
+  IconTrash,
+  IconUserPlus
 } from '@/app/components/icons/icons'
 import { toast } from 'sonner'
 import Title from '@/app/components/ui/title'
+import Link from 'next/link'
 
 type Tab = 'registrados' | 'huerfanas'
 
@@ -142,9 +143,17 @@ export default function PacientesPage() {
         <Link href={`/dashboard/atencion/pacientes/${paciente.paciente_id}`}>
           <button
             className='px-3 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium shadow-sm cursor-pointer'
-            title='Ver Fichas'
+            title='Ver detalle'
           >
             <IconHistory />
+          </button>
+        </Link>
+        <Link href={`/dashboard/tratamientos/${paciente.paciente_id}/crear`}>
+          <button
+            className='px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm font-medium shadow-sm cursor-pointer'
+            title='Registrar vacuna'
+          >
+            💉
           </button>
         </Link>
       </div>
@@ -197,6 +206,17 @@ export default function PacientesPage() {
       <Title subtitle='Gestiona los pacientes que has registrado en el centro de salud. Puedes editar sus datos, eliminarlos o revisar su historial de atenciones.'>
         Pacientes Registrados
       </Title>
+
+      {/* Acciones */}
+      <div className='flex justify-end mb-4'>
+        <Link
+          href='/dashboard/atencion/pacientes/crear'
+          className='px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium shadow-sm cursor-pointer flex flex-row gap-2 items-center'
+        >
+          <IconUserPlus />
+          Registrar Paciente
+        </Link>
+      </div>
 
       {/* Tabs */}
       <div className='flex gap-2 border-b border-gray-200'>

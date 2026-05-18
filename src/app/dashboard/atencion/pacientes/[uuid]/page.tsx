@@ -6,7 +6,44 @@ import apiClient from '@/app/services/client'
 import CustomDataTable from '@/app/components/ui/dataTable'
 import { StatusBadge } from '@/app/dashboard/fichas/components/statusBadge'
 import Link from 'next/link'
-import { IconCredential, IconEmail } from '@/app/components/icons/icons'
+import {
+  IconCredential,
+  IconEmail,
+  IconVaccine
+} from '@/app/components/icons/icons'
+
+const ESTADO_TRATAMIENTO: Record<string, { label: string; color: string }> = {
+  EN_CURSO: {
+    label: 'En curso',
+    color: 'border-blue-500 bg-blue-500/20 text-blue-700'
+  },
+  COMPLETADA: {
+    label: 'Completado',
+    color: 'border-green-500 bg-green-500/20 text-green-700'
+  },
+  INCOMPLETA: {
+    label: 'Incompleto',
+    color: 'border-amber-500 bg-amber-500/20 text-amber-700'
+  },
+  CANCELADO: {
+    label: 'Cancelado',
+    color: 'border-red-500 bg-red-500/20 text-red-700'
+  }
+}
+
+function EstadoTratamientoBadge({ estado }: { estado: string }) {
+  const config = ESTADO_TRATAMIENTO[estado] || {
+    label: estado,
+    color: 'border-gray-500 bg-gray-500/20 text-gray-700'
+  }
+  return (
+    <span
+      className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${config.color}`}
+    >
+      {config.label}
+    </span>
+  )
+}
 
 export default function PacienteDetallePage() {
   const params = useParams()
@@ -49,7 +86,8 @@ export default function PacienteDetallePage() {
     )
   }
 
-  const columnas = [
+  // ── Columnas de fichas ──
+  const columnasFichas = [
     { campo: 'Fecha' },
     { campo: 'Turno' },
     { campo: 'Estado' },
@@ -57,7 +95,7 @@ export default function PacienteDetallePage() {
     { campo: 'Doctor' }
   ]
 
-  const contenidoTabla =
+  const contenidoFichas =
     paciente.fichas?.map((ficha: any) => [
       <span
         key={`date-${ficha.id}`}
@@ -95,6 +133,47 @@ export default function PacienteDetallePage() {
       </span>
     ]) || []
 
+  // ── Columnas de tratamientos ──
+  const columnasTratamientos = [
+    { campo: 'Vacuna' },
+    { campo: 'Dosis' },
+    { campo: 'Fecha Aplicación' },
+    { campo: 'Observaciones' },
+    { campo: 'Estado' }
+  ]
+
+  const contenidoTratamientos =
+    paciente.tratamientos?.map((t: any) => [
+      <span key={`vac-${t.id}`} className='flex items-center gap-1.5'>
+        <IconVaccine className='text-primary-600 shrink-0' size='16' />
+        <span>{t.esquema_dosis?.vacunas?.nombre || '-'}</span>
+      </span>,
+      <span key={`dos-${t.id}`} className='font-semibold text-primary-700'>
+        Dosis #{t.esquema_dosis?.numero}
+        {t.esquema_dosis?.notas && (
+          <span className='block text-step--2 font-normal text-gray-500'>
+            {t.esquema_dosis.notas}
+          </span>
+        )}
+      </span>,
+      <span key={`fecha-${t.id}`} className='text-gray-600'>
+        {new Date(t.fecha_aplicacion).toLocaleDateString('es-BO', {
+          timeZone: 'America/La_Paz',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        })}
+      </span>,
+      <span
+        key={`obs-${t.id}`}
+        className='text-gray-500 text-step--2 truncate max-w-[200px]'
+        title={t.observaciones || ''}
+      >
+        {t.observaciones || '-'}
+      </span>,
+      <EstadoTratamientoBadge key={`est-${t.id}`} estado={t.estado} />
+    ]) || []
+
   return (
     <div className='flex flex-col gap-6 animate-fade-in pb-8'>
       <div className='flex items-center gap-2 mb-2'>
@@ -119,6 +198,7 @@ export default function PacienteDetallePage() {
         </Link>
       </div>
 
+      {/* Card info paciente */}
       <div className='bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden'>
         <div className='bg-gradient-to-r from-primary-600 to-primary-800 p-6 text-white'>
           <h2 className='text-2xl font-bold flex items-center gap-2'>
@@ -126,7 +206,7 @@ export default function PacienteDetallePage() {
             {paciente.personas.materno || ''}
           </h2>
           <p className='text-primary-100 mt-1 opacity-90'>
-            Historial completo de atenciones en el centro de salud.
+            Historial completo de atenciones y tratamientos.
           </p>
         </div>
         <div className='p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm text-gray-700'>
@@ -207,12 +287,41 @@ export default function PacienteDetallePage() {
         </div>
       </div>
 
-      <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-2'>
+      {/* Tratamientos del paciente */}
+      <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
+        <div className='flex items-center justify-between mb-4'>
+          <div>
+            <h3 className='text-lg font-bold text-gray-800 flex items-center gap-2'>
+              <IconVaccine className='text-emerald-600' size='22' />
+              Tratamientos (Vacunas)
+            </h3>
+            <p className='text-sm text-gray-500'>
+              {paciente.tratamientos?.length || 0} tratamiento(s) registrado(s)
+            </p>
+          </div>
+          <Link
+            href={`/dashboard/tratamientos/${uuid}/crear`}
+            className='px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm cursor-pointer flex items-center gap-2'
+          >
+            <IconVaccine size='18' />
+            Registrar tratamiento
+          </Link>
+        </div>
+        <CustomDataTable
+          columnas={columnasTratamientos}
+          contenidoTabla={contenidoTratamientos}
+          numeracion={true}
+          contenidoCuandoVacio='Este paciente aún no tiene tratamientos registrados.'
+        />
+      </div>
+
+      {/* Fichas del paciente */}
+      <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
         <CustomDataTable
           titulo='Fichas del Paciente'
           subtitulo={`Mostrando ${paciente.fichas?.length || 0} atenciones registradas`}
-          columnas={columnas}
-          contenidoTabla={contenidoTabla}
+          columnas={columnasFichas}
+          contenidoTabla={contenidoFichas}
           numeracion={true}
           contenidoCuandoVacio='Este paciente aún no tiene fichas registradas.'
         />

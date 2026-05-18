@@ -26,6 +26,17 @@ export async function GET(
       where: { paciente_id: uuid, eliminado_en: null },
       include: {
         personas: true,
+        tratamientos: {
+          where: { eliminado_en: null },
+          include: {
+            esquema_dosis: {
+              include: {
+                vacunas: { select: { nombre: true, fabricante: true } }
+              }
+            }
+          },
+          orderBy: { fecha_aplicacion: 'desc' }
+        },
         fichas: {
           where: { eliminado_en: null },
           include: {

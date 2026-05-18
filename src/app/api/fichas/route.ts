@@ -123,6 +123,12 @@ export async function GET() {
 
 // REGISTRAR UNA NUEVA FICHA
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  console.log(
+    '*******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************'
+  )
+
+  console.log('llegando aqui')
+
   // Validar permisos usando tu método existente
   const validation = await AuthService.validateApiPermission(
     '/api/fichas',
@@ -180,20 +186,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
       .join(' ')
 
-    if (persona) {
-      // Validacion para verificar que los datos de la persona sean los mismos del formulario
-      const nombrePersona =
-        `${persona?.nombres} ${persona?.paterno} ${persona?.materno}`.trim()
-      console.log(nombrePersona)
-      console.log(formatedName)
-
-      if (nombrePersona !== formatedName) {
-        return NextResponse.json({
-          success: false,
-          message: 'Los datos de la persona no coinciden con los del formulario'
-        })
-      }
-    } else {
+    if (!persona) {
       const nombreParts = formatedName.split(' ')
       const [nombres = '', paterno = '', materno = ''] = nombreParts
 

@@ -8,13 +8,12 @@ import AuthService from '@/lib/services/auth-service'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-// import { Roles } from '@/app/api/lib/constants'
 import { StateTreatment } from '@/lib/constants'
 
 /**
  * POST /api/tratamientos/batch
  * Registra N tratamientos + citas opcionales en UNA sola transacción.
- * Si algo falla, se hace rollback completo.
+ * Ahora vinculado directamente al paciente (sin ficha).
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const validation = await AuthService.validateApiPermission(
@@ -50,36 +49,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const validData = validationResult.data
+    const pacienteCi = validData.pacienteId
 
     // ══════════════════════════════════════════════════════════════════════
     // TRANSACCIÓN: todo o nada
     // ══════════════════════════════════════════════════════════════════════
     const result = await prisma.$transaction(async tx => {
-      // 1. Buscar la ficha origen
-      const ficha = await tx.fichas.findUnique({
-        where: { id: validData.fichaOrigenId },
-        include: {
-          pacientes: {
-            include: { personas: true }
-          },
-          disponibilidades: {
-            select: {
-              doctores_especialidades: {
-                select: { doctor_id: true }
-              }
-            }
-          }
-        }
+      // 1. Buscar el paciente
+      const paciente = await tx.pacientes.findUnique({
+        where: { paciente_id: pacienteCi },
+        include: { personas: true }
       })
 
-      if (!ficha) {
-        throw new Error('FICHA_NOT_FOUND')
+      if (!paciente) {
+        throw new Error('PACIENTE_NOT_FOUND')
       }
 
-      const pacienteCi = ficha.pacientes.paciente_id
-      const persona = ficha.pacientes.personas
-      const doctorId =
-        ficha.disponibilidades?.doctores_especialidades?.doctor_id
+      const persona = paciente.personas
 
       // 2. Verificar/crear usuario del paciente
       let usuarioCreado = false
@@ -128,6 +114,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const tratamientosCreados = []
       let citasCreadas = 0
 
+      // Buscar el doctor asociado al usuario actual (Enfermería)
+      let doctorAsignadoId = null
+
+      const usuarioActual = await tx.usuarios.findUnique({
+        where: { usuario_id: userId },
+        select: { persona_ci: true }
+      })
+
+      if (usuarioActual?.persona_ci) {
+        const doctorAsociado = await tx.doctores.findUnique({
+          where: { doctor_id: usuarioActual.persona_ci }
+        })
+        if (doctorAsociado) {
+          doctorAsignadoId = doctorAsociado.doctor_id
+        }
+      }
+
+      // Fallback a un doctor genérico si el usuario actual no está registrado como doctor
+      if (!doctorAsignadoId) {
+        const doctorGenerico = await tx.doctores.findFirst({
+          where: { eliminado_en: null }
+        })
+        if (doctorGenerico) {
+          doctorAsignadoId = doctorGenerico.doctor_id
+        }
+      }
+
       for (const item of validData.tratamientos) {
         // 3.1 Verificar esquema de dosis
         const esquemaDosis = await tx.esquema_dosis.findUnique({
@@ -160,7 +173,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const tratamientosAnteriores = await tx.tratamientos.findMany({
           where: {
             eliminado_en: null,
-            ficha_origen: { paciente_id: pacienteCi },
+            paciente_id: pacienteCi,
             esquema_dosis: { vacuna_id: esquemaActual!.vacuna_id }
           },
           include: {
@@ -214,20 +227,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // 3.3 Crear el tratamiento
         const tratamiento = await tx.tratamientos.create({
           data: {
-            ficha_origen_id: validData.fichaOrigenId,
+            paciente_id: pacienteCi,
             esquema_id: item.esquemaId,
             estado: estadoNuevoTratamiento,
+            observaciones: item.observaciones || null,
             fecha_aplicacion: new Date(),
             creado_por: userId
           }
         })
 
         // 3.4 Crear cita si fue incluida
-        if (item.cita && doctorId) {
+        if (item.cita && doctorAsignadoId) {
           await tx.citas.create({
             data: {
               paciente_id: pacienteCi,
-              doctor_id: doctorId,
+              doctor_id: doctorAsignadoId,
               tratamiento_id: tratamiento.id,
               fecha_programada: new Date(item.cita.fechaProgramada),
               tipo: item.cita.tipo,
@@ -249,15 +263,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           estado: estadoNuevoTratamiento
         })
       }
-
-      // 4. Marcar la ficha como ATENDIDA
-      await tx.fichas.update({
-        where: { id: validData.fichaOrigenId },
-        data: {
-          estado: 'ATENDIDA',
-          actualizado_por: userId
-        }
-      })
 
       return {
         tratamientosCreados,
@@ -290,9 +295,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[BATCH] Error creating tratamientos:', error)
 
     // Errores controlados
-    if (error.message === 'FICHA_NOT_FOUND') {
+    if (error.message === 'PACIENTE_NOT_FOUND') {
       return NextResponse.json(
-        { success: false, message: 'Ficha no encontrada' },
+        { success: false, message: 'Paciente no encontrado' },
         { status: 404 }
       )
     }

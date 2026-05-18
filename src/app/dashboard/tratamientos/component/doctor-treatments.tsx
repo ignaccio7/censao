@@ -44,7 +44,6 @@ export default function DoctorTreatments() {
     { campo: 'Vacuna' },
     { campo: 'Dosis' },
     { campo: 'Fecha Aplicación' },
-    { campo: 'Especialidad' },
     { campo: 'Estado' }
   ]
 
@@ -69,9 +68,6 @@ export default function DoctorTreatments() {
     </span>,
     <span key={`fecha-${t.id}`} className='text-gray-600'>
       {t.fecha_aplicacion}
-    </span>,
-    <span key={`esp-${t.id}`} className='text-gray-600'>
-      {t.especialidad}
     </span>,
     <EstadoBadge key={`est-${t.id}`} estado={t.estado} />
   ])

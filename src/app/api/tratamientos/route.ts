@@ -5,13 +5,13 @@
 import { tratamientoCreateSchema } from '@/app/dashboard/tratamientos/schemas'
 import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
-import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import bcrypt from 'bcryptjs'
 import { Roles } from '@/app/api/lib/constants'
 import { StateTreatment } from '@/lib/constants'
+import { NextResponse, NextRequest } from 'next/server'
+import bcrypt from 'bcryptjs'
 
-// LISTAR TRATAMIENTOS DEL DOCTOR
+// LISTAR TRATAMIENTOS (ENFERMERIA o ADMIN)
 export async function GET() {
   const validation = await AuthService.validateApiPermission(
     '/api/tratamientos',
@@ -25,7 +25,6 @@ export async function GET() {
     )
   }
 
-  const userId = validation.data?.id
   const userRole = validation.data?.role
 
   try {
@@ -34,23 +33,9 @@ export async function GET() {
       eliminado_en: null
     }
 
-    // Si es DOCTOR_GENERAL, filtrar solo sus tratamientos (a través de la ficha)
-    if (userRole === Roles.DOCTOR_GENERAL) {
-      whereClause.ficha_origen = {
-        disponibilidades: {
-          doctores_especialidades: {
-            doctores: {
-              personas: {
-                usuarios: {
-                  some: {
-                    usuario_id: userId
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+    // Enfermería ve todos los tratamientos no eliminados
+    if (userRole === Roles.ENFERMERIA) {
+      // El filtro base eliminado_en: null ya cubre esto
     }
 
     const tratamientos = await prisma.tratamientos.findMany({
@@ -59,8 +44,10 @@ export async function GET() {
       select: {
         id: true,
         estado: true,
+        observaciones: true,
         fecha_aplicacion: true,
         creado_en: true,
+        paciente_id: true,
         esquema_dosis: {
           select: {
             numero: true,
@@ -73,31 +60,14 @@ export async function GET() {
             }
           }
         },
-        ficha_origen: {
+        pacientes: {
           select: {
-            id: true,
-            orden_turno: true,
-            pacientes: {
+            paciente_id: true,
+            personas: {
               select: {
-                paciente_id: true,
-                personas: {
-                  select: {
-                    nombres: true,
-                    paterno: true,
-                    materno: true
-                  }
-                }
-              }
-            },
-            disponibilidades: {
-              select: {
-                doctores_especialidades: {
-                  select: {
-                    especialidades: {
-                      select: { nombre: true }
-                    }
-                  }
-                }
+                nombres: true,
+                paterno: true,
+                materno: true
               }
             }
           }
@@ -106,7 +76,7 @@ export async function GET() {
     })
 
     const tratamientosDto = tratamientos.map(t => {
-      const persona = t.ficha_origen.pacientes.personas
+      const persona = t.pacientes.personas
       const fechaAplicacion = new Date(t.fecha_aplicacion).toLocaleDateString(
         'es-BO',
         {
@@ -121,16 +91,14 @@ export async function GET() {
         id: t.id,
         paciente_nombre:
           `${persona.nombres} ${persona.paterno} ${persona.materno}`.trim(),
-        paciente_ci: t.ficha_origen.pacientes.paciente_id,
+        paciente_ci: t.pacientes.paciente_id,
         vacuna_nombre: t.esquema_dosis.vacunas.nombre,
         vacuna_fabricante: t.esquema_dosis.vacunas.fabricante,
+        dosis_numero: t.esquema_dosis.numero,
         dosis_notas: t.esquema_dosis.notas,
         estado: t.estado,
-        fecha_aplicacion: fechaAplicacion,
-        especialidad:
-          t?.ficha_origen?.disponibilidades?.doctores_especialidades
-            ?.especialidades?.nombre,
-        ficha_id: t.ficha_origen.id
+        observaciones: t.observaciones,
+        fecha_aplicacion: fechaAplicacion
       }
     })
 
@@ -179,34 +147,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const validData = validationResult.data
+    const pacienteCi = validData.pacienteId
 
-    // 1. Buscar la ficha origen con datos del paciente y doctor asignado
-    const ficha = await prisma.fichas.findUnique({
-      where: { id: validData.fichaOrigenId },
+    // 1. Buscar el paciente
+    const paciente = await prisma.pacientes.findUnique({
+      where: { paciente_id: pacienteCi },
       include: {
-        pacientes: {
-          include: {
-            personas: true
-          }
-        },
-        disponibilidades: {
-          select: {
-            doctores_especialidades: {
-              select: {
-                doctor_id: true
-              }
-            }
-          }
-        }
+        personas: true
       }
     })
 
-    if (!ficha) {
+    if (!paciente) {
       return NextResponse.json(
-        { success: false, message: 'Ficha no encontrada' },
+        { success: false, message: 'Paciente no encontrado' },
         { status: 404 }
       )
     }
+
+    const persona = paciente.personas
 
     // 2. Verificar que el esquema de dosis existe
     const esquemaDosis = await prisma.esquema_dosis.findUnique({
@@ -224,9 +182,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // 3. Verificar/crear usuario del paciente si no existe
-    const pacienteCi = ficha.pacientes.paciente_id
-    const persona = ficha.pacientes.personas
-
     const usuarioExistente = await prisma.usuarios.findFirst({
       where: { persona_ci: pacienteCi }
     })
@@ -237,7 +192,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Hash del CI como contraseña
       const passwordHash = await bcrypt.hash(pacienteCi, 10)
 
-      // Buscar el rol PACIENTE
       const rolPaciente = await prisma.roles.findUnique({
         where: { nombre: 'PACIENTE' }
       })
@@ -252,7 +206,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         )
       }
 
-      // Crear usuario con CI como username y password
       const nuevoUsuario = await prisma.usuarios.create({
         data: {
           persona_ci: pacienteCi,
@@ -263,7 +216,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
       })
 
-      // Asignar rol PACIENTE
       await prisma.usuarios_roles.create({
         data: {
           usuario_id: nuevoUsuario.usuario_id,
@@ -305,17 +257,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const totalDosis = todosEsquemasVacuna.length
     const esUltimaDosis = esquemaActual!.numero === totalDosis
 
-    console.log(totalDosis)
-    console.log(esUltimaDosis)
-
-    // Buscar TODOS los tratamientos anteriores de esta vacuna para este paciente
-    // ordenados del más antiguo al más reciente
+    // Buscar tratamientos anteriores de esta vacuna para este paciente
     const tratamientosAnteriores = await prisma.tratamientos.findMany({
       where: {
         eliminado_en: null,
-        ficha_origen: {
-          paciente_id: pacienteCi
-        },
+        paciente_id: pacienteCi,
         esquema_dosis: {
           vacuna_id: esquemaActual!.vacuna_id
         }
@@ -400,29 +346,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 4. Crear el tratamiento
     const tratamiento = await prisma.tratamientos.create({
       data: {
-        ficha_origen_id: validData.fichaOrigenId,
+        paciente_id: pacienteCi,
         esquema_id: validData.esquemaId,
         estado: estadoNuevoTratamiento,
+        observaciones: validData.observaciones || null,
         fecha_aplicacion: new Date(),
         creado_por: userId
       }
     })
 
-    // 4.5. Crear cita futura si fue solicitada
+    // 4.5. Crear cita futura si fue solicitada (sin doctor por ahora)
     let citaCreada = false
     if (validData.cita) {
-      const doctorId =
-        ficha.disponibilidades?.doctores_especialidades?.doctor_id
+      // Buscar un doctor de enfermería o usar el creador como referencia
+      // Para citas creadas desde enfermería sin ficha, usamos un doctor genérico
+      // El doctor_id es requerido por el modelo de citas, necesitamos buscar uno
+      const doctorEnfermeria = await prisma.doctores.findFirst({
+        where: { eliminado_en: null }
+      })
 
-      if (!doctorId) {
-        console.warn(
-          'No se pudo obtener el doctor_id de la ficha para crear la cita'
-        )
-      } else {
+      if (doctorEnfermeria) {
         await prisma.citas.create({
           data: {
             paciente_id: pacienteCi,
-            doctor_id: doctorId,
+            doctor_id: doctorEnfermeria.doctor_id,
             tratamiento_id: tratamiento.id,
             fecha_programada: new Date(validData.cita.fechaProgramada),
             tipo: validData.cita.tipo,
@@ -437,15 +384,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         )
       }
     }
-
-    // 5. Marcar la ficha como ATENDIDA
-    await prisma.fichas.update({
-      where: { id: validData.fichaOrigenId },
-      data: {
-        estado: 'ATENDIDA',
-        actualizado_por: userId
-      }
-    })
 
     return NextResponse.json(
       {

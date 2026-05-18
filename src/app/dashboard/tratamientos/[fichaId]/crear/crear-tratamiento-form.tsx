@@ -49,6 +49,7 @@ type PendingTreatment = {
   dosisNumero: number
   dosisNotas: string | null
   intervaloDias: number
+  observaciones: string
   // Cita opcional
   cita?: {
     fechaProgramada: string
@@ -58,11 +59,9 @@ type PendingTreatment = {
 }
 
 interface CrearTratamientoFormProps {
-  fichaId: string
+  pacienteId: string
   pacienteNombre: string
   pacienteCi: string
-  especialidadNombre: string
-  ordenTurno: number | null
   vacunas: Vacuna[]
 }
 
@@ -73,11 +72,9 @@ const TIPOS_CITA = [
 ]
 
 export default function CrearTratamientoForm({
-  fichaId,
+  pacienteId,
   pacienteNombre,
   pacienteCi,
-  especialidadNombre,
-  ordenTurno,
   vacunas
 }: CrearTratamientoFormProps) {
   const router = useRouter()
@@ -86,6 +83,7 @@ export default function CrearTratamientoForm({
   // ── Selector de vacuna / dosis ──
   const [selectedVacunaId, setSelectedVacunaId] = useState('')
   const [selectedEsquemaId, setSelectedEsquemaId] = useState('')
+  const [tratamientoObservaciones, setTratamientoObservaciones] = useState('')
 
   // ── Carrito: tratamientos pendientes (aún no enviados) ──
   const [pendingTreatments, setPendingTreatments] = useState<
@@ -168,7 +166,8 @@ export default function CrearTratamientoForm({
       esquemaId: selectedEsquemaId,
       dosisNumero: selectedEsquema.numero,
       dosisNotas: selectedEsquema.notas,
-      intervaloDias: selectedEsquema.intervalo_dias
+      intervaloDias: selectedEsquema.intervalo_dias,
+      observaciones: tratamientoObservaciones.trim()
     }
 
     setPendingTreatments(prev => [...prev, newTreatment])
@@ -178,6 +177,7 @@ export default function CrearTratamientoForm({
 
     setSelectedVacunaId('')
     setSelectedEsquemaId('')
+    setTratamientoObservaciones('')
   }
 
   const removeTreatment = (localId: string) => {
@@ -270,11 +270,14 @@ export default function CrearTratamientoForm({
 
     try {
       const payload = {
-        fichaOrigenId: fichaId,
+        pacienteId: pacienteId,
         tratamientos: pendingTreatments.map(t => ({
           esquemaId: t.esquemaId,
           dosisNumero: t.dosisNumero,
           vacunaNombre: t.vacunaNombre,
+          ...(t.observaciones && {
+            observaciones: t.observaciones
+          }),
           ...(t.cita && {
             cita: {
               fechaProgramada: t.cita.fechaProgramada,
@@ -303,7 +306,7 @@ export default function CrearTratamientoForm({
             { duration: 5000 }
           )
         }
-        router.push('/dashboard/fichas')
+        router.push('/dashboard/atencion/pacientes')
       } else {
         toast.error(result.message || 'Error al registrar tratamientos')
       }
@@ -336,7 +339,7 @@ export default function CrearTratamientoForm({
 
   return (
     <section className='crear-tratamiento pb-10'>
-      <Title subtitle={`Ficha #${ordenTurno || '—'} · ${especialidadNombre}`}>
+      <Title subtitle={`Paciente: ${pacienteNombre} · CI: ${pacienteCi}`}>
         Registrar Tratamiento
       </Title>
 
@@ -428,6 +431,24 @@ export default function CrearTratamientoForm({
               </div>
             </div>
 
+            <div className='flex flex-col gap-1.5 mb-4'>
+              <label
+                className='font-semibold text-gray-700 text-step--1'
+                htmlFor='tratamientoObservaciones'
+              >
+                Observaciones (opcional)
+              </label>
+              <textarea
+                id='tratamientoObservaciones'
+                value={tratamientoObservaciones}
+                onChange={e => setTratamientoObservaciones(e.target.value)}
+                placeholder='Notas clínicas sobre la aplicación...'
+                maxLength={1000}
+                rows={2}
+                className='w-full p-2.5 border border-gray-300 rounded-lg bg-white outline-none focus:border-primary-500 text-step--1 resize-none'
+              />
+            </div>
+
             <button
               type='button'
               onClick={addTreatmentToCart}
@@ -474,6 +495,11 @@ export default function CrearTratamientoForm({
                             <p className='text-step--2 text-emerald-600 font-medium'>
                               Dosis #{t.dosisNumero}
                             </p>
+                            {t.observaciones && (
+                              <p className='text-step--2 text-gray-500 italic truncate'>
+                                📝 {t.observaciones}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <button

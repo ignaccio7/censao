@@ -29,19 +29,12 @@ export default async function Tratamiento({
 
   const tratamientos = await prisma.tratamientos.findMany({
     where: {
-      ficha_origen: { paciente_id: usuario.persona_ci },
+      paciente_id: usuario.persona_ci,
       esquema_dosis: { vacuna_id: uuid },
       eliminado_en: null
     },
     include: {
       esquema_dosis: true,
-      ficha_origen: {
-        include: {
-          disponibilidades: {
-            include: { turnos_catalogo: true }
-          }
-        }
-      },
       citas: {
         where: { eliminado_en: null },
         include: {
@@ -106,18 +99,7 @@ export default async function Tratamiento({
   const eventos: Evento[] = []
 
   for (const t of tratamientos) {
-    // 1. Ficha origen (siempre presencial, es la que generó el tratamiento)
-    eventos.push({
-      tipo: 'ficha',
-      subtipo: t.ficha_origen.cita_origen_id ? 'programada' : 'presencial',
-      fecha: t.ficha_origen.fecha_ficha.toISOString().split('T')[0],
-      turno:
-        t.ficha_origen.disponibilidades?.turnos_catalogo?.nombre ?? 'General',
-      motivo: t.ficha_origen.motivo ?? 'Visita para control / vacunación',
-      orden: t.ficha_origen.orden_turno
-    })
-
-    // 2. Tratamiento (dosis aplicada)
+    // 1. Tratamiento (dosis aplicada)
     eventos.push({
       tipo: 'tratamiento',
       fecha: t.fecha_aplicacion.toISOString().split('T')[0],

@@ -56,7 +56,6 @@ model fichas {
   disponibilidades  disponibilidades? @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_disponibilidad_id_foreign")
   pacientes         pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_paciente_id_foreign")
   cita_origen       citas?           @relation("CitaToFicha", fields: [cita_origen_id], references: [id])
-  tratamientos      tratamientos[]
   consultas         consultas[]
 
   @@unique([disponibilidad_id, fecha_ficha, orden_turno])
@@ -149,6 +148,7 @@ model pacientes {
   eliminado_por        String?
   fichas               fichas[]
   citas                citas[]
+  tratamientos         tratamientos[]
   notificaciones       notificaciones[]
   personas             personas         @relation(fields: [paciente_id], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_pacientes_personas")
 }
@@ -228,9 +228,9 @@ model roles_permisos {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model tratamientos {
   id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paciente_id             String           // CI del paciente
   estado                  String           @default("EN_CURSO") // EN_CURSO, COMPLETADA, INCOMPLETA
   observaciones           String?          // Notas clínicas libres
-  ficha_origen_id         String           @db.Uuid
   esquema_id              String           @db.Uuid
   fecha_aplicacion        DateTime         @default(now()) @db.Timestamptz(0) // Cuándo se aplicó realmente
   creado_en               DateTime         @default(now()) @db.Timestamptz(0)
@@ -239,8 +239,8 @@ model tratamientos {
   actualizado_por         String?
   eliminado_en            DateTime?        @db.Timestamptz(0)
   eliminado_por           String?  
-
-  ficha_origen            fichas           @relation(fields: [ficha_origen_id], references: [id])
+    
+  pacientes               pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction)
   esquema_dosis           esquema_dosis    @relation(fields: [esquema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_esquema_id_foreign")
   citas               citas[]
 }

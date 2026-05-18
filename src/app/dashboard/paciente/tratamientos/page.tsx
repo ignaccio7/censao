@@ -29,9 +29,7 @@ export default async function Page() {
 
   const tratamientosDB = await prisma.tratamientos.findMany({
     where: {
-      ficha_origen: {
-        paciente_id: usuario.persona_ci
-      },
+      paciente_id: usuario.persona_ci,
       eliminado_en: null
     },
     select: {

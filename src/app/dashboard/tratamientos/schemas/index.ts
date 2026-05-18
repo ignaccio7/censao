@@ -1,13 +1,17 @@
 import { z } from 'zod'
 
-// ── Schema para un solo tratamiento (legacy, por si se usa en otros lados) ──
+// ── Schema para un solo tratamiento ──
 export const tratamientoCreateSchema = z.object({
-  fichaOrigenId: z.string().uuid('ID de ficha inválido'),
+  pacienteId: z.string().min(1, 'ID del paciente es requerido'),
   esquemaId: z.string().uuid('ID de esquema de dosis inválido'),
   dosisNumero: z
     .number()
     .int()
     .min(1, 'El número de dosis debe ser al menos 1'),
+  observaciones: z
+    .string()
+    .max(1000, 'Las observaciones no pueden exceder 1000 caracteres')
+    .optional(),
   // Cita futura (opcional)
   cita: z
     .object({
@@ -35,6 +39,10 @@ const tratamientoItemSchema = z.object({
     .int()
     .min(1, 'El número de dosis debe ser al menos 1'),
   vacunaNombre: z.string().optional(), // solo para mensajes de respuesta
+  observaciones: z
+    .string()
+    .max(1000, 'Las observaciones no pueden exceder 1000 caracteres')
+    .optional(),
   cita: z
     .object({
       fechaProgramada: z
@@ -52,7 +60,7 @@ const tratamientoItemSchema = z.object({
 })
 
 export const tratamientoBatchCreateSchema = z.object({
-  fichaOrigenId: z.string().uuid('ID de ficha inválido'),
+  pacienteId: z.string().min(1, 'ID del paciente es requerido'),
   tratamientos: z
     .array(tratamientoItemSchema)
     .min(1, 'Debe registrar al menos un tratamiento')

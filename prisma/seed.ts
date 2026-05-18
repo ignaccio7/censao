@@ -368,6 +368,15 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         modulo: 'atencion'
       },
       {
+        nombre: 'Crear Pacientes',
+        tipo: 'frontend',
+        ruta: '/dashboard/atencion/pacientes/crear',
+        metodos: ['create'],
+        icono: 'plus',
+        descripcion: 'Crear pacientes',
+        modulo: 'atencion'
+      },
+      {
         nombre: 'Pacientes',
         tipo: 'frontend',
         ruta: '/dashboard/atencion/pacientes/:uuid',

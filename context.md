@@ -521,5 +521,6 @@ Un paciente puede tener múltiples Consultas registradas por el Doctor General d
 `Paciente -> fichas -> consultas -> citas (de retorno)`
 
 La diferencia con tratamientos:
+
 - `tratamientos` = seguimiento de vacunación (registrado por Enfermería).
 - `consultas` = seguimiento de consultas médicas generales (registrado por Doctor General).
