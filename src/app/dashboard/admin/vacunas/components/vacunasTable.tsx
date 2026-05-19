@@ -2,7 +2,8 @@ import Link from 'next/link'
 import { IconPencil } from '@/app/components/icons/icons'
 import CustomDataTable from '@/app/components/ui/dataTable'
 import { VacunasService } from '@/services/vacunas'
-import { DeleteVacunaButton } from './deleteVacunaButton'
+// import { DeleteVacunaButton } from './deleteVacunaButton'
+import { SwitchState } from './switchState'
 
 interface Props {
   search?: string
@@ -28,6 +29,7 @@ export default async function VacunasTable({
     { campo: 'Fabricante' },
     { campo: 'Descripción' },
     { campo: 'Esquemas de dosis' },
+    { campo: 'Estado' },
     { campo: 'Acciones' }
   ]
 
@@ -74,6 +76,13 @@ export default async function VacunasTable({
       )}
     </div>,
 
+    // Estado
+    <SwitchState
+      key={`estado-${vacuna.id}`}
+      activo={vacuna.activo}
+      vacunaId={vacuna.id}
+    />,
+
     // Acciones
     <div key={`acc-${vacuna.id}`} className='flex gap-2 items-center'>
       <Link
@@ -83,7 +92,7 @@ export default async function VacunasTable({
       >
         <IconPencil />
       </Link>
-      <DeleteVacunaButton id={vacuna.id} />
+      {/* <DeleteVacunaButton id={vacuna.id} /> */}
     </div>
   ])
 

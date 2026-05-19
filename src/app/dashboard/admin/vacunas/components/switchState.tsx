@@ -2,15 +2,15 @@
 
 import { useState, useTransition } from 'react'
 import { ToggleSwitch } from '@/app/components/ui/toggle-switch'
-import { toggleUsuario } from '@/actions/usuarios/toggle-usuario'
 import { toast } from 'sonner'
+import { toggleVacuna } from '@/actions/vacunas/toggle-vacunas'
 
 interface EstadoSwitchProps {
   activo: boolean
-  usuarioId: string
+  vacunaId: string
 }
 
-export function SwitchState({ activo, usuarioId }: EstadoSwitchProps) {
+export function SwitchState({ activo, vacunaId }: EstadoSwitchProps) {
   const [isPending, startTransition] = useTransition()
   const [statusLocal, setStatusLocal] = useState(activo)
 
@@ -20,7 +20,7 @@ export function SwitchState({ activo, usuarioId }: EstadoSwitchProps) {
 
     startTransition(async () => {
       try {
-        const result = await toggleUsuario(usuarioId, newState)
+        const result = await toggleVacuna(vacunaId, newState)
 
         if (result.success) {
           toast.success(result.message)
@@ -33,7 +33,7 @@ export function SwitchState({ activo, usuarioId }: EstadoSwitchProps) {
         // Revertir en caso de error
         console.log(error)
         setStatusLocal(!newState)
-        toast.error('Error al inactivar el usuario')
+        toast.error('Error al inactivar la vacuna')
       }
     })
   }

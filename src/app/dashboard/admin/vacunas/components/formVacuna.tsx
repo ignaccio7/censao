@@ -16,6 +16,7 @@ import {
   IconMedicineBox,
   IconClipboardText
 } from '@/app/components/icons/icons'
+import { useVacunas } from '@/app/services/vacunas'
 
 interface Props {
   vacunaId?: string // si viene → edición, si no → creación
@@ -32,6 +33,7 @@ const DEFAULT_ESQUEMA = {
 export default function FormVacuna({ vacunaId, defaultValues }: Props) {
   const router = useRouter()
   const modoEdicion = !!vacunaId
+  const { createVacuna, updateVacuna } = useVacunas(vacunaId)
 
   const form = useForm<VacunaFormData>({
     resolver: zodResolver(vacunaSchema),
@@ -60,17 +62,9 @@ export default function FormVacuna({ vacunaId, defaultValues }: Props) {
     console.log(payload)
 
     try {
-      const url = modoEdicion
-        ? `/api/admin/vacunas/${vacunaId}`
-        : '/api/admin/vacunas'
-      const method = modoEdicion ? 'PATCH' : 'POST'
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      const result = await res.json()
+      const result = !modoEdicion
+        ? await createVacuna.mutateAsync(payload)
+        : await updateVacuna.mutateAsync(payload)
 
       if (result.success) {
         toast.success(

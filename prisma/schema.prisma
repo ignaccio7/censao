@@ -345,6 +345,7 @@ model vacunas {
   nombre          String          @unique(map: "vacunas_nombre_unique")
   descripcion     String?
   fabricante      String?
+  activo          Boolean         @default(true)
   creado_en       DateTime        @default(now()) @db.Timestamptz(0)
   creado_por      String?
   actualizado_en  DateTime        @default(now()) @db.Timestamptz(0)
