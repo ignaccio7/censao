@@ -70,7 +70,7 @@ test('Flujo completo: ficha presencial de ADMISION a ATENDIDA', async ({
   // ============================================
   // PASO 4: Doctor General llama y atiende
   // ============================================
-  await loginWithUser(page, 'doctor.general') // o doctor.general según tu usuario
+  await loginWithUser(page, 'odontologa') // o doctor.general según tu usuario
   await page.goto('http://localhost:3000/dashboard/fichas')
   await page.waitForLoadState('networkidle')
 

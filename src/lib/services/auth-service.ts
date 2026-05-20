@@ -21,9 +21,6 @@ export default class AuthService {
         }
       })
 
-      // console.log(username)
-      // console.log(password)
-
       if (!user) {
         return null
       }
@@ -38,12 +35,6 @@ export default class AuthService {
       const userWithPermissionsForJWT = await this.getUserPermissionsForJWT(
         user.usuario_id
       )
-
-      // console.log(
-      //   '*****************************************************************************************'
-      // )
-      // console.log('PERMISOS DEL USUARIO')
-      // console.log(JSON.stringify(userWithPermissionsForJWT, null, 2))
 
       const d = this.formatUserData(userWithPermissionsForJWT, true)
       // console.log(d)

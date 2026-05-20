@@ -65,8 +65,6 @@ export async function GET() {
     console.log('Fichas db')
     console.log(data)
 
-    // console.log(fichas)
-
     const fichasDto = fichas.map(ficha => {
       const fechaFicha = new Date(ficha.fecha_ficha).toLocaleString('es-BO', {
         timeZone: 'America/La_Paz',
@@ -172,34 +170,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log(`El body es:`, validData)
 
+    // Ya no crearemos el PACIENTE o PERSONA en este flujo en caso de no existir paciente manda un error
     // Crear/verificar persona
-    let persona = await prisma.personas.findUnique({
-      where: { ci: validData.cedula }
-    })
+    // let persona = await prisma.personas.findUnique({
+    //   where: { ci: validData.cedula }
+    // })
 
-    const formatedName = validData.nombre
-      .trim()
-      .split(' ')
-      .map(
-        (word: string) =>
-          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      )
-      .join(' ')
+    // const formatedName = validData.nombre
+    //   .trim()
+    //   .split(' ')
+    //   .map(
+    //     (word: string) =>
+    //       word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    //   )
+    //   .join(' ')
 
-    if (!persona) {
-      const nombreParts = formatedName.split(' ')
-      const [nombres = '', paterno = '', materno = ''] = nombreParts
+    // if (!persona) {
+    //   const nombreParts = formatedName.split(' ')
+    //   const [nombres = '', paterno = '', materno = ''] = nombreParts
 
-      persona = await prisma.personas.create({
-        data: {
-          ci: validData.cedula,
-          nombres,
-          paterno,
-          materno,
-          creado_por: id
-        }
-      })
-    }
+    //   persona = await prisma.personas.create({
+    //     data: {
+    //       ci: validData.cedula,
+    //       nombres,
+    //       paterno,
+    //       materno,
+    //       creado_por: id
+    //     }
+    //   })
+    // }
 
     // Crear/verificar paciente
     let paciente = await prisma.pacientes.findUnique({
@@ -207,15 +206,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     })
 
     if (!paciente) {
-      paciente = await prisma.pacientes.create({
-        data: {
-          paciente_id: validData.cedula,
-          fecha_nacimiento: null,
-          sexo: null,
-          grupo_sanguineo: null,
-          creado_por: id
-        }
-      })
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Paciente no encontrado. Por favor registre al paciente antes de crear la ficha.'
+        },
+        { status: 404 }
+      )
+      // paciente = await prisma.pacientes.create({
+      //   data: {
+      //     paciente_id: validData.cedula,
+      //     fecha_nacimiento: null,
+      //     sexo: null,
+      //     grupo_sanguineo: null,
+      //     creado_por: id
+      //   }
+      // })
     }
 
     const fechaFicha = new Date()

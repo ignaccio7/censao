@@ -265,6 +265,15 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         modulo: 'atencion'
       },
       {
+        nombre: 'Crear paciente',
+        tipo: 'frontend',
+        ruta: '/dashboard/atencion/pacientes/crear',
+        metodos: ['create'],
+        icono: 'list',
+        descripcion: 'Crear un nuevo pacientes en el sistema',
+        modulo: 'atencion'
+      },
+      {
         nombre: 'Pacientes',
         tipo: 'frontend',
         ruta: '/dashboard/atencion/pacientes/:uuid',
