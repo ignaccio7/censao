@@ -1,8 +1,7 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
-import apiClient from '@/app/services/client'
+import { usePaciente } from '@/app/services/pacientes'
 import CustomDataTable from '@/app/components/ui/dataTable'
 import { StatusBadge } from '@/app/dashboard/fichas/components/statusBadge'
 import Link from 'next/link'
@@ -56,15 +55,7 @@ export default function PacienteDetallePage() {
   const { user } = useUser()
   // const { create } = useProfileRoutes()
 
-  const {
-    data: paciente,
-    isLoading,
-    isError
-  } = useQuery({
-    queryKey: ['atencion-pacientes', uuid],
-    queryFn: () =>
-      apiClient.get(`atencion/pacientes/${uuid}`).then(res => res.data.data)
-  })
+  const { data: paciente, isLoading, isError } = usePaciente(uuid)
 
   if (isLoading) {
     return (

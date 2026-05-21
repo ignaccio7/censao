@@ -90,7 +90,7 @@ export async function GET() {
         hora_ficha: horaBoliviana,
         estado: ficha.estado,
         paciente_id: ficha.pacientes.paciente_id,
-        paciente_nombres: `${ficha.pacientes.personas.nombres} ${ficha.pacientes.personas.paterno} ${ficha.pacientes.personas.materno}`,
+        paciente_nombres: `${ficha.pacientes.personas.nombres} ${ficha.pacientes.personas.paterno || ''} ${ficha.pacientes.personas.materno || ''}`,
         turno_codigo: ficha?.disponibilidades?.turno_codigo ?? '',
         doctor_id: ficha?.disponibilidades?.doctor_especialidad_id ?? '',
         doctor_nombre: nombreDoctor,

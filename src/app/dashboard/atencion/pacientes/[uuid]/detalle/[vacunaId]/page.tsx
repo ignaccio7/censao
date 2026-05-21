@@ -111,7 +111,7 @@ export default async function DetalleTratamientoVacunaPage({
       {/* Lista de Acordeones */}
       <div className='flex flex-col gap-4'>
         {tratamientos.map((t: any) => (
-          <TratamientoAccordion key={t.id} tratamiento={t} />
+          <TratamientoAccordion key={t.id} tratamiento={t} pacienteId={uuid} />
         ))}
         {tratamientos.length === 0 && (
           <div className='text-center p-12 bg-white rounded-2xl border border-gray-200 text-gray-500'>

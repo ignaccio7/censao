@@ -7,6 +7,10 @@ import {
   TratamientoBatchCreateData
 } from '../dashboard/tratamientos/schemas'
 
+export type TratamientoUpdateData = {
+  observaciones?: string | null
+}
+
 export function useTratamientos() {
   const queryClient = useQueryClient()
 
@@ -29,6 +33,7 @@ export function useTratamientos() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fichas'] })
       queryClient.invalidateQueries({ queryKey: ['tratamientos'] })
+      queryClient.invalidateQueries({ queryKey: ['atencion-pacientes'] })
     }
   })
 
@@ -38,10 +43,32 @@ export function useTratamientos() {
       const response = await apiClient.post('tratamientos/batch', data)
       return response.data
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['fichas'] })
       queryClient.invalidateQueries({ queryKey: ['tratamientos'] })
+      queryClient.invalidateQueries({ queryKey: ['atencion-pacientes'] })
+      const pacienteId = variables?.pacienteId
+      if (pacienteId) {
+        queryClient.invalidateQueries({
+          queryKey: ['atencion-paciente', pacienteId]
+        })
+      }
     }
+  })
+
+  // Editar observaciones de un tratamiento
+  const updateTratamiento = useMutation({
+    mutationFn: async ({
+      id,
+      data
+    }: {
+      id: string
+      data: TratamientoUpdateData
+    }) => {
+      const response = await apiClient.patch(`tratamientos/${id}`, data)
+      return response.data
+    }
+    // onSuccess: invalidate
   })
 
   return {
@@ -49,6 +76,7 @@ export function useTratamientos() {
     isLoading: tratamientosQuery.isLoading,
     isError: tratamientosQuery.isError,
     createTratamiento,
+    updateTratamiento,
     createTratamientoBatch
   }
 }

@@ -412,6 +412,37 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         descripcion: 'Crear tratamientos de vacunas de pacientes',
         modulo: 'tratamientos'
       },
+      // ************ VACUNAS
+      // -> Inicio
+      {
+        nombre: 'Gestión de Vacunas',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/vacunas',
+        metodos: ['read', 'create', 'update', 'delete'],
+        icono: 'vaccine',
+        descripcion: 'Gestionar vacunas del sistema',
+        modulo: 'administracion'
+      },
+      // -> Crear
+      {
+        nombre: 'Creacion de Vacunas',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/vacunas/crear',
+        metodos: ['create'],
+        icono: 'vaccine',
+        descripcion: 'Gestionar vacunas del sistema',
+        modulo: 'administracion'
+      },
+      // -> Editar
+      {
+        nombre: 'Edicion de Vacunas',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/vacunas/:uuid/editar',
+        metodos: ['update'],
+        icono: 'vaccine',
+        descripcion: 'Editar vacunas del sistema',
+        modulo: 'administracion'
+      },
       // BACKEND - APIs para enfermería
       // - Fichas
       {
@@ -459,9 +490,9 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
       {
         nombre: 'API Tratamientos Paciente',
         tipo: 'backend',
-        ruta: '/api/tratamientos/paciente/:uuid',
-        metodos: ['GET', 'PATCH'],
-        descripcion: 'API para tratamientos específicos de paciente',
+        ruta: '/api/tratamientos/:uuid',
+        metodos: ['PATCH'],
+        descripcion: 'API para editar tratamientos específicos de paciente',
         modulo: 'tratamientos'
       },
       {
@@ -471,6 +502,32 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         metodos: ['GET', 'PATCH', 'DELETE'],
         descripcion: 'API para detalle de tratamiento específico',
         modulo: 'tratamientos'
+      },
+      // ************ VACUNAS
+      {
+        nombre: 'API Vacunas Admin',
+        tipo: 'backend',
+        ruta: '/api/admin/vacunas',
+        metodos: ['GET', 'POST', 'DELETE'],
+        descripcion: 'API para administrar vacunas',
+        modulo: 'administracion'
+      },
+      {
+        nombre: 'API Edicion de Vacunas',
+        tipo: 'backend',
+        ruta: '/api/admin/vacunas/:uuid',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para editar vacunas',
+        modulo: 'administracion'
+      },
+      // ************ CITAS
+      {
+        nombre: 'API Citas',
+        tipo: 'backend',
+        ruta: '/api/citas',
+        metodos: ['PATCH', 'POST', 'DELETE'],
+        descripcion: 'API para administrar citas',
+        modulo: 'administracion'
       }
     ]
   }
