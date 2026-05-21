@@ -792,51 +792,51 @@ const USUARIO_ADMIN: UsuarioCompleto = {
     permisos: [
       ...PERMISOS_COMUNES,
       // ACCESO TOTAL A FICHAS
-      {
-        nombre: 'Gestionar Fichas',
-        tipo: 'frontend',
-        ruta: '/dashboard/fichas',
-        metodos: ['read', 'create', 'update', 'delete'],
-        icono: 'plus',
-        descripcion: 'Gestión completa de fichas médicas',
-        modulo: 'fichas'
-      },
-      {
-        nombre: 'Estado de doctores',
-        tipo: 'frontend',
-        ruta: '/dashboard/estado-doctores',
-        metodos: ['read', 'create', 'update', 'delete'],
-        icono: 'stethoscope',
-        descripcion: 'Gestión completa de fichas médicas',
-        modulo: 'fichas'
-      },
-      {
-        nombre: 'API Fichas',
-        tipo: 'backend',
-        ruta: '/api/fichas',
-        metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestión completa de fichas',
-        modulo: 'fichas'
-      },
+      // {
+      //   nombre: 'Gestionar Fichas',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/fichas',
+      //   metodos: ['read', 'create', 'update', 'delete'],
+      //   icono: 'plus',
+      //   descripcion: 'Gestión completa de fichas médicas',
+      //   modulo: 'fichas'
+      // },
+      // {
+      //   nombre: 'Estado de doctores',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/estado-doctores',
+      //   metodos: ['read', 'create', 'update', 'delete'],
+      //   icono: 'stethoscope',
+      //   descripcion: 'Gestión completa de fichas médicas',
+      //   modulo: 'fichas'
+      // },
+      // {
+      //   nombre: 'API Fichas',
+      //   tipo: 'backend',
+      //   ruta: '/api/fichas',
+      //   metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
+      //   descripcion: 'API para gestión completa de fichas',
+      //   modulo: 'fichas'
+      // },
       // ACCESO TOTAL A ATENCIÓN MÉDICA
-      {
-        nombre: 'Pacientes',
-        tipo: 'frontend',
-        ruta: '/dashboard/atencion/pacientes',
-        metodos: ['read', 'update', 'create'],
-        icono: 'list',
-        descripcion: 'Gestionar todos los pacientes',
-        modulo: 'atencion'
-      },
-      {
-        nombre: 'Seguimiento Tratamientos',
-        tipo: 'frontend',
-        ruta: '/dashboard/atencion/seguimiento',
-        metodos: ['read', 'update', 'delete'],
-        icono: 'monitor',
-        descripcion: 'Seguimiento de tratamientos médicos',
-        modulo: 'atencion'
-      },
+      // {
+      //   nombre: 'Pacientes',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/atencion/pacientes',
+      //   metodos: ['read', 'update', 'create'],
+      //   icono: 'list',
+      //   descripcion: 'Gestionar todos los pacientes',
+      //   modulo: 'atencion'
+      // },
+      // {
+      //   nombre: 'Seguimiento Tratamientos',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/atencion/seguimiento',
+      //   metodos: ['read', 'update', 'delete'],
+      //   icono: 'monitor',
+      //   descripcion: 'Seguimiento de tratamientos médicos',
+      //   modulo: 'atencion'
+      // },
       {
         nombre: 'Reenviar Notificaciones',
         tipo: 'frontend',
@@ -846,59 +846,59 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         descripcion: 'Gestionar notificaciones a pacientes',
         modulo: 'atencion'
       },
-      {
-        nombre: 'Tratamientos',
-        tipo: 'frontend',
-        ruta: '/dashboard/paciente/tratamientos',
-        metodos: ['read', 'create', 'update', 'delete'],
-        icono: 'history',
-        descripcion: 'Gestionar todos los tratamientos',
-        modulo: 'tratamientos'
-      },
-      {
-        nombre: 'Detalle Tratamiento',
-        tipo: 'frontend',
-        ruta: '/dashboard/paciente/tratamientos/:uuid',
-        metodos: ['read', 'update', 'delete'],
-        icono: 'history',
-        descripcion: 'Gestionar detalle de tratamientos',
-        modulo: 'tratamientos'
-      },
-      {
-        nombre: 'Fichas',
-        tipo: 'frontend',
-        ruta: '/dashboard/paciente/fichas',
-        metodos: ['read', 'update', 'delete'],
-        icono: 'calendar',
-        descripcion: 'Gestionar todas las fichas',
-        modulo: 'tratamientos'
-      },
+      // {
+      //   nombre: 'Tratamientos',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/paciente/tratamientos',
+      //   metodos: ['read', 'create', 'update', 'delete'],
+      //   icono: 'history',
+      //   descripcion: 'Gestionar todos los tratamientos',
+      //   modulo: 'tratamientos'
+      // },
+      // {
+      //   nombre: 'Detalle Tratamiento',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/paciente/tratamientos/:uuid',
+      //   metodos: ['read', 'update', 'delete'],
+      //   icono: 'history',
+      //   descripcion: 'Gestionar detalle de tratamientos',
+      //   modulo: 'tratamientos'
+      // },
+      // {
+      //   nombre: 'Fichas',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/paciente/fichas',
+      //   metodos: ['read', 'update', 'delete'],
+      //   icono: 'calendar',
+      //   descripcion: 'Gestionar todas las fichas',
+      //   modulo: 'tratamientos'
+      // },
 
       // BACKEND - APIs completas
-      {
-        nombre: 'API Atención Pacientes',
-        tipo: 'backend',
-        ruta: '/api/atencion/:uuid/pacientes',
-        metodos: ['GET'],
-        descripcion: 'API para obtener todos los pacientes',
-        modulo: 'atencion'
-      },
-      {
-        nombre: 'API Tratamientos',
-        tipo: 'backend',
-        ruta: '/api/atencion/tratamientos',
-        metodos: ['GET', 'POST'],
-        descripcion: 'API para gestión completa de tratamientos',
-        modulo: 'atencion'
-      },
-      {
-        nombre: 'API Tratamientos Paciente',
-        tipo: 'backend',
-        ruta: '/api/atencion/tratamientos/paciente/:uuid',
-        metodos: ['GET', 'PATCH'],
-        descripcion: 'API para tratamientos de pacientes específicos',
-        modulo: 'atencion'
-      },
+      // {
+      //   nombre: 'API Atención Pacientes',
+      //   tipo: 'backend',
+      //   ruta: '/api/atencion/:uuid/pacientes',
+      //   metodos: ['GET'],
+      //   descripcion: 'API para obtener todos los pacientes',
+      //   modulo: 'atencion'
+      // },
+      // {
+      //   nombre: 'API Tratamientos',
+      //   tipo: 'backend',
+      //   ruta: '/api/atencion/tratamientos',
+      //   metodos: ['GET', 'POST'],
+      //   descripcion: 'API para gestión completa de tratamientos',
+      //   modulo: 'atencion'
+      // },
+      // {
+      //   nombre: 'API Tratamientos Paciente',
+      //   tipo: 'backend',
+      //   ruta: '/api/atencion/tratamientos/paciente/:uuid',
+      //   metodos: ['GET', 'PATCH'],
+      //   descripcion: 'API para tratamientos de pacientes específicos',
+      //   modulo: 'atencion'
+      // },
       {
         nombre: 'API Notificaciones Médicas',
         tipo: 'backend',
@@ -915,32 +915,32 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         descripcion: 'API para notificaciones a paciente específico',
         modulo: 'atencion'
       },
-      {
-        nombre: 'API Tratamientos de Paciente',
-        tipo: 'backend',
-        ruta: '/api/paciente/:uuid/tratamientos',
-        metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestión total de tratamientos de pacientes',
-        modulo: 'tratamientos'
-      },
-      {
-        nombre: 'API Detalle Tratamiento Paciente',
-        tipo: 'backend',
-        ruta: '/api/paciente/:uuid/tratamientos/:uuid',
-        metodos: ['GET', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestión total de detalle de tratamientos',
-        modulo: 'tratamientos'
-      },
-      {
-        nombre: 'API Fichas de Paciente',
-        tipo: 'backend',
-        ruta: '/api/paciente/:uuid/fichas',
-        metodos: ['GET', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestión total de fichas',
-        modulo: 'tratamientos'
-      },
+      // {
+      //   nombre: 'API Tratamientos de Paciente',
+      //   tipo: 'backend',
+      //   ruta: '/api/paciente/:uuid/tratamientos',
+      //   metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
+      //   descripcion: 'API para gestión total de tratamientos de pacientes',
+      //   modulo: 'tratamientos'
+      // },
+      // {
+      //   nombre: 'API Detalle Tratamiento Paciente',
+      //   tipo: 'backend',
+      //   ruta: '/api/paciente/:uuid/tratamientos/:uuid',
+      //   metodos: ['GET', 'PATCH', 'DELETE'],
+      //   descripcion: 'API para gestión total de detalle de tratamientos',
+      //   modulo: 'tratamientos'
+      // },
+      // {
+      //   nombre: 'API Fichas de Paciente',
+      //   tipo: 'backend',
+      //   ruta: '/api/paciente/:uuid/fichas',
+      //   metodos: ['GET', 'PATCH', 'DELETE'],
+      //   descripcion: 'API para gestión total de fichas',
+      //   modulo: 'tratamientos'
+      // },
 
-      // PERMISOS ADMINISTRATIVOS BÁSICOS (para futuro)
+      // PERMISOS ADMINISTRATIVOS
       // ************ FRONTEND ************
       // ************ USUARIOS
       // -> Inicio
@@ -1027,6 +1027,17 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         descripcion: 'Editar vacunas del sistema',
         modulo: 'administracion'
       },
+      // ************ TURNOS
+      // -> Inicio
+      {
+        nombre: 'Gestión de Turnos',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/turnos',
+        metodos: ['read', 'update'],
+        icono: 'clock',
+        descripcion: 'Configurar horarios de turnos del centro de salud',
+        modulo: 'administracion'
+      },
       // ************ BACKEND ************
       // ************ USUARIOS
       {
@@ -1079,6 +1090,23 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         ruta: '/api/admin/vacunas/:uuid',
         metodos: ['GET', 'PATCH'],
         descripcion: 'API para editar vacunas',
+        modulo: 'administracion'
+      },
+      // ************ TURNOS
+      {
+        nombre: 'API Turnos Admin',
+        tipo: 'backend',
+        ruta: '/api/admin/turnos',
+        metodos: ['GET'],
+        descripcion: 'API para listar turnos',
+        modulo: 'administracion'
+      },
+      {
+        nombre: 'API Edición de Turno',
+        tipo: 'backend',
+        ruta: '/api/admin/turnos/:codigo',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para editar un turno específico',
         modulo: 'administracion'
       }
     ]
@@ -1380,16 +1408,19 @@ async function main() {
         {
           codigo: 'AM',
           nombre: 'Mañana',
-          hora_inicio: new Date('1970-01-01T00:01:00.000Z'),
-          hora_fin: new Date('1970-01-01T14:00:00.000Z')
+          // Queremos: 00:01 a 14:00 Bolivia
+          // Bolivia es UTC-4, entonces en UTC sumamos 4 horas
+          hora_inicio: new Date('1970-01-01T04:01:00.000Z'), // 00:01 Bolivia = 04:01 UTC
+          hora_fin: new Date('1970-01-01T18:00:00.000Z') // 14:00 Bolivia = 18:00 UTC
           // hora_inicio: new Date('1970-01-01T07:00:00.000Z'),
           // hora_fin: new Date('1970-01-01T12:30:00.000Z')
         },
         {
           codigo: 'PM',
           nombre: 'Tarde',
-          hora_inicio: new Date('1970-01-01T14:01:00.000Z'),
-          hora_fin: new Date('1970-01-01T23:59:00.000Z')
+          // Queremos: 14:01 a 23:59 Bolivia
+          hora_inicio: new Date('1970-01-01T18:01:00.000Z'), // 14:01 Bolivia = 18:01 UTC
+          hora_fin: new Date('1970-01-02T03:59:00.000Z') // 23:59 Bolivia = 03:59 UTC (día siguiente)
           // hora_inicio: new Date('1970-01-01T14:00:00.000Z'),
           // hora_fin: new Date('1970-01-01T18:00:00.000Z')
         }

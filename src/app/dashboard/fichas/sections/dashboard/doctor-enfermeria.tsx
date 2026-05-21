@@ -82,7 +82,7 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
           textColorClass='text-slate-600'
         />
         <FichasStatCard
-          title='En triage ahora'
+          title='En enfermeria ahora'
           count={globalInTriage.length}
           icon={<IconTeam size='26' />}
           textColorClass='text-green-600'

@@ -46,7 +46,15 @@ export async function GET() {
   const rolUser = validation.data?.role
 
   const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
-  const turno = await getTurnoActual()
+  let turno = await getTurnoActual()
+
+  if (!turno) {
+    return NextResponse.json({
+      success: true,
+      data: [],
+      message: 'Fuera de horario'
+    })
+  }
 
   console.log(`EL TURNO ES:${turno}`)
 
@@ -230,6 +238,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
     const turno = await getTurnoActual()
 
+    if (!turno) {
+      return NextResponse.json({
+        success: false,
+        message: 'No es posible crear la ficha fuera de horario de atención'
+      })
+    }
+
     // Obtenemos el nro total de fichas en este turno para este dia
     const totalFichas = await prisma.fichas.count({
       where: {
@@ -364,6 +379,14 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     if (validData.especialidad && validData.doctor) {
       const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
       const turno = await getTurnoActual()
+
+      if (!turno) {
+        return NextResponse.json({
+          success: false,
+          message:
+            'No es posible actualizar la ficha fuera de horario de atención'
+        })
+      }
 
       const disponibilidad = await prisma.disponibilidades.findFirst({
         where: {

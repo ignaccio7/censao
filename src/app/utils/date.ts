@@ -20,7 +20,10 @@ export function getRangoUTCBoliviaHoy() {
 }
 
 function timeToSecondsFromPrisma(d: Date) {
-  return d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds()
+  // Convertir de UTC a Bolivia (UTC-4)
+  let boliviaHour = d.getUTCHours() - 4
+  if (boliviaHour < 0) boliviaHour += 24
+  return boliviaHour * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds()
 }
 
 function nowInLaPazSeconds() {
@@ -38,29 +41,18 @@ function nowInLaPazSeconds() {
   return get('hour') * 3600 + get('minute') * 60 + get('second')
 }
 
-export async function getTurnoActual(): Promise<string> {
+export async function getTurnoActual(): Promise<string | null> {
   const turnosCatalogo = await prisma.turnos_catalogo.findMany({
-    select: {
-      codigo: true,
-      hora_inicio: true,
-      hora_fin: true
-    }
+    select: { codigo: true, hora_inicio: true, hora_fin: true }
   })
-
   const currentSeconds = nowInLaPazSeconds()
-
   const turno = turnosCatalogo.find(t => {
     const inicio = timeToSecondsFromPrisma(t.hora_inicio)
     const fin = timeToSecondsFromPrisma(t.hora_fin)
-
     if (inicio <= fin) {
       return currentSeconds >= inicio && currentSeconds <= fin
     }
-
     return currentSeconds >= inicio || currentSeconds <= fin
   })
-
-  console.log({ currentSeconds, turno, turnosCatalogo })
-
-  return turno?.codigo ?? 'AM'
+  return turno?.codigo ?? null
 }

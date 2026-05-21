@@ -29,7 +29,15 @@ export async function GET() {
   // const fechaConsulta = new Date(`${fechaBolivia}T00:00:00.000Z`)
 
   const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
+
   const turno = await getTurnoActual()
+  if (!turno) {
+    return NextResponse.json({
+      success: true,
+      data: [],
+      message: 'Fuera de horario'
+    })
+  }
 
   try {
     const especialidades = await prisma.especialidades.findMany({
