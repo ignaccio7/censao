@@ -147,6 +147,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     fecha.setHours(8, 0, 0, 0)
 
+    // Cancelar citas PENDIENTES previas para esta misma consulta o tratamiento
+    // (reprogramación automática)
+    if (consultaId) {
+      await prisma.citas.updateMany({
+        where: {
+          consulta_id: consultaId,
+          estado: 'PENDIENTE',
+          eliminado_en: null
+        },
+        data: {
+          estado: 'CANCELADA',
+          actualizado_en: new Date(),
+          actualizado_por: userId
+        }
+      })
+    } else if (tratamientoId) {
+      await prisma.citas.updateMany({
+        where: {
+          tratamiento_id: tratamientoId,
+          estado: 'PENDIENTE',
+          eliminado_en: null
+        },
+        data: {
+          estado: 'CANCELADA',
+          actualizado_en: new Date(),
+          actualizado_por: userId
+        }
+      })
+    }
+
     const nuevaCita = await prisma.citas.create({
       data: {
         paciente_id: pacienteId,

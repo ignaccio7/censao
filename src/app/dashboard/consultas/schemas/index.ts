@@ -3,6 +3,7 @@ import { z } from 'zod'
 // ── Schema para crear una consulta médica ──
 export const consultaCreateSchema = z.object({
   fichaOrigenId: z.string().uuid('ID de ficha inválido'),
+  consultaPadreId: z.string().uuid('ID de consulta padre inválido').optional(),
   motivoConsulta: z
     .string()
     .min(3, 'El motivo de consulta debe tener al menos 3 caracteres')

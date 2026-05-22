@@ -194,6 +194,8 @@ Este rol es responsable de la clasificación del paciente antes de la atención 
 - Asignar o confirmar al médico disponible y cambiar el estado a EN_ESPERA.
 - **Aplicar vacunas y registrar tratamientos de vacunación.**
 - **La asignación de médico y la aplicación de vacunas no tienen orden fijo** — el paciente podría vacunarse primero y luego ser asignado a un médico, o al revés.
+- **Gestión Administrativa de Vacunas:** Puede crear, ver, editar y eliminar vacunas en el sistema (rutas `/dashboard/admin/vacunas`, `/dashboard/admin/vacunas/crear`, `/dashboard/admin/vacunas/:uuid/editar` y sus correspondientes APIs `/api/admin/vacunas`, `/api/admin/vacunas/:uuid`).
+- **Gestión de Citas:** Permiso para interactuar con la API `/api/citas` para administrar citas de vacunación.
 - Ver carga de trabajo de médicos.
 - Reasignar fichas si es necesario.
 - Visualizar la pantalla pública.
@@ -491,7 +493,7 @@ Inicialmente el sistema manejará vacunas simples, por ejemplo:
 - COVID
 - Influenza
 
-Cada vacuna podrá tener varios esquemas:
+Cada vacuna en la base de datos cuenta con un campo `activo` (`Boolean` con valor por defecto `true`) para habilitación o deshabilitación lógica. Cada vacuna podrá tener varios esquemas:
 
 - Número de dosis
 - Tiempo entre dosis

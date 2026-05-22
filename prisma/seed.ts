@@ -588,15 +588,15 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'atencion'
       },
       // FRONTEND - Consultas (como doctor)
-      {
-        nombre: 'Consultas',
-        tipo: 'frontend',
-        ruta: '/dashboard/consultas',
-        metodos: ['read', 'create', 'update', 'delete'],
-        icono: 'history',
-        descripcion: 'Gestionar consultas de pacientes',
-        modulo: 'consultas'
-      },
+      // {
+      //   nombre: 'Consultas',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/consultas',
+      //   metodos: ['read', 'create', 'update', 'delete'],
+      //   icono: 'history',
+      //   descripcion: 'Gestionar consultas de pacientes',
+      //   modulo: 'consultas'
+      // },
       {
         nombre: 'Detalle Consulta',
         tipo: 'frontend',
@@ -613,6 +613,22 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         metodos: ['create'],
         icono: 'history',
         descripcion: 'Crear consultas de pacientes',
+        modulo: 'consultas'
+      },
+      {
+        nombre: 'Resumen Clínico',
+        tipo: 'frontend',
+        ruta: '/dashboard/consultas/:uuid',
+        metodos: ['GET'],
+        descripcion: 'Resumen clínico del paciente',
+        modulo: 'consultas'
+      },
+      {
+        nombre: 'Detalle de Consulta',
+        tipo: 'frontend',
+        ruta: '/dashboard/consultas/:uuid/consulta/:uuid',
+        metodos: ['GET'],
+        descripcion: 'Detalle de consulta del paciente',
         modulo: 'consultas'
       },
       // {
@@ -644,6 +660,7 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
       },
 
       // BACKEND - APIs
+      // fichas
       {
         nombre: 'API Fichas',
         tipo: 'backend',
@@ -652,6 +669,7 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         descripcion: 'API para gestión completa de fichas',
         modulo: 'fichas'
       },
+      // atencion
       {
         nombre: 'API Atención Pacientes',
         tipo: 'backend',
@@ -660,14 +678,16 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         descripcion: 'API para obtener pacientes asignados al doctor',
         modulo: 'atencion'
       },
+      // citas
       {
-        nombre: 'API Citas de Paciente',
+        nombre: 'API Citas',
         tipo: 'backend',
-        ruta: '/api/atencion/citas',
-        metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestionar citas de pacientes',
-        modulo: 'atencion'
+        ruta: '/api/citas',
+        metodos: ['PATCH', 'POST', 'DELETE'],
+        descripcion: 'API para administrar citas',
+        modulo: 'administracion'
       },
+      // notificaciones medicas
       {
         nombre: 'API Notificaciones Médicas',
         tipo: 'backend',
@@ -684,6 +704,7 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         descripcion: 'API para notificaciones a paciente específico',
         modulo: 'atencion'
       },
+      // consultas
       {
         nombre: 'API Consultas',
         tipo: 'backend',

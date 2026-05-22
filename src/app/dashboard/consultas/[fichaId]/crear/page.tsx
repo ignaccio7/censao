@@ -2,9 +2,17 @@ import prisma from '@/lib/prisma/prisma'
 import CrearConsultaForm from './crear-consulta-form'
 
 type Params = Promise<{ fichaId: string }>
+type SearchParams = Promise<{ consultaPadreId?: string }>
 
-export default async function Page({ params }: { params: Params }) {
+export default async function Page({
+  params,
+  searchParams
+}: {
+  params: Params
+  searchParams: SearchParams
+}) {
   const { fichaId } = await params
+  const { consultaPadreId } = await searchParams
 
   // Fetch datos básicos de la ficha para mostrar contexto
   const ficha = await prisma.fichas.findUnique({
@@ -56,9 +64,20 @@ export default async function Page({ params }: { params: Params }) {
   }
 
   const pacienteNombre =
-    `${ficha.pacientes.personas.nombres} ${ficha.pacientes.personas.paterno} ${ficha.pacientes.personas.materno}`.trim()
+    `${ficha.pacientes.personas.nombres} ${ficha.pacientes.personas.paterno} ${ficha.pacientes.personas.materno || ''}`.trim()
   const especialidadNombre =
     ficha.disponibilidades?.doctores_especialidades?.especialidades?.nombre
+
+  let motivoPadre = undefined
+  if (consultaPadreId) {
+    const consultaPadre = await prisma.consultas.findUnique({
+      where: { id: consultaPadreId },
+      select: { motivo_consulta: true }
+    })
+    if (consultaPadre) {
+      motivoPadre = consultaPadre.motivo_consulta
+    }
+  }
 
   return (
     <main className='font-secondary'>
@@ -68,6 +87,8 @@ export default async function Page({ params }: { params: Params }) {
         pacienteCi={ficha.pacientes.personas.ci}
         especialidadNombre={especialidadNombre ?? 'Consultorio general'}
         ordenTurno={ficha.orden_turno}
+        consultaPadreId={consultaPadreId}
+        motivoPadre={motivoPadre}
       />
     </main>
   )

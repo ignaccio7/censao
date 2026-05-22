@@ -29,56 +29,56 @@ model auditoria_log {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 
 enum EstadoFicha {
-  ADMISION     // Ya pasó por Admisión, esperando que Enfermería le llame
-  ENFERMERIA   // Enfermería llamó al paciente para que pase a su consultorio (visible en pantalla pública con color diferente)
-  EN_ESPERA    // Enfermería asignó un médico, los médicos listan fichas con este estado
-  ATENDIENDO   // Un médico llamó al paciente para ser atendido (visible en pantalla pública con color diferente)
-  ATENDIDA     // Paciente ya fue atendido (desaparece de pantalla pública)
-  CANCELADA    // Paciente no asistió o se perdió (desaparece de pantalla pública)
+  ADMISION // Ya pasó por Admisión, esperando que Enfermería le llame
+  ENFERMERIA // Enfermería llamó al paciente para que pase a su consultorio (visible en pantalla pública con color diferente)
+  EN_ESPERA // Enfermería asignó un médico, los médicos listan fichas con este estado
+  ATENDIENDO // Un médico llamó al paciente para ser atendido (visible en pantalla pública con color diferente)
+  ATENDIDA // Paciente ya fue atendido (desaparece de pantalla pública)
+  CANCELADA // Paciente no asistió o se perdió (desaparece de pantalla pública)
 }
 
 model fichas {
-  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   paciente_id       String
-  disponibilidad_id String?          @db.Uuid
+  disponibilidad_id String?           @db.Uuid
   turno_codigo      String
-  fecha_ficha       DateTime         @default(now()) @db.Timestamptz(0)
+  fecha_ficha       DateTime          @default(now()) @db.Timestamptz(0)
   motivo            String?
-  estado            EstadoFicha?     @default(ADMISION)
+  estado            EstadoFicha?      @default(ADMISION)
   orden_turno       Int?
-  cita_origen_id    String?          @db.Uuid
-  creado_en         DateTime         @default(now()) @db.Timestamptz(0)
+  cita_origen_id    String?           @db.Uuid
+  creado_en         DateTime          @default(now()) @db.Timestamptz(0)
   creado_por        String?
-  actualizado_en    DateTime         @default(now()) @db.Timestamptz(0)
+  actualizado_en    DateTime          @default(now()) @db.Timestamptz(0)
   actualizado_por   String?
-  eliminado_en      DateTime?        @db.Timestamptz(0)
+  eliminado_en      DateTime?         @db.Timestamptz(0)
   eliminado_por     String?
   disponibilidades  disponibilidades? @relation(fields: [disponibilidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_disponibilidad_id_foreign")
-  pacientes         pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_paciente_id_foreign")
-  cita_origen       citas?           @relation("CitaToFicha", fields: [cita_origen_id], references: [id])
+  pacientes         pacientes         @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "fichas_paciente_id_foreign")
+  cita_origen       citas?            @relation("CitaToFicha", fields: [cita_origen_id], references: [id])
   consultas         consultas[]
 
   @@unique([disponibilidad_id, fecha_ficha, orden_turno])
 }
 
-  /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-  model disponibilidades {
-    id                      String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    turno_codigo            String
-    cupos                   Int                     @default(0)
-    observacion             String?
-    estado                  Boolean                 @default(true)  // true = activo, false = inactivo/eliminado
-    creado_en               DateTime                @default(now()) @db.Timestamptz(0)
-    creado_por              String?
-    actualizado_en          DateTime                @default(now()) @db.Timestamptz(0)
-    actualizado_por         String?
-    eliminado_en            DateTime?               @db.Timestamptz(0)
-    eliminado_por           String?
-    doctor_especialidad_id  String                  @db.Uuid
-    fichas                  fichas[]
-    doctores_especialidades doctores_especialidades @relation(fields: [doctor_especialidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-    turnos_catalogo         turnos_catalogo         @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_turno_codigo_foreign")
-  }
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model disponibilidades {
+  id                      String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  turno_codigo            String
+  cupos                   Int                     @default(0)
+  observacion             String?
+  estado                  Boolean                 @default(true) // true = activo, false = inactivo/eliminado
+  creado_en               DateTime                @default(now()) @db.Timestamptz(0)
+  creado_por              String?
+  actualizado_en          DateTime                @default(now()) @db.Timestamptz(0)
+  actualizado_por         String?
+  eliminado_en            DateTime?               @db.Timestamptz(0)
+  eliminado_por           String?
+  doctor_especialidad_id  String                  @db.Uuid
+  fichas                  fichas[]
+  doctores_especialidades doctores_especialidades @relation(fields: [doctor_especialidad_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  turnos_catalogo         turnos_catalogo         @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction, map: "disponibilidades_turno_codigo_foreign")
+}
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model doctores {
@@ -115,22 +115,22 @@ model esquema_dosis {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model notificaciones {
-  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   paciente_id     String
-  titulo          String       @db.VarChar(255)
-  mensaje         String       @db.VarChar(255)
-  fecha_envio     DateTime     @db.Timestamp(0)
-  leido           Boolean      @default(false)
-  medio           String       @db.VarChar(255)
-  cita_id         String       @db.Uuid
-  creado_en       DateTime     @default(now()) @db.Timestamptz(0)
+  titulo          String    @db.VarChar(255)
+  mensaje         String    @db.VarChar(255)
+  fecha_envio     DateTime  @db.Timestamp(0)
+  leido           Boolean   @default(false)
+  medio           String    @db.VarChar(255)
+  cita_id         String    @db.Uuid
+  creado_en       DateTime  @default(now()) @db.Timestamptz(0)
   creado_por      String?
-  actualizado_en  DateTime     @default(now()) @db.Timestamptz(0)
+  actualizado_en  DateTime  @default(now()) @db.Timestamptz(0)
   actualizado_por String?
-  eliminado_en    DateTime?    @db.Timestamptz(0)
+  eliminado_en    DateTime? @db.Timestamptz(0)
   eliminado_por   String?
-  pacientes       pacientes    @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_paciente_id_foreign")
-  citas           citas        @relation(fields: [cita_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_cita_id_foreign")
+  pacientes       pacientes @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_paciente_id_foreign")
+  citas           citas     @relation(fields: [cita_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "notificaciones_cita_id_foreign")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -227,30 +227,12 @@ model roles_permisos {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model tratamientos {
-  id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  paciente_id             String           // CI del paciente
-  estado                  String           @default("EN_CURSO") // EN_CURSO, COMPLETADA, INCOMPLETA
-  observaciones           String?          // Notas clínicas libres
-  esquema_id              String           @db.Uuid
-  fecha_aplicacion        DateTime         @default(now()) @db.Timestamptz(0) // Cuándo se aplicó realmente
-  creado_en               DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por              String?
-  actualizado_en          DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por         String?
-  eliminado_en            DateTime?        @db.Timestamptz(0)
-  eliminado_por           String?  
-    
-  pacientes               pacientes        @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction)
-  esquema_dosis           esquema_dosis    @relation(fields: [esquema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_esquema_id_foreign")
-  citas               citas[]
-}
-
-model consultas {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ficha_origen_id  String    @db.Uuid        // La ficha de HOY
-  motivo_consulta  String                    // "Papanicolao", "Control tensión", etc.
-  observaciones    String?                   // Notas clínicas libres
-  requiere_retorno Boolean   @default(false) // ¿Debe volver?
+  paciente_id      String // CI del paciente
+  estado           String    @default("EN_CURSO") // EN_CURSO, COMPLETADA, INCOMPLETA
+  observaciones    String? // Notas clínicas libres
+  esquema_id       String    @db.Uuid
+  fecha_aplicacion DateTime  @default(now()) @db.Timestamptz(0) // Cuándo se aplicó realmente
   creado_en        DateTime  @default(now()) @db.Timestamptz(0)
   creado_por       String?
   actualizado_en   DateTime  @default(now()) @db.Timestamptz(0)
@@ -258,33 +240,54 @@ model consultas {
   eliminado_en     DateTime? @db.Timestamptz(0)
   eliminado_por    String?
 
-  ficha_origen     fichas    @relation(fields: [ficha_origen_id], references: [id])
-  citas            citas[]   // Las citas de retorno generadas desde esta consulta
+  pacientes     pacientes     @relation(fields: [paciente_id], references: [paciente_id], onDelete: NoAction, onUpdate: NoAction)
+  esquema_dosis esquema_dosis @relation(fields: [esquema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tratamientos_esquema_id_foreign")
+  citas         citas[]
+}
+
+model consultas {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ficha_origen_id   String    @db.Uuid // La ficha de HOY
+  consulta_padre_id String?   @db.Uuid // NULL = consulta raíz; valor = seguimiento de otra consulta
+  motivo_consulta   String // "Papanicolao", "Control tensión", etc.
+  observaciones     String? // Notas clínicas libres
+  requiere_retorno  Boolean   @default(false) // ¿Debe volver?
+  creado_en         DateTime  @default(now()) @db.Timestamptz(0)
+  creado_por        String?
+  actualizado_en    DateTime  @default(now()) @db.Timestamptz(0)
+  actualizado_por   String?
+  eliminado_en      DateTime? @db.Timestamptz(0)
+  eliminado_por     String?
+
+  ficha_origen   fichas      @relation(fields: [ficha_origen_id], references: [id])
+  consulta_padre consultas?  @relation("ConsultaSeguimiento", fields: [consulta_padre_id], references: [id])
+  seguimientos   consultas[] @relation("ConsultaSeguimiento")
+  citas          citas[] // Las citas de retorno generadas desde esta consulta
 }
 
 model citas {
-  id                      String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  paciente_id             String
-  doctor_id               String
-  tratamiento_id          String?           @db.Uuid   // ← NUEVA FK (viene del tratamiento que la generó)
-  consulta_id             String?           @db.Uuid   // ← NUEVA FK (viene de la consulta que la generó)
-  fecha_programada        DateTime         @db.Timestamptz(0) // Cuándo debe volver el paciente
-  tipo                    String           // "VACUNA", "CONTROL", "CONSULTA"
-  estado                  String           @default("PENDIENTE") // "PENDIENTE", "GENERADA", "ABSORBIDA", "CANCELADA", "VENCIDA"
-  observaciones           String?
-  creado_en               DateTime         @default(now()) @db.Timestamptz(0)
-  creado_por              String?
-  actualizado_en          DateTime         @default(now()) @db.Timestamptz(0)
-  actualizado_por         String?
-  eliminado_en            DateTime?        @db.Timestamptz(0)
-  eliminado_por           String?
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  paciente_id      String
+  doctor_id        String
+  tratamiento_id   String?   @db.Uuid // ← NUEVA FK (viene del tratamiento que la generó)
+  consulta_id      String?   @db.Uuid // ← NUEVA FK (viene de la consulta que la generó)
+  fecha_programada DateTime  @db.Timestamptz(0) // Cuándo debe volver el paciente
+  tipo             String // "VACUNA", "CONTROL", "CONSULTA"
+  estado           String    @default("PENDIENTE") // "PENDIENTE", "GENERADA", "ABSORBIDA", "CANCELADA", "VENCIDA"
+  observaciones    String?
+  creado_en        DateTime  @default(now()) @db.Timestamptz(0)
+  creado_por       String?
+  actualizado_en   DateTime  @default(now()) @db.Timestamptz(0)
+  actualizado_por  String?
+  eliminado_en     DateTime? @db.Timestamptz(0)
+  eliminado_por    String?
 
-  ficha_generada          fichas[]         @relation("CitaToFicha")
-  pacientes               pacientes        @relation(fields: [paciente_id], references: [paciente_id])
-  doctores                doctores         @relation(fields: [doctor_id], references: [doctor_id])
-  tratamientos            tratamientos?     @relation(fields: [tratamiento_id], references: [id])
-  consultas               consultas?        @relation(fields: [consulta_id], references: [id])
-  notificaciones          notificaciones[]
+  ficha_generada fichas[]         @relation("CitaToFicha")
+  pacientes      pacientes        @relation(fields: [paciente_id], references: [paciente_id])
+  doctores       doctores         @relation(fields: [doctor_id], references: [doctor_id])
+  tratamientos   tratamientos?    @relation(fields: [tratamiento_id], references: [id])
+  consultas      consultas?       @relation(fields: [consulta_id], references: [id])
+  notificaciones notificaciones[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -385,7 +388,7 @@ model especialidades {
   id                      String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   nombre                  String
   descripcion             String?
-  estado                  Boolean                   @default(true)  // true = activo, false = inactivo/eliminado
+  estado                  Boolean                   @default(true) // true = activo, false = inactivo/eliminado
   creado_en               DateTime                  @default(now()) @db.Timestamptz(0)
   creado_por              String?
   actualizado_en          DateTime                  @default(now()) @db.Timestamptz(0)

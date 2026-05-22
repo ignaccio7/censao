@@ -211,9 +211,48 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         motivo_consulta: validData.motivoConsulta,
         observaciones: validData.observaciones || null,
         requiere_retorno: validData.requiereRetorno,
+        consulta_padre_id: validData.consultaPadreId || null,
         creado_por: userId
       }
     })
+
+    // 2.1 Absorción automática de citas si es un seguimiento
+    // Cuando se crea un nuevo seguimiento se absorben las citas PENDIENTES de:
+    //   - La consulta raíz (consultaPadreId)
+    //   - Todos los seguimientos hermanos previos (comparten el mismo consulta_padre_id)
+    let citasAbsorbidas = 0
+    if (validData.consultaPadreId) {
+      // Buscar todos los seguimientos hermanos ya existentes
+      const hermanos = await prisma.consultas.findMany({
+        where: {
+          consulta_padre_id: validData.consultaPadreId,
+          eliminado_en: null,
+          // Excluir el que acabamos de crear
+          id: { not: consulta.id }
+        },
+        select: { id: true }
+      })
+
+      // IDs cuyas citas PENDIENTES deben absorberse: raíz + todos los hermanos
+      const consultaIdsAAbsorber = [
+        validData.consultaPadreId,
+        ...hermanos.map(h => h.id)
+      ]
+
+      const updateResult = await prisma.citas.updateMany({
+        where: {
+          consulta_id: { in: consultaIdsAAbsorber },
+          estado: 'PENDIENTE',
+          eliminado_en: null
+        },
+        data: {
+          estado: 'ABSORBIDA',
+          actualizado_por: userId,
+          actualizado_en: new Date()
+        }
+      })
+      citasAbsorbidas = updateResult.count
+    }
 
     // 3. Crear cita de retorno si fue solicitada
     let citaCreada = false
@@ -243,28 +282,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // 4. Marcar la ficha como ATENDIDA
-    await prisma.fichas.update({
-      where: { id: validData.fichaOrigenId },
-      data: {
-        estado: 'ATENDIDA',
-        actualizado_por: userId
-      }
-    })
+    // 4. (Removido: La ficha ya no se marca como ATENDIDA automáticamente)
+    // El doctor debe marcarla explícitamente desde la interfaz.
 
     const persona = ficha.pacientes.personas
 
     return NextResponse.json(
       {
         success: true,
-        message: `Consulta registrada exitosamente — ${validData.motivoConsulta}${citaCreada ? ' · Cita de retorno programada' : ''}`,
+        message: `Consulta registrada exitosamente — ${validData.motivoConsulta}${citaCreada ? ' · Cita de retorno programada' : ''}${citasAbsorbidas > 0 ? ` · ${citasAbsorbidas} cita(s) absorbida(s)` : ''}`,
         data: {
           consulta_id: consulta.id,
           paciente:
-            `${persona.nombres} ${persona.paterno} ${persona.materno}`.trim(),
+            `${persona.nombres} ${persona.paterno} ${persona.materno || ''}`.trim(),
           motivo: validData.motivoConsulta,
           requiere_retorno: validData.requiereRetorno,
-          cita_creada: citaCreada
+          cita_creada: citaCreada,
+          citas_absorbidas: citasAbsorbidas
         }
       },
       { status: 201 }

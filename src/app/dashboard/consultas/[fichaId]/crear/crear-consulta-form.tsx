@@ -26,6 +26,8 @@ interface CrearConsultaFormProps {
   pacienteCi: string
   especialidadNombre: string
   ordenTurno: number | null
+  consultaPadreId?: string
+  motivoPadre?: string
 }
 
 export default function CrearConsultaForm({
@@ -33,7 +35,9 @@ export default function CrearConsultaForm({
   pacienteNombre,
   pacienteCi,
   especialidadNombre,
-  ordenTurno
+  ordenTurno,
+  consultaPadreId,
+  motivoPadre
 }: CrearConsultaFormProps) {
   const router = useRouter()
   const { createConsulta } = useConsultas()
@@ -97,6 +101,10 @@ export default function CrearConsultaForm({
         requiereRetorno
       }
 
+      if (consultaPadreId) {
+        payload.consultaPadreId = consultaPadreId
+      }
+
       if (observaciones.trim()) {
         payload.observaciones = observaciones.trim()
       }
@@ -122,7 +130,7 @@ export default function CrearConsultaForm({
         if (result.data?.cita_creada) {
           toast.success('📅 Cita de retorno programada', { duration: 5000 })
         }
-        router.push('/dashboard/fichas')
+        router.push(`/dashboard/consultas/${fichaId}`)
       } else {
         toast.error(result.message || 'Error al registrar consulta')
       }
@@ -139,19 +147,37 @@ export default function CrearConsultaForm({
         Registrar Consulta Médica
       </Title>
 
-      {/* Info paciente */}
-      <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6'>
-        <div className='flex items-center gap-3'>
-          <div className='w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0'>
-            <span className='text-primary-700 font-bold text-step-1'>
-              {pacienteNombre.charAt(0).toUpperCase()}
-            </span>
+      {/* Info paciente e indicador de seguimiento */}
+      <div className='flex flex-col gap-4 mb-6'>
+        {consultaPadreId && motivoPadre && (
+          <div className='bg-primary-50 border border-primary-200 rounded-lg p-4 flex items-center gap-3'>
+            <div className='bg-primary-100 p-2 rounded-full'>
+              <IconCheckupList className='text-primary-700' size='20' />
+            </div>
+            <div>
+              <p className='text-xs font-bold text-primary-700 uppercase tracking-wide'>
+                Registrando seguimiento de consulta
+              </p>
+              <p className='text-primary-900 font-medium text-sm'>
+                {motivoPadre}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className='font-semibold text-gray-800 text-step-1'>
-              {pacienteNombre}
-            </h3>
-            <p className='text-gray-500 text-step--1'>CI: {pacienteCi}</p>
+        )}
+
+        <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
+          <div className='flex items-center gap-3'>
+            <div className='w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0'>
+              <span className='text-primary-700 font-bold text-step-1'>
+                {pacienteNombre.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <h3 className='font-semibold text-gray-800 text-step-1'>
+                {pacienteNombre}
+              </h3>
+              <p className='text-gray-500 text-step--1'>CI: {pacienteCi}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -256,7 +282,7 @@ export default function CrearConsultaForm({
               <div className='flex gap-3'>
                 <button
                   type='button'
-                  onClick={() => router.push('/dashboard/fichas')}
+                  onClick={() => router.push(`/dashboard/consultas/${fichaId}`)}
                   className='flex-1 py-2.5 px-4 border border-gray-300 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 text-step--1 cursor-pointer'
                 >
                   Cancelar
