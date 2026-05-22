@@ -573,9 +573,18 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         nombre: 'Pacientes',
         tipo: 'frontend',
         ruta: '/dashboard/atencion/pacientes',
-        metodos: ['read', 'update', 'create'],
+        metodos: ['read'],
         icono: 'list',
-        descripcion: 'Gestionar pacientes asignados',
+        descripcion: 'Listar pacientes asignados',
+        modulo: 'atencion'
+      },
+      {
+        nombre: 'Pacientes',
+        tipo: 'frontend',
+        ruta: '/dashboard/atencion/pacientes/:uuid',
+        metodos: ['read'],
+        icono: 'list',
+        descripcion: 'Ver detalle de paciente',
         modulo: 'atencion'
       },
       {
@@ -598,7 +607,7 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
       //   modulo: 'consultas'
       // },
       {
-        nombre: 'Detalle Consulta',
+        nombre: 'Detalle Consulta del paciente desde ficha',
         tipo: 'frontend',
         ruta: '/dashboard/consultas/:uuid',
         metodos: ['read', 'update', 'delete'],
@@ -607,7 +616,7 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'consultas'
       },
       {
-        nombre: 'Crear Consulta',
+        nombre: 'Crear Consulta de paciente desde ficha',
         tipo: 'frontend',
         ruta: '/dashboard/consultas/:uuid/crear',
         metodos: ['create'],
@@ -616,19 +625,38 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'consultas'
       },
       {
-        nombre: 'Resumen Clínico',
+        nombre:
+          'Detalle de las consulta del paciente desde su historial de consultas',
         tipo: 'frontend',
-        ruta: '/dashboard/consultas/:uuid',
+        ruta: '/dashboard/consultas/paciente/:uuid',
         metodos: ['GET'],
-        descripcion: 'Resumen clínico del paciente',
+        descripcion: 'Resumen clínico de las consultas del paciente',
         modulo: 'consultas'
       },
+      // {
+      //   nombre: 'Resumen Clínico',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/consultas/:uuid',
+      //   metodos: ['GET'],
+      //   descripcion: 'Resumen clínico del paciente',
+      //   modulo: 'consultas'
+      // },
       {
-        nombre: 'Detalle de Consulta',
+        nombre: 'Detalle de Consulta del paciente al sacar ficha',
         tipo: 'frontend',
         ruta: '/dashboard/consultas/:uuid/consulta/:uuid',
         metodos: ['GET'],
-        descripcion: 'Detalle de consulta del paciente',
+        descripcion: 'Detalle de consulta del paciente cuando saca ficha',
+        modulo: 'consultas'
+      },
+      {
+        nombre:
+          'Detalle de Consulta del paciente desde su historial de consultas',
+        tipo: 'frontend',
+        ruta: '/dashboard/consultas/paciente/:uuid/consulta/:uuid',
+        metodos: ['GET'],
+        descripcion:
+          'Detalle de consulta del paciente desde su historial de consultas',
         modulo: 'consultas'
       },
       // {
@@ -640,17 +668,18 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
       //   descripcion: 'Editar tratamientos de pacientes',
       //   modulo: 'tratamientos'
       // },
+      // FRONTEND - Seguimientos
+      // {
+      //   nombre: 'Seguimiento Tratamientos',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/tratamientos/seguimiento',
+      //   metodos: ['read', 'update', 'delete'],
+      //   icono: 'monitor',
+      //   descripcion: 'Seguimiento de tratamientos médicos',
+      //   modulo: 'tratamientos'
+      // },
       {
-        nombre: 'Seguimiento Tratamientos',
-        tipo: 'frontend',
-        ruta: '/dashboard/tratamientos/seguimiento',
-        metodos: ['read', 'update', 'delete'],
-        icono: 'monitor',
-        descripcion: 'Seguimiento de tratamientos médicos',
-        modulo: 'tratamientos'
-      },
-      {
-        nombre: 'Reenviar Notificaciones',
+        nombre: 'Notificaciones',
         tipo: 'frontend',
         ruta: '/dashboard/tratamientos/notificaciones',
         metodos: ['read', 'create'],
@@ -665,19 +694,35 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         nombre: 'API Fichas',
         tipo: 'backend',
         ruta: '/api/fichas',
-        metodos: ['GET', 'POST', 'PATCH', 'DELETE'],
-        descripcion: 'API para gestión completa de fichas',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para ver y actualizar fichas',
         modulo: 'fichas'
       },
-      // atencion
+      // - Atención médica
       {
         nombre: 'API Atención Pacientes',
         tipo: 'backend',
-        ruta: '/api/atencion/:uuid/pacientes',
+        ruta: '/api/atencion/pacientes',
         metodos: ['GET'],
-        descripcion: 'API para obtener pacientes asignados al doctor',
+        descripcion: 'API para obtener pacientes del doctor',
         modulo: 'atencion'
       },
+      {
+        nombre: 'API Atención Pacientes',
+        tipo: 'backend',
+        ruta: '/api/atencion/pacientes/:uuid',
+        metodos: ['GET'],
+        descripcion: 'API para ver detalle de paciente',
+        modulo: 'atencion'
+      },
+      // {
+      //   nombre: 'API Atención Pacientes',
+      //   tipo: 'backend',
+      //   ruta: '/api/atencion/:uuid/pacientes',
+      //   metodos: ['GET'],
+      //   descripcion: 'API para obtener pacientes asignados al doctor',
+      //   modulo: 'atencion'
+      // },
       // citas
       {
         nombre: 'API Citas',

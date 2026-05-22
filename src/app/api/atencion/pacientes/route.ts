@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
 import { crearPacienteSchema } from '@/app/dashboard/atencion/pacientes/schemas'
+import { PacientesService } from '@/services/pacientes'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { Roles } from '../../lib/constants'
@@ -25,38 +26,17 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams
-    const huerfanas = searchParams.get('huerfanas') === 'true'
+    const search = searchParams.get('search') || ''
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const numberPerPage = parseInt(searchParams.get('numberPerPage') || '5', 10)
 
-    // const esDoctorFichas = validation.data?.role === Roles.DOCTOR_FICHAS
-    // const userId = validation.data?.id
-    console.log('Estamos entrando aqui')
-    // console.log(esDoctorFichas);
-
-    const pacientes = await prisma.pacientes.findMany({
-      where: {
-        eliminado_en: null,
-        fichas: huerfanas
-          ? { none: { eliminado_en: null } } // al menos una
-          : { some: { eliminado_en: null } } // ninguna
-        // ...(esDoctorFichas && {
-        // fichas: {
-        //   some: {
-        //     // creado_por: userId,
-        //     eliminado_en: null
-        //   }
-        // }
-        // })
-      },
-      include: {
-        personas: true,
-        _count: {
-          select: { fichas: { where: { eliminado_en: null } } }
-        }
-      },
-      orderBy: { personas: { paterno: 'asc' } }
+    const pacientes = await PacientesService.getAllPacientes({
+      search,
+      page,
+      numberPerPage,
+      userId: validation.data?.id,
+      userRole: validation.data?.role
     })
-
-    console.log(pacientes)
 
     return NextResponse.json(
       { success: true, data: pacientes },

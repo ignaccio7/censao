@@ -38,12 +38,14 @@ function EstadoBadge({ estado }: { estado: string }) {
 
 interface ConsultasTableProps {
   consultas: any[]
-  fichaId: string
+  fichaId?: string
+  pacienteCi?: string
 }
 
 export default function ConsultasTable({
   consultas,
-  fichaId
+  fichaId,
+  pacienteCi
 }: ConsultasTableProps) {
   const router = useRouter()
 
@@ -95,9 +97,15 @@ export default function ConsultasTable({
     </div>,
     <button
       key={`btn-${c.id}`}
-      onClick={() =>
-        router.push(`/dashboard/consultas/${fichaId}/consulta/${c.id}`)
-      }
+      onClick={() => {
+        if (pacienteCi) {
+          router.push(
+            `/dashboard/consultas/paciente/${pacienteCi}/consulta/${c.id}`
+          )
+        } else if (fichaId) {
+          router.push(`/dashboard/consultas/${fichaId}/consulta/${c.id}`)
+        }
+      }}
       className='px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors text-sm font-medium rounded-lg flex items-center gap-1.5 whitespace-nowrap cursor-pointer border border-transparent hover:border-primary-200'
     >
       <IconHistory size='16' />

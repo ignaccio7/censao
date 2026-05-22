@@ -9,6 +9,7 @@ import { IconUserPlus } from '@/app/components/icons/icons'
 import Link from 'next/link'
 import { PacientesService } from '@/services/pacientes'
 import PacientesTableClient from './components/pacientesTableClient'
+import { Roles } from '@/lib/constants'
 
 export default async function PacientesPage({
   searchParams
@@ -28,19 +29,38 @@ export default async function PacientesPage({
     redirect('/dashboard')
   }
 
+  const userRole = validation.data?.role
+  const userId = validation.data?.id
+
   const params = await searchParams
   const search = params?.search ?? ''
   const page = Number(params?.page) || 1
 
   const numberPerPage = 5
-  const totalResults = await PacientesService.countPacientes({ search })
+  const totalResults = await PacientesService.countPacientes({
+    search,
+    userId,
+    userRole
+  })
   const totalPages = Math.ceil(totalResults / numberPerPage)
 
   const pacientes = await PacientesService.getAllPacientes({
     search,
     page,
-    numberPerPage
+    numberPerPage,
+    userId,
+    userRole
   })
+
+  console.log({ userId, userRole })
+
+  console.log(pacientes)
+
+  // Solo DOCTOR_FICHAS o ADMINISTRADOR o ENFERMERIA pueden crear pacientes
+  const canCreatePaciente =
+    userRole === Roles.DOCTOR_FICHAS ||
+    userRole === Roles.ADMINISTRADOR ||
+    userRole === Roles.ENFERMERIA
 
   return (
     <main className='pb-8'>
@@ -53,20 +73,22 @@ export default async function PacientesPage({
           placeholder='Buscar por CI, nombre o apellidos'
           className='grow basis-80'
         />
-        <Link
-          href='/dashboard/atencion/pacientes/crear'
-          className='px-2 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium shadow-sm cursor-pointer flex flex-row gap-2 items-center basis-52 shrink-0 grow-0'
-        >
-          <IconUserPlus />
-          Registrar Paciente
-        </Link>
+        {canCreatePaciente && (
+          <Link
+            href='/dashboard/atencion/pacientes/crear'
+            className='px-2 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium shadow-sm cursor-pointer flex flex-row gap-2 items-center basis-52 shrink-0 grow-0'
+          >
+            <IconUserPlus />
+            Registrar Paciente
+          </Link>
+        )}
       </section>
 
       <Suspense
         key={`${search}-${page}`}
         fallback={<SkeletonTable columns={6} rows={5} />}
       >
-        <PacientesTableClient pacientes={pacientes} />
+        <PacientesTableClient pacientes={pacientes} userRole={userRole} />
       </Suspense>
 
       <div className='details w-full flex gap-2 justify-between items-center mt-4'>

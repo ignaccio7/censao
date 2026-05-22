@@ -7,6 +7,7 @@ import {
 } from '@/app/components/icons/icons'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Modal from '@/app/components/ui/modal/modal'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
@@ -29,6 +30,7 @@ interface AccionesConsultaProps {
   estadoFicha: string | null
   esSeguimiento?: boolean
   esAbsorbida?: boolean
+  isFromPatientePath?: boolean
 }
 
 export default function AccionesConsulta({
@@ -39,8 +41,10 @@ export default function AccionesConsulta({
   doctorId,
   estadoFicha,
   esSeguimiento = false,
-  esAbsorbida = false
+  esAbsorbida = false,
+  isFromPatientePath = false
 }: AccionesConsultaProps) {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const [modalCita, setModalCita] = useState(false)
   console.log(estadoFicha)
@@ -63,6 +67,8 @@ export default function AccionesConsulta({
       // Limpiar formulario
       setCitaFecha(undefined)
       setCitaObservaciones('')
+      // Refrescar los datos del servidor
+      router.refresh()
     },
     onError: (error: any) => {
       const message =
@@ -117,8 +123,8 @@ export default function AccionesConsulta({
         </h3>
 
         <div className='flex flex-col gap-3'>
-          {/* Seguimiento solo si NO es un seguimiento ya */}
-          {!esSeguimiento && (
+          {/* Seguimiento solo si NO es un seguimiento ya y NO está en vista de paciente */}
+          {!esSeguimiento && !isFromPatientePath && (
             <>
               <Link
                 href={`/dashboard/consultas/${fichaId}/crear?consultaPadreId=${consultaId}`}
