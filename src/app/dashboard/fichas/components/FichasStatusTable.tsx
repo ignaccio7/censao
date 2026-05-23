@@ -14,6 +14,10 @@ type FichaActionData = {
   fichaId: string
   cedula: string
   nombre: string
+  especialidadId?: string
+  doctorId?: string
+  especialidadNombre?: string
+  doctorNombre?: string
 }
 
 interface FichasStatusTableProps {
@@ -77,24 +81,46 @@ export default function FichasStatusTable({
     )
   )
 
-  const filteredFichas = fichas.filter((f: any) => {
-    if (waitingMode) {
-      if (activeTab === StateRecord.ADMISION)
-        return (
-          f.estado === StateRecord.ADMISION ||
-          f.estado === StateRecord.ENFERMERIA
-        )
+  const filteredFichas = fichas
+    .filter((f: any) => {
+      if (waitingMode) {
+        if (activeTab === StateRecord.ADMISION)
+          return (
+            f.estado === StateRecord.ADMISION ||
+            f.estado === StateRecord.ENFERMERIA
+          )
+        return f.especialidad_nombre === activeTab
+      }
+      if (activeTab === 'all') return true
       return f.especialidad_nombre === activeTab
-    }
-    if (activeTab === 'all') return true
-    return f.especialidad_nombre === activeTab
-  })
+    })
+    .sort((a: any, b: any) => {
+      // Priorizar ATENDIENDO para que aparezca primero en la lista
+      if (
+        a.estado === StateRecord.ATENDIENDO &&
+        b.estado !== StateRecord.ATENDIENDO
+      ) {
+        return -1
+      }
+      if (
+        a.estado !== StateRecord.ATENDIENDO &&
+        b.estado === StateRecord.ATENDIENDO
+      ) {
+        return 1
+      }
+      // Mantener el orden por orden_turno para el resto
+      return (a.orden_turno || 0) - (b.orden_turno || 0)
+    })
 
   const tableContent = filteredFichas.map((ficha: any, index: number) => {
     const d: FichaActionData = {
       fichaId: ficha.ficha_id,
       cedula: ficha.paciente_id,
-      nombre: ficha.paciente_nombres
+      nombre: ficha.paciente_nombres,
+      especialidadId: ficha.especialidad_id,
+      doctorId: ficha.doctor_id,
+      especialidadNombre: ficha.especialidad_nombre,
+      doctorNombre: ficha.doctor_nombre
     }
 
     return [
@@ -102,7 +128,7 @@ export default function FichasStatusTable({
         className='font-semibold text-primary-700 text-step-1'
         key={`id-${index}`}
       >
-        # {index + 1}
+        # {ficha.orden_turno}
       </span>,
       ficha?.paciente_nombres,
       ficha?.especialidad_nombre || (
@@ -157,7 +183,7 @@ export default function FichasStatusTable({
           </button>
         )}
 
-        {/* ATENDIENDO → Finalizar + Tratamiento */}
+        {/* ATENDIENDO → Finalizar + Consulta */}
         {ficha.estado === StateRecord.ATENDIENDO && (
           <>
             {onFinishAttention && (

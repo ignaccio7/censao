@@ -10,9 +10,11 @@ import {
   IconCheckupList,
   IconStethoscope,
   IconUserCheck,
-  IconAlertTriangle
+  IconAlertTriangle,
+  IconMedicineBox
 } from '@/app/components/icons/icons'
 import Modal from '@/app/components/ui/modal/modal'
+import FormReassign from '../../components/FormReassign'
 import usePatientStore from '@/store/patient/patient'
 import { useFichas } from '@/app/services/fichas'
 import { useRouter } from 'next/navigation'
@@ -35,6 +37,16 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
   const { updateFicha } = useFichas(refetchInterval)
   const [modal, setModal] = useState(false)
+  const [reassignModal, setReassignModal] = useState(false)
+  const [reassignData, setReassignData] = useState<{
+    fichaId: string
+    cedula: string
+    nombre: string
+    especialidadId?: string
+    doctorId?: string
+    especialidadNombre?: string
+    doctorNombre?: string
+  } | null>(null)
   const [activeTab, setActiveTab] = useState<StateRecordValueType>(
     StateRecordValue.EN_ESPERA
   )
@@ -59,21 +71,41 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
     { campo: '' }
   ]
 
-  const filteredFichas = fichas.filter((ficha: any) => {
-    const matchedKey = Object.keys(StateRecordValue).find(
-      key =>
-        StateRecordValue[key as keyof typeof StateRecordValue] === activeTab
-    )
-
-    if (activeTab === StateRecordValue.EN_ESPERA) {
-      return (
-        ficha.estado === StateRecord.EN_ESPERA ||
-        ficha.estado === StateRecord.ATENDIENDO
+  const filteredFichas = fichas
+    .filter((ficha: any) => {
+      const matchedKey = Object.keys(StateRecordValue).find(
+        key =>
+          StateRecordValue[key as keyof typeof StateRecordValue] === activeTab
       )
-    }
 
-    return ficha.estado === StateRecord[matchedKey as keyof typeof StateRecord]
-  })
+      if (activeTab === StateRecordValue.EN_ESPERA) {
+        return (
+          ficha.estado === StateRecord.EN_ESPERA ||
+          ficha.estado === StateRecord.ATENDIENDO
+        )
+      }
+
+      return (
+        ficha.estado === StateRecord[matchedKey as keyof typeof StateRecord]
+      )
+    })
+    .sort((a: any, b: any) => {
+      // Priorizar ATENDIENDO para que aparezca primero en la lista
+      if (
+        a.estado === StateRecord.ATENDIENDO &&
+        b.estado !== StateRecord.ATENDIENDO
+      ) {
+        return -1
+      }
+      if (
+        a.estado !== StateRecord.ATENDIENDO &&
+        b.estado === StateRecord.ATENDIENDO
+      ) {
+        return 1
+      }
+      // Mantener el orden por orden_turno para el resto
+      return (a.orden_turno || 0) - (b.orden_turno || 0)
+    })
 
   const contenidoTabla: any[] = filteredFichas.map(
     (ficha: any, index: number) => {
@@ -82,32 +114,55 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
           className='font-semibold text-primary-700 text-step-1'
           key={`id-${index}`}
         >
-          # {index + 1}
+          # {ficha.orden_turno}
         </span>,
         ficha?.paciente_nombres,
         ficha?.especialidad_nombre,
         ficha?.doctor_nombre,
         <StatusBadge status={ficha.estado} key={`st-${index}`} />,
-        <div key={`btn-${index}`}>
-          <button
-            onClick={() => {
-              setPatient({
-                fichaId: ficha.ficha_id as string,
-                pacienteId: ficha.paciente_id as string,
-                pacienteNombres: ficha.paciente_nombres as string,
-                doctorNombre: ficha.doctor_nombre as string,
-                especialidadNombre: ficha.especialidad_nombre as string,
-                estadoFicha: ficha.estado as string
-              })
-              setModal(true)
-            }}
-            data-testid={`btn-doctor-abrir-modal-consulta-${index}`}
-          >
-            <IconStethoscope
-              className='cursor-pointer border border-transparent bg-primary-600 text-white py-1 rounded-md hover:border-primary-600 hover:text-primary-600 hover:bg-transparent transition-all duration-300'
-              size='32'
-            />
-          </button>
+        <div className='flex items-center gap-2' key={`btn-${index}`}>
+          {activeTab !== StateRecordValue.ATENDIDA &&
+            activeTab !== StateRecordValue.CANCELADA && (
+              <button
+                onClick={() => {
+                  setPatient({
+                    fichaId: ficha.ficha_id as string,
+                    pacienteId: ficha.paciente_id as string,
+                    pacienteNombres: ficha.paciente_nombres as string,
+                    doctorNombre: ficha.doctor_nombre as string,
+                    especialidadNombre: ficha.especialidad_nombre as string,
+                    estadoFicha: ficha.estado as string
+                  })
+                  setModal(true)
+                }}
+                data-testid={`btn-doctor-abrir-modal-consulta-${index}`}
+              >
+                <IconStethoscope
+                  className='cursor-pointer border border-transparent bg-primary-600 text-white py-1 rounded-md hover:border-primary-600 hover:text-primary-600 hover:bg-transparent transition-all duration-300'
+                  size='32'
+                />
+              </button>
+            )}
+          {activeTab === StateRecordValue.CANCELADA && (
+            <button
+              onClick={() => {
+                setReassignData({
+                  fichaId: ficha.ficha_id as string,
+                  cedula: ficha.paciente_id as string,
+                  nombre: ficha.paciente_nombres as string,
+                  especialidadId: ficha.especialidad_id as string,
+                  doctorId: ficha.doctor_id as string,
+                  especialidadNombre: ficha.especialidad_nombre as string,
+                  doctorNombre: ficha.doctor_nombre as string
+                })
+                setReassignModal(true)
+              }}
+              title='Reasignar paciente'
+              className='text-primary-600 hover:text-primary-800 transition-colors cursor-pointer'
+            >
+              <IconMedicineBox size='32' />
+            </button>
+          )}
         </div>
       ]
     }
@@ -277,23 +332,28 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
             </button>
           </div>
         )}
+      </Modal>
 
-        {/* Ficha ya en ATENDIDA o CANCELADA (solo mostrar tratamiento) */}
-        {estadoFicha === StateRecord.ATENDIDA && (
-          <div className='grid grid-cols-1 gap-4'>
-            <button
-              className='bg-transparent border-4 border-cyan-800 text-cyan-800 py-2 px-4 rounded-md hover:bg-cyan-800 hover:text-white transition-colors duration-200 cursor-pointer'
-              onClick={() => {
-                setModal(false)
-                router.push(`/dashboard/consultas/${fichaId}`)
-              }}
-            >
-              <span className='flex flex-col-reverse justify-center items-center gap-2 font-semibold text-step-0 uppercase'>
-                Registrar consulta
-                <IconCheckupList size='36' />
-              </span>
-            </button>
-          </div>
+      {/* MODAL REASIGNAR */}
+      <Modal
+        title='Reasignar paciente'
+        isOpen={reassignModal}
+        onClose={() => {
+          setReassignModal(false)
+          setReassignData(null)
+        }}
+        maxWidth='xl'
+      >
+        {reassignData && (
+          <FormReassign
+            fichaId={reassignData.fichaId}
+            pacienteCedula={reassignData.cedula}
+            pacienteNombres={reassignData.nombre}
+            especialidadId={reassignData.especialidadId}
+            doctorId={reassignData.doctorId}
+            especialidadNombre={reassignData.especialidadNombre}
+            doctorNombre={reassignData.doctorNombre}
+          />
         )}
       </Modal>
     </section>

@@ -24,12 +24,20 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
     fichaId: string
     cedula: string
     nombre: string
+    especialidadId?: string
+    doctorId?: string
+    especialidadNombre?: string
+    doctorNombre?: string
   } | null>(null)
 
   const handleRevertToQueue = (data: {
     fichaId: string
     cedula: string
     nombre: string
+    especialidadId?: string
+    doctorId?: string
+    especialidadNombre?: string
+    doctorNombre?: string
   }) => {
     setReassignData(data)
     openModal()
@@ -157,6 +165,10 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
             fichaId={reassignData.fichaId}
             pacienteCedula={reassignData.cedula}
             pacienteNombres={reassignData.nombre}
+            especialidadId={reassignData.especialidadId}
+            doctorId={reassignData.doctorId}
+            especialidadNombre={reassignData.especialidadNombre}
+            doctorNombre={reassignData.doctorNombre}
           />
         ) : (
           <FormRegister />

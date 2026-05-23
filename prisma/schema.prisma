@@ -58,7 +58,7 @@ model fichas {
   cita_origen       citas?            @relation("CitaToFicha", fields: [cita_origen_id], references: [id])
   consultas         consultas[]
 
-  @@unique([disponibilidad_id, fecha_ficha, orden_turno])
+  @@unique([turno_codigo, fecha_ficha, orden_turno])
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

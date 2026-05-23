@@ -8,8 +8,6 @@ import {
   IconHistory
 } from '@/app/components/icons/icons'
 import { useFichas } from '@/app/services/fichas'
-import { useEspecialidades } from '@/app/services/disponibilidad/especialidades'
-import { useState } from 'react'
 import { toast } from 'sonner'
 import useModal from '@/hooks/useModal'
 import { StateRecord } from '@/lib/constants'
@@ -18,38 +16,38 @@ interface FormReassignProps {
   fichaId: string
   pacienteNombres: string
   pacienteCedula: string
+  especialidadId?: string
+  doctorId?: string
+  especialidadNombre?: string
+  doctorNombre?: string
 }
 
 export default function FormReassign({
   fichaId,
   pacienteNombres,
-  pacienteCedula
+  pacienteCedula,
+  especialidadId,
+  doctorId,
+  especialidadNombre,
+  doctorNombre
 }: FormReassignProps) {
-  const { especialidades } = useEspecialidades()
   const { updateFicha } = useFichas()
   const { closeModal } = useModal()
-
-  const [especialidad, setEspecialidad] = useState('')
-  const [doctor, setDoctor] = useState('')
-
-  const doctoresDisponibles = especialidad
-    ? especialidades.find(esp => esp.id === especialidad)?.doctores || []
-    : []
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!especialidad || !doctor) {
-      toast.error('Seleccione una especialidad y un doctor')
+    if (!especialidadId || !doctorId) {
+      toast.error('Faltan datos de especialidad o doctor para reasignar.')
       return
     }
 
     try {
       const result = await updateFicha.mutateAsync({
         id: fichaId,
-        status: StateRecord.ADMISION,
-        especialidad,
-        doctor
+        status: StateRecord.EN_ESPERA,
+        especialidad: especialidadId,
+        doctor: doctorId
       })
 
       if (result.success) {
@@ -68,8 +66,9 @@ export default function FormReassign({
 
   return (
     <div className='form-reassign'>
-      <h3 className='text-step-0 text-gray-600'>
-        Seleccione la nueva especialidad y doctor para reasignar al paciente
+      <h3 className='text-step-0 text-gray-600 mb-4'>
+        El paciente será reasignado a su doctor original y volverá a la sala de
+        espera.
       </h3>
 
       <form
@@ -112,70 +111,47 @@ export default function FormReassign({
           />
         </label>
 
-        {/* Especialidad */}
+        {/* Especialidad (readonly) */}
         <label
           htmlFor='reassign-especialidad'
           className='text-step-0 w-full flex flex-col gap-1'
         >
           <span className='font-semibold flex gap-1 items-center'>
             <IconStethoscope />
-            Nueva Especialidad Médica
+            Especialidad
           </span>
-          <select
+          <input
+            className='p-2 border rounded-md bg-gray-100 text-gray-500 cursor-not-allowed border-transparent'
+            type='text'
             id='reassign-especialidad'
-            value={especialidad}
-            onChange={e => {
-              setEspecialidad(e.target.value)
-              setDoctor('')
-            }}
-            className='p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors border-transparent focus:border-primary-600 focus:ring-primary-600'
-          >
-            <option value=''>Seleccione una especialidad</option>
-            {especialidades?.map(esp => (
-              <option key={esp.id} value={esp.id}>
-                {esp.nombre}
-              </option>
-            ))}
-          </select>
+            value={especialidadNombre || 'Sin asignar'}
+            disabled
+          />
         </label>
 
-        {/* Doctor */}
+        {/* Doctor (readonly) */}
         <label
           htmlFor='reassign-doctor'
           className='text-step-0 w-full flex flex-col gap-1'
         >
           <span className='font-semibold flex gap-1 items-center'>
             <IconSchedule />
-            Nuevo Doctor disponible
+            Doctor
           </span>
-          <select
+          <input
+            className='p-2 border rounded-md bg-gray-100 text-gray-500 cursor-not-allowed border-transparent'
+            type='text'
             id='reassign-doctor'
-            value={doctor}
-            onChange={e => setDoctor(e.target.value)}
-            disabled={!especialidad || doctoresDisponibles.length === 0}
-            className='p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed border-transparent focus:border-primary-600 focus:ring-primary-600'
-          >
-            <option value=''>
-              {!especialidad
-                ? 'Primero seleccione una especialidad'
-                : doctoresDisponibles.length === 0
-                  ? 'No hay doctores disponibles'
-                  : 'Seleccione un doctor'}
-            </option>
-            {doctoresDisponibles.map((doc: any) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.nombre} • {doc.capacidadActual}/{doc.capacidadMaxima}{' '}
-                pacientes
-              </option>
-            ))}
-          </select>
+            value={doctorNombre || 'Sin asignar'}
+            disabled
+          />
         </label>
 
         {/* Submit Button */}
         <button
           type='submit'
-          disabled={updateFicha.isPending || !especialidad || !doctor}
-          className='w-full bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer flex gap-2 items-center justify-center col-span-1 md:col-span-2 disabled:opacity-50 disabled:cursor-not-allowed'
+          disabled={updateFicha.isPending}
+          className='w-full mt-4 bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer flex gap-2 items-center justify-center col-span-1 md:col-span-2 disabled:opacity-50 disabled:cursor-not-allowed'
         >
           {updateFicha.isPending ? (
             <>

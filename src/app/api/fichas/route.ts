@@ -375,60 +375,6 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       estado: validData.status
     }
 
-    // Si se envía especialidad y doctor, buscar la nueva disponibilidad para reasignar
-    if (validData.especialidad && validData.doctor) {
-      const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
-      const turno = await getTurnoActual()
-
-      if (!turno) {
-        return NextResponse.json({
-          success: false,
-          message:
-            'No es posible actualizar la ficha fuera de horario de atención'
-        })
-      }
-
-      const disponibilidad = await prisma.disponibilidades.findFirst({
-        where: {
-          doctores_especialidades: {
-            doctor_id: validData.doctor,
-            especialidad_id: validData.especialidad
-          },
-          turnos_catalogo: {
-            codigo: turno
-          }
-        },
-        include: {
-          _count: {
-            select: {
-              fichas: {
-                where: {
-                  fecha_ficha: {
-                    gte: inicioUTC,
-                    lte: finUTC
-                  },
-                  eliminado_en: null
-                }
-              }
-            }
-          }
-        }
-      })
-
-      if (!disponibilidad) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: `No hay disponibilidad para este doctor en el turno ${turno}`
-          },
-          { status: 400 }
-        )
-      }
-
-      updateData.disponibilidad_id = disponibilidad.id
-      updateData.orden_turno = disponibilidad._count.fichas + 1
-    }
-
     const fichaActualizada = await prisma.fichas.update({
       where: {
         id: validData.id
@@ -441,9 +387,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       {
         success: true,
-        message: validData.especialidad
-          ? 'Ficha asignada exitosamente'
-          : 'Ficha actualizada exitosamente'
+        message: 'Ficha actualizada exitosamente'
       },
       {
         status: 200

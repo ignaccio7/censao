@@ -59,11 +59,7 @@ export const fichaUpdateSchema = z.object({
     )
     .optional(),
   especialidad: z.uuid('ID de especialidad inválido').optional(),
-  doctor: z
-    .string()
-    .min(1, 'El doctor es requerido')
-    .regex(/^\d+$/, 'El doctor debe contener solo números')
-    .optional()
+  doctor: z.string().min(1, 'El doctor es requerido').optional()
 })
 
 export type FichaUpdateFormData = z.infer<typeof fichaUpdateSchema>

@@ -42,6 +42,8 @@ export default async function PacientesPage({
     userId,
     userRole
   })
+  console.log(totalResults)
+
   const totalPages = Math.ceil(totalResults / numberPerPage)
 
   const pacientes = await PacientesService.getAllPacientes({

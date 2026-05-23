@@ -237,8 +237,10 @@ El rol Doctor General incluye médicos generales, odontólogos u otros médicos 
 - Crear usuario de paciente si requiere seguimiento.
 - Enviar recordatorios manuales.
 - **Dar seguimiento a tratamientos de vacunación** (solo lectura — no aplica vacunas directamente).
+- **Visualización de Pacientes y Consultas**: Ver la lista de sus pacientes y el historial de consultas médicas registradas (`/dashboard/atencion/pacientes`, `/dashboard/consultas/paciente/:uuid` y `/dashboard/consultas/paciente/:uuid/consulta/:uuid`).
+- **Reprogramación de Citas**: Ver y actualizar citas de control para reprogramar atenciones si fuera necesario (`/dashboard/atencion/citas`, API `/api/citas`).
 
-> **Cambio v4:** DOCTOR_GENERAL ya no registra tratamientos de vacunación (eso pasa a ENFERMERIA). Ahora gestiona **consultas médicas** en su lugar.
+> **Cambio v4:** DOCTOR_GENERAL ya no registra tratamientos de vacunación (eso pasa a ENFERMERIA). Ahora gestiona **consultas médicas** en su lugar. También se agregaron permisos para la visualización global de sus pacientes, consulta de su historial clínico y reprogramación directa de citas.
 
 ## Flujo de atención
 
@@ -526,3 +528,40 @@ La diferencia con tratamientos:
 
 - `tratamientos` = seguimiento de vacunación (registrado por Enfermería).
 - `consultas` = seguimiento de consultas médicas generales (registrado por Doctor General).
+
+---
+
+## Flujos del Módulo de Consultas (Médico General)
+
+### 1. Sistema de Consulta Padre y Seguimientos
+
+- **Consulta Padre**: Es la atención principal (ej. "tratamiento conducto"), que se registra a partir de una ficha de atención inicial.
+- **Seguimiento**: Son consultas hijas que nacen de la consulta padre (ej. "revisión del conducto").
+- **Restricción de Profundidad**: Los seguimientos NO pueden tener sub-seguimientos. Toda la jerarquía de seguimiento es plana debajo de la consulta padre (nivel máximo de profundidad = 1).
+
+### 2. Regla de "Solo el más reciente tiene citas pendientes"
+
+- Si se crea un **nuevo seguimiento**, todas las citas en estado `PENDIENTE` del seguimiento anterior o de la consulta padre se marcan automáticamente como **ABSORBIDAS**.
+- La consulta padre ya no puede crear nuevas citas (solo se pueden crear y programar citas de retorno desde el seguimiento más reciente).
+
+### 3. Diferencia entre VENCIDA y ABSORBIDA
+
+| Estado        | Cuándo pasa                                                                                                                                                                                                                                                                                               |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **VENCIDA**   | El paciente no asiste en el día programado. Cuando regresa en una fecha posterior (sin haber sacado ficha, solo para solicitar reprogramación en el consultorio del médico si este tiene tiempo libre) y se le agenda una nueva cita, la cita anterior vencida se marca automáticamente como **VENCIDA**. |
+| **ABSORBIDA** | El paciente asiste a su control (creando un nuevo seguimiento antes de la cita o en el transcurso de ella), o se crea un nuevo seguimiento que suplanta el control anterior. En este momento, las citas pendientes del seguimiento previo pasan a ser **ABSORBIDAS**.                                     |
+
+### 4. Vista de Detalle por Tipo de Consulta
+
+| Tipo de consulta   | Qué se muestra en pantalla                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| **Consulta padre** | Sus citas + lista completa de todos sus seguimientos registrados + botón "Registrar Seguimiento".  |
+| **Seguimiento**    | Solo sus citas + aviso explícito de que no puede tener sub-seguimientos + botón "Volver al padre". |
+
+### 5. Absorción Automática al Crear Seguimiento
+
+- **Antes de crear el seguimiento #2**:
+  - Seguimiento #1 → Cita: `PENDIENTE` ✅
+- **Después de crear el seguimiento #2**:
+  - Seguimiento #1 → Cita: `ABSORBIDA` ❌
+  - Seguimiento #2 → Cita: `PENDIENTE` ✅

@@ -14,6 +14,10 @@ type FichaActionData = {
   fichaId: string
   cedula: string
   nombre: string
+  especialidadId?: string
+  doctorId?: string
+  especialidadNombre?: string
+  doctorNombre?: string
 }
 
 export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
@@ -171,6 +175,10 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
             fichaId={reassignData.fichaId}
             pacienteCedula={reassignData.cedula}
             pacienteNombres={reassignData.nombre}
+            especialidadId={reassignData.especialidadId}
+            doctorId={reassignData.doctorId}
+            especialidadNombre={reassignData.especialidadNombre}
+            doctorNombre={reassignData.doctorNombre}
           />
         )}
         {assignData && (

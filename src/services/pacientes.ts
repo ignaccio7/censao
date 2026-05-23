@@ -93,8 +93,8 @@ export class PacientesService {
     userRole
   }: Omit<PacientesParams, 'page' | 'numberPerPage'>) {
     const where: any = {
-      eliminado_en: null,
-      fichas: { some: { eliminado_en: null } }
+      eliminado_en: null
+      // fichas: { some: { eliminado_en: null } } // solo registrados con fichas
     }
 
     // Si es DOCTOR_GENERAL, filtrar solo sus pacientes

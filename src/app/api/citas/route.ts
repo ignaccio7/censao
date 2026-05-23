@@ -147,31 +147,66 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     fecha.setHours(8, 0, 0, 0)
 
-    // Cancelar citas PENDIENTES previas para esta misma consulta o tratamiento
+    // Cancelar/vencer citas PENDIENTES previas para esta misma consulta o tratamiento
     // (reprogramación automática)
+    const ahora = new Date()
     if (consultaId) {
+      // Citas con fecha programada en el pasado -> VENCIDA (el paciente no vino)
       await prisma.citas.updateMany({
         where: {
           consulta_id: consultaId,
           estado: 'PENDIENTE',
+          fecha_programada: { lt: ahora },
+          eliminado_en: null
+        },
+        data: {
+          estado: 'VENCIDA',
+          actualizado_en: ahora,
+          actualizado_por: userId
+        }
+      })
+
+      // Citas con fecha programada hoy o a futuro -> CANCELADA (reprogramación anticipada)
+      await prisma.citas.updateMany({
+        where: {
+          consulta_id: consultaId,
+          estado: 'PENDIENTE',
+          fecha_programada: { gte: ahora },
           eliminado_en: null
         },
         data: {
           estado: 'CANCELADA',
-          actualizado_en: new Date(),
+          actualizado_en: ahora,
           actualizado_por: userId
         }
       })
     } else if (tratamientoId) {
+      // Citas con fecha programada en el pasado -> VENCIDA (el paciente no vino)
       await prisma.citas.updateMany({
         where: {
           tratamiento_id: tratamientoId,
           estado: 'PENDIENTE',
+          fecha_programada: { lt: ahora },
+          eliminado_en: null
+        },
+        data: {
+          estado: 'VENCIDA',
+          actualizado_en: ahora,
+          actualizado_por: userId
+        }
+      })
+
+      // Citas con fecha programada hoy o a futuro -> CANCELADA (reprogramación anticipada)
+      await prisma.citas.updateMany({
+        where: {
+          tratamiento_id: tratamientoId,
+          estado: 'PENDIENTE',
+          fecha_programada: { gte: ahora },
           eliminado_en: null
         },
         data: {
           estado: 'CANCELADA',
-          actualizado_en: new Date(),
+          actualizado_en: ahora,
           actualizado_por: userId
         }
       })

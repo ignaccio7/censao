@@ -12,7 +12,7 @@
 | Administrador    | `ADMINISTRADOR`  | Acceso total: gestiona usuarios, roles, vacunas, horarios, reportes                                                                                 |
 | Doctor de Fichas | `DOCTOR_FICHAS`  | Registra pacientes, crea fichas presenciales (ADMISION), genera lote de citas programadas, ve pacientes del centro de salud y sus fichas históricas |
 | Enfermería       | `ENFERMERIA`     | Triage básico, asigna médico Y aplica vacunas. Gestiona tratamientos, administración de vacunas (UI/APIs) y citas (APIs)                            |
-| Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas asignadas a él, atiende pacientes, registra consultas médicas (NO vacunas)                                                           |
+| Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas asignadas a él, atiende pacientes, registra consultas médicas (NO vacunas), ve la lista de sus pacientes y reprograma citas          |
 | Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas y citas; nunca crea fichas                                                                                      |
 
 **Flujo central:** Paciente llega → Doctor de Fichas crea Ficha (ADMISION) → Enfermería llama al paciente (ENFERMERIA, triage) → Enfermería asigna médico y/o aplica vacunas (orden flexible) → Ficha pasa a EN_ESPERA → Ficha aparece en pantalla del Doctor General y pantalla pública → Médico llama al paciente (ATENDIENDO) → Doctor General atiende, registra consulta si corresponde, y marca como ATENDIDA.
@@ -31,6 +31,38 @@
 
 - RBAC: cada rol tiene permisos distintos almacenados en DB (`roles → roles_permisos → permisos`).
 - ABAC: validación de atributos en cada ruta (ej. Doctor General solo ve fichas en estado **EN_ESPERA** donde la disponibilidad está vinculada a su usuario_id; Enfermería solo ve fichas en estado **ADMISION**).
+
+### 0.1 Flujos de Consulta y Citas (Médico General — v4)
+
+#### Jerarquía Padre-Hijo (Consultas y Seguimientos)
+
+- **Consulta Padre**: Es la consulta inicial o raíz (motivo principal como "tratamiento conducto").
+- **Seguimiento**: Consultas hijas asociadas a la consulta padre (ej. "revisión del conducto").
+- **Restricción de Profundidad**: Toda la jerarquía de seguimiento es plana debajo de la consulta padre. No se admiten sub-seguimientos (nivel máximo de profundidad = 1).
+
+#### Regla de Citas Activas y Absorción Automática
+
+- Solo la consulta o seguimiento **más reciente** de una jerarquía de consultas puede tener citas pendientes y registrar nuevas citas.
+- Al registrar una nueva consulta de seguimiento, todas las citas en estado `PENDIENTE` de los seguimientos anteriores o de la consulta padre se marcan automáticamente en base de datos como **`ABSORBIDAS`**.
+- La consulta padre queda bloqueada para la creación de nuevas citas una vez que cuenta con seguimientos.
+
+#### Estados de Cita
+
+- **`PENDIENTE`**: Cita programada y a la espera de ser atendida o procesada.
+- **`ABSORBIDA`**: Marcada automáticamente cuando el paciente asiste antes de lo programado (creando un nuevo seguimiento antes de la cita o en el transcurso de ella), o al crearse un nuevo seguimiento que suplanta el control anterior.
+- **`VENCIDA`**: Marcada al reprogramar una cita pendiente cuya fecha programada ya pasó (el paciente faltó a su cita anterior y acudió posteriormente en un momento libre del médico a solicitar la reprogramación).
+- **`CANCELADA`**: Marcada al reprogramar una cita pendiente futura (reprogramación anticipada) o al cancelarse lógicamente por el usuario.
+
+#### Detalle Visual por Tipo de Consulta
+
+- **Consulta Padre**: Muestra sus citas + la lista completa de todos sus seguimientos registrados + botón "Registrar Seguimiento".
+- **Seguimiento**: Muestra únicamente sus citas + aviso de que no puede tener sub-seguimientos + botón "Volver al padre".
+
+#### Visualización de Pacientes, Historial Clínico y Reprogramación (Seed & Rutas v4)
+
+- **Visualización de Pacientes**: El Doctor General puede listar sus pacientes a través de `/dashboard/atencion/pacientes` (API `/api/atencion/pacientes` [GET]), permitiéndole ver a quiénes ha atendido o tiene asignados.
+- **Historial Clínico**: Tiene acceso al historial completo de consultas de un paciente a través de `/dashboard/consultas/paciente/:uuid` (API `/api/consultas/paciente/:uuid` [GET]) y el detalle de cada consulta histórica en `/dashboard/consultas/paciente/:uuid/consulta/:uuid` (API `/api/consultas/paciente/:uuid/detalle/:uuid` [GET]).
+- **Reprogramación de Citas**: Cuenta con acceso a `/dashboard/atencion/citas` (API `/api/citas` [POST, PATCH, DELETE]) permitiéndole ver la agenda de citas programadas, reprogramar citas de control (por inasistencia marcando las antiguas como `VENCIDA` o por reprogramación anticipada marcándolas como `CANCELADA`), o eliminarlas lógicamente.
 
 ---
 
