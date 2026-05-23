@@ -95,53 +95,27 @@ export default async function Tratamiento({
 
   type Evento = EventoFicha | EventoTratamiento | EventoCita
 
-  // ── Construcción del timeline ──────────────────────────────────────────────
-  const eventos: Evento[] = []
+  // ── Agrupación en Ciclos ───────────────────────────────────────────────────
+  const ciclos: (typeof tratamientos)[] = []
+  let cicloActual: typeof tratamientos = []
 
   for (const t of tratamientos) {
-    // 1. Tratamiento (dosis aplicada)
-    eventos.push({
-      tipo: 'tratamiento',
-      fecha: t.fecha_aplicacion.toISOString().split('T')[0],
-      estado: t.estado,
-      nombre:
-        vac.nombre +
-        (t.esquema_dosis?.numero ? ` — Dosis ${t.esquema_dosis.numero}` : ''),
-      descripcion:
-        vac.descripcion ?? 'Registro documental de la vacuna aplicada.',
-      fabricante: vac.fabricante ?? 'Fabricante no especificado'
-    })
+    if (cicloActual.length === 0) {
+      cicloActual.push(t)
+    } else {
+      const lastT = cicloActual[cicloActual.length - 1]
+      const currentDose = t.esquema_dosis?.numero ?? 1
+      const lastDose = lastT.esquema_dosis?.numero ?? 1
 
-    // 3. Citas generadas por este tratamiento
-    for (const c of t.citas) {
-      // 3a. La cita en sí
-      eventos.push({
-        tipo: 'cita',
-        fecha: c.fecha_programada.toISOString().split('T')[0],
-        estado: c.estado,
-        observaciones:
-          c.observaciones ?? 'Cita de seguimiento o refuerzo programada',
-        tieneFichaGenerada: c.ficha_generada.length > 0
-      })
-
-      // 3b. Si la cita generó una ficha programada, la agregamos también
-      for (const fg of c.ficha_generada) {
-        eventos.push({
-          tipo: 'ficha',
-          subtipo: 'programada',
-          fecha: fg.fecha_ficha.toISOString().split('T')[0],
-          turno: fg.disponibilidades?.turnos_catalogo?.nombre ?? 'Programada',
-          motivo: fg.motivo ?? 'Visita programada por seguimiento',
-          orden: fg.orden_turno
-        })
+      if (currentDose <= lastDose) {
+        ciclos.push(cicloActual)
+        cicloActual = [t]
+      } else {
+        cicloActual.push(t)
       }
     }
   }
-
-  // Orden cronológico global
-  eventos.sort(
-    (a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
-  )
+  if (cicloActual.length > 0) ciclos.push(cicloActual)
 
   // ── Etiquetas de estado de cita ────────────────────────────────────────────
   const etiquetaEstadoCita: Record<string, string> = {
@@ -163,103 +137,164 @@ export default async function Tratamiento({
   return (
     <section className='tratamiento font-secondary pb-10'>
       <Title className='mb-2'>Tratamiento: {vac.nombre}</Title>
-      <div className='flex flex-col gap-4 md:gap-0 mt-6'>
-        {eventos.map((evento, index) => {
-          const esFicha = evento.tipo === 'ficha'
-          const esCita = evento.tipo === 'cita'
-          const esTratamiento = evento.tipo === 'tratamiento'
 
-          // Fichas y citas van a la izquierda; tratamientos a la derecha
-          const ladoIzquierda = esFicha || esCita
+      {ciclos.map((ciclo, cIndex) => {
+        const esUltimoCiclo = cIndex === ciclos.length - 1
 
-          let headerColor = 'bg-green-900'
-          if (esTratamiento) headerColor = 'bg-amber-600'
-          if (esCita) {
-            const c = evento as EventoCita
-            headerColor = colorEstadoCita[c.estado] ?? 'bg-[#0099ff]'
+        // ── Construcción del timeline para este ciclo ──
+        const eventosCiclo: Evento[] = []
+        for (const t of ciclo) {
+          eventosCiclo.push({
+            tipo: 'tratamiento',
+            fecha: t.fecha_aplicacion.toISOString().split('T')[0],
+            estado: t.estado,
+            nombre:
+              vac.nombre +
+              (t.esquema_dosis?.numero
+                ? ` — Dosis ${t.esquema_dosis.numero}`
+                : ''),
+            descripcion:
+              vac.descripcion ?? 'Registro documental de la vacuna aplicada.',
+            fabricante: vac.fabricante ?? 'Fabricante no especificado'
+          })
+
+          for (const c of t.citas) {
+            eventosCiclo.push({
+              tipo: 'cita',
+              fecha: c.fecha_programada.toISOString().split('T')[0],
+              estado: c.estado,
+              observaciones:
+                c.observaciones ?? 'Cita de seguimiento o refuerzo programada',
+              tieneFichaGenerada: c.ficha_generada.length > 0
+            })
+
+            for (const fg of c.ficha_generada) {
+              eventosCiclo.push({
+                tipo: 'ficha',
+                subtipo: 'programada',
+                fecha: fg.fecha_ficha.toISOString().split('T')[0],
+                turno:
+                  fg.disponibilidades?.turnos_catalogo?.nombre ?? 'Programada',
+                motivo: fg.motivo ?? 'Visita programada por seguimiento',
+                orden: fg.orden_turno
+              })
+            }
           }
-          if (esFicha && (evento as EventoFicha).subtipo === 'programada') {
-            headerColor = 'bg-teal-700'
-          }
+        }
 
-          let titulo = ''
-          let subtitulo = ''
-          let descripcion = ''
-
-          if (esFicha) {
-            const f = evento as EventoFicha
-            titulo =
-              f.subtipo === 'presencial'
-                ? 'Visita presencial'
-                : 'Visita programada'
-            subtitulo = `Turno: ${f.turno}`
-            descripcion = f.motivo
-          } else if (esTratamiento) {
-            const t = evento as EventoTratamiento
-            titulo = t.nombre
-            subtitulo = `Estado: ${t.estado}`
-            descripcion = t.descripcion
-          } else if (esCita) {
-            const c = evento as EventoCita
-            titulo = 'Cita programada'
-            subtitulo = etiquetaEstadoCita[c.estado] ?? c.estado
-            descripcion = c.observaciones
-          }
-
-          return (
-            <section
-              className='grid grid-cols-1 md:grid-cols-[45%_10%_45%]'
-              key={`${evento.fecha}-${index}`}
-            >
-              {/* Tarjeta */}
-              <article
-                className={`bg-white rounded-md overflow-hidden shadow-md text-step-1 my-0 md:my-2
-                  ${ladoIzquierda ? 'order-1' : 'order-3'}`}
+        return (
+          <div key={`ciclo-${cIndex}`} className='mb-8'>
+            <div className='flex justify-center my-6'>
+              <span
+                className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm uppercase tracking-wider border ${esUltimoCiclo ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}
               >
-                <h2
-                  className={`flex gap-1 items-center text-white justify-between p-2 font-semibold capitalize ${headerColor}`}
-                >
-                  <span className='flex gap-1 items-center'>
-                    {esTratamiento ? (
-                      <IconVaccine className='block md:hidden' />
-                    ) : (
-                      <IconCalendar className='block md:hidden' />
-                    )}
-                    {titulo}
-                  </span>
-                  <small className='font-normal text-sm lowercase'>
-                    {subtitulo} | {evento.fecha}
-                  </small>
-                </h2>
-                <p className='p-3 text-pretty text-gray-700 min-h-16'>
-                  {descripcion}
-                </p>
-              </article>
+                {esUltimoCiclo ? '🔄 Ciclo Actual' : '🔄 Ciclo Anterior'}
+              </span>
+            </div>
 
-              {/* Línea central con ícono */}
-              <div className='hidden md:flex justify-center items-center order-2 relative'>
-                {esTratamiento ? (
-                  <IconVaccine
-                    className={`absolute z-10 p-2 rounded-full border text-white shadow-sm ${headerColor}`}
-                    size='44'
-                  />
-                ) : (
-                  <IconCalendar
-                    className={`absolute z-10 p-2 rounded-full border text-white shadow-sm ${headerColor}`}
-                    size='44'
-                  />
-                )}
-                <div className='h-full border-l-2 border-dashed border-gray-300 w-0' />
-              </div>
+            <div className='flex flex-col gap-4 md:gap-0 mt-6'>
+              {eventosCiclo.map((evento, index) => {
+                const esFicha = evento.tipo === 'ficha'
+                const esCita = evento.tipo === 'cita'
+                const esTratamiento = evento.tipo === 'tratamiento'
 
-              {/* Celda vacía del lado contrario */}
-              <div
-                className={`hidden md:block ${ladoIzquierda ? 'order-3' : 'order-1'}`}
-              />
-            </section>
-          )
-        })}
-      </div>
+                // Fichas y citas van a la izquierda; tratamientos a la derecha
+                const ladoIzquierda = esFicha || esCita
+
+                let headerColor = 'bg-green-900'
+                if (esTratamiento) headerColor = 'bg-amber-600'
+                if (esCita) {
+                  const c = evento as EventoCita
+                  headerColor = colorEstadoCita[c.estado] ?? 'bg-[#0099ff]'
+                }
+                if (
+                  esFicha &&
+                  (evento as EventoFicha).subtipo === 'programada'
+                ) {
+                  headerColor = 'bg-teal-700'
+                }
+
+                let titulo = ''
+                let subtitulo = ''
+                let descripcion = ''
+
+                if (esFicha) {
+                  const f = evento as EventoFicha
+                  titulo =
+                    f.subtipo === 'presencial'
+                      ? 'Visita presencial'
+                      : 'Visita programada'
+                  subtitulo = `Turno: ${f.turno}`
+                  descripcion = f.motivo
+                } else if (esTratamiento) {
+                  const t = evento as EventoTratamiento
+                  titulo = t.nombre
+                  subtitulo = `Estado: ${t.estado}`
+                  descripcion = t.descripcion
+                } else if (esCita) {
+                  const c = evento as EventoCita
+                  titulo = 'Cita programada'
+                  subtitulo = etiquetaEstadoCita[c.estado] ?? c.estado
+                  descripcion = c.observaciones
+                }
+
+                return (
+                  <section
+                    className='grid grid-cols-1 md:grid-cols-[45%_10%_45%]'
+                    key={`${evento.fecha}-${index}`}
+                  >
+                    {/* Tarjeta */}
+                    <article
+                      className={`bg-white rounded-md overflow-hidden shadow-md text-step-1 my-0 md:my-2
+                        ${ladoIzquierda ? 'order-1' : 'order-3'}`}
+                    >
+                      <h2
+                        className={`flex gap-1 items-center text-white justify-between p-2 font-semibold capitalize ${headerColor}`}
+                      >
+                        <span className='flex gap-1 items-center'>
+                          {esTratamiento ? (
+                            <IconVaccine className='block md:hidden' />
+                          ) : (
+                            <IconCalendar className='block md:hidden' />
+                          )}
+                          {titulo}
+                        </span>
+                        <small className='font-normal text-sm lowercase'>
+                          {subtitulo} | {evento.fecha}
+                        </small>
+                      </h2>
+                      <p className='p-3 text-pretty text-gray-700 min-h-16'>
+                        {descripcion}
+                      </p>
+                    </article>
+
+                    {/* Línea central con ícono */}
+                    <div className='hidden md:flex justify-center items-center order-2 relative'>
+                      {esTratamiento ? (
+                        <IconVaccine
+                          className={`absolute z-10 p-2 rounded-full border text-white shadow-sm ${headerColor}`}
+                          size='44'
+                        />
+                      ) : (
+                        <IconCalendar
+                          className={`absolute z-10 p-2 rounded-full border text-white shadow-sm ${headerColor}`}
+                          size='44'
+                        />
+                      )}
+                      <div className='h-full border-l-2 border-dashed border-gray-300 w-0' />
+                    </div>
+
+                    {/* Celda vacía del lado contrario */}
+                    <div
+                      className={`hidden md:block ${ladoIzquierda ? 'order-3' : 'order-1'}`}
+                    />
+                  </section>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
     </section>
   )
 }
