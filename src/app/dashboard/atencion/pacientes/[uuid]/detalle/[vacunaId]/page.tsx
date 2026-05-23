@@ -41,8 +41,11 @@ export default async function DetalleTratamientoVacunaPage({
           },
           citas: {
             where: { eliminado_en: null },
-            orderBy: { fecha_programada: 'asc' }
+            orderBy: { creado_en: 'desc' }
           }
+        },
+        orderBy: {
+          creado_en: 'asc'
         }
       }
     }
@@ -62,9 +65,11 @@ export default async function DetalleTratamientoVacunaPage({
     )
   }
 
-  // Ordenamos los tratamientos por número de dosis (ascendente)
+  // Ordenamos los tratamientos por fecha cronológicamente (ascendente)
   const tratamientos = paciente.tratamientos.sort(
-    (a, b) => (a.esquema_dosis?.numero || 0) - (b.esquema_dosis?.numero || 0)
+    (a, b) =>
+      new Date(a.fecha_aplicacion).getTime() -
+      new Date(b.fecha_aplicacion).getTime()
   )
 
   const vacunaNombre =
@@ -110,8 +115,13 @@ export default async function DetalleTratamientoVacunaPage({
 
       {/* Lista de Acordeones */}
       <div className='flex flex-col gap-4'>
-        {tratamientos.map((t: any) => (
-          <TratamientoAccordion key={t.id} tratamiento={t} pacienteId={uuid} />
+        {tratamientos.map((t: any, index: number) => (
+          <TratamientoAccordion
+            key={t.id}
+            tratamiento={t}
+            pacienteId={uuid}
+            isEditable={index === tratamientos.length - 1}
+          />
         ))}
         {tratamientos.length === 0 && (
           <div className='text-center p-12 bg-white rounded-2xl border border-gray-200 text-gray-500'>

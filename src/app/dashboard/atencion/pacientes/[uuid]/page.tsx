@@ -141,17 +141,17 @@ export default function PacienteDetallePage() {
         acc[vacunaId] = {
           vacunaId,
           vacunaNombre: t.esquema_dosis.vacunas.nombre,
-          dosisAplicadas: 1,
+          dosisAplicadas: t.esquema_dosis?.numero || 1,
           ultimoTratamiento: t
         }
       } else {
-        acc[vacunaId].dosisAplicadas += 1
         // Actualizar si este tratamiento es más reciente
         if (
           new Date(t.fecha_aplicacion) >
           new Date(acc[vacunaId].ultimoTratamiento.fecha_aplicacion)
         ) {
           acc[vacunaId].ultimoTratamiento = t
+          acc[vacunaId].dosisAplicadas = t.esquema_dosis?.numero || 1
         }
       }
       return acc

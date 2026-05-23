@@ -88,10 +88,12 @@ TODAY.setHours(0, 0, 0, 0)
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function TratamientoAccordion({
   tratamiento,
-  pacienteId
+  pacienteId,
+  isEditable = true
 }: {
   tratamiento: Tratamiento
   pacienteId: string
+  isEditable?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [modal, setModal] = useState<ModalState>({ type: 'none' })
@@ -236,7 +238,7 @@ export default function TratamientoAccordion({
         observaciones: citaObs.trim() || undefined
       })
       if (result.success) {
-        setLocalCitas(prev => [...prev, result.data as Cita])
+        setLocalCitas(prev => [result.data as Cita, ...prev])
         toast.success(
           `Cita programada para el ${formatDateLong(result.data.fecha_programada)}`
         )
@@ -295,14 +297,16 @@ export default function TratamientoAccordion({
             >
               {localCitas.length} {localCitas.length === 1 ? 'cita' : 'citas'}
             </span>
-            <button
-              onClick={openEditTratamiento}
-              title='Editar observaciones'
-              className='flex items-center gap-1 px-2.5 py-1.5 bg-gray-50 border border-gray-200 text-gray-500 hover:text-primary-600 hover:bg-primary-50 hover:border-primary-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer'
-            >
-              <IconPencil className='w-3.5 h-3.5' />
-              <span className='hidden sm:inline'>Obs.</span>
-            </button>
+            {isEditable && (
+              <button
+                onClick={openEditTratamiento}
+                title='Editar observaciones'
+                className='flex items-center gap-1 px-2.5 py-1.5 bg-gray-50 border border-gray-200 text-gray-500 hover:text-primary-600 hover:bg-primary-50 hover:border-primary-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer'
+              >
+                <IconPencil className='w-3.5 h-3.5' />
+                <span className='hidden sm:inline'>Obs.</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -363,7 +367,7 @@ export default function TratamientoAccordion({
                       {cita.estado}
                     </span>
                     <div className='flex items-center gap-1.5'>
-                      {cita.estado !== 'CANCELADA' ? (
+                      {cita.estado !== 'CANCELADA' && isEditable ? (
                         <>
                           <button
                             onClick={() => openEditCita(cita)}
@@ -402,27 +406,29 @@ export default function TratamientoAccordion({
             </div>
 
             {/* Footer */}
-            <div className='p-3 sm:p-4 bg-gray-50/50 flex justify-end'>
-              <button
-                onClick={openNewCita}
-                className='inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer'
-              >
-                <svg
-                  className='w-3.5 h-3.5'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
+            {isEditable && (
+              <div className='p-3 sm:p-4 bg-gray-50/50 flex justify-end'>
+                <button
+                  onClick={openNewCita}
+                  className='inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer'
                 >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='2.5'
-                    d='M12 4v16m8-8H4'
-                  />
-                </svg>
-                Programar Nueva Cita
-              </button>
-            </div>
+                  <svg
+                    className='w-3.5 h-3.5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2.5'
+                      d='M12 4v16m8-8H4'
+                    />
+                  </svg>
+                  Programar Nueva Cita
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

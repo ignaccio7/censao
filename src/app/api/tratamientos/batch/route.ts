@@ -8,7 +8,7 @@ import AuthService from '@/lib/services/auth-service'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import { StateTreatment } from '@/lib/constants'
+import { StateTreatment, StateTreatmentType } from '@/lib/constants'
 
 /**
  * POST /api/tratamientos/batch
@@ -182,30 +182,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           orderBy: { fecha_aplicacion: 'asc' }
         })
 
-        // Caso REINICIO
-        const dosisYaAplicada = tratamientosAnteriores.some(
-          t => t.esquema_dosis.numero === esquemaActual!.numero
-        )
+        // ── Lógica de Estado y Reinicio ──
+        const ultimoTratamientoGlobal = tratamientosAnteriores.at(-1)
 
-        let estadoNuevoTratamiento: string
+        let esReinicio = false
+        if (ultimoTratamientoGlobal) {
+          esReinicio =
+            esquemaActual!.numero <=
+            ultimoTratamientoGlobal.esquema_dosis.numero
+        }
 
-        if (dosisYaAplicada) {
-          const ultimoEnCurso = tratamientosAnteriores
-            .filter(t => t.estado === StateTreatment.EN_CURSO)
-            .at(-1)
+        let estadoNuevoTratamiento: StateTreatmentType = StateTreatment.EN_CURSO
 
-          if (ultimoEnCurso) {
-            await tx.tratamientos.update({
-              where: { id: ultimoEnCurso.id },
-              data: {
-                estado: 'INCOMPLETA',
-                actualizado_por: userId,
-                actualizado_en: new Date()
-              }
-            })
-          }
-
-          estadoNuevoTratamiento = StateTreatment.EN_CURSO
+        if (esReinicio && ultimoTratamientoGlobal) {
+          // Si es reinicio, marcamos el último tratamiento del ciclo anterior como INCOMPLETO
+          await tx.tratamientos.update({
+            where: { id: ultimoTratamientoGlobal.id },
+            data: {
+              estado: 'INCOMPLETA',
+              actualizado_por: userId,
+              actualizado_en: new Date()
+            }
+          })
         } else if (esUltimaDosis) {
           const numerosAplicados = new Set(
             tratamientosAnteriores
@@ -220,8 +218,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           estadoNuevoTratamiento = todasLasAnterioresAplicadas
             ? StateTreatment.COMPLETADA
             : StateTreatment.EN_CURSO
-        } else {
-          estadoNuevoTratamiento = StateTreatment.EN_CURSO
+        }
+
+        // Cancelar o absorber citas pendientes del tratamiento anterior
+        if (ultimoTratamientoGlobal) {
+          const estadoCita = esReinicio ? 'CANCELADA' : 'ABSORBIDA'
+          await tx.citas.updateMany({
+            where: {
+              tratamiento_id: ultimoTratamientoGlobal.id,
+              estado: 'PENDIENTE',
+              eliminado_en: null
+            },
+            data: {
+              estado: estadoCita,
+              actualizado_por: userId,
+              actualizado_en: new Date()
+            }
+          })
+          console.log(
+            `[BATCH] Citas PENDIENTE del tratamiento anterior ${ultimoTratamientoGlobal.id} marcadas como ${estadoCita}`
+          )
         }
 
         // 3.3 Crear el tratamiento

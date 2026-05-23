@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma/prisma'
 import AuthService from '@/lib/services/auth-service'
 import { z } from 'zod'
 import { Roles } from '@/app/api/lib/constants'
-import { StateTreatment } from '@/lib/constants'
+import { StateTreatment, StateTreatmentType } from '@/lib/constants'
 import { NextResponse, NextRequest } from 'next/server'
 import bcrypt from 'bcryptjs'
 
@@ -282,43 +282,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Los anteriores ya son parte de la bitácora y no se tocan.
     // El nuevo registro entra como EN_CURSO (empieza el ciclo de nuevo).
     // ────────────────────────────────────────────────────────────────────────────
-    const dosisYaAplicada = tratamientosAnteriores.some(
-      t => t.esquema_dosis.numero === esquemaActual!.numero
-    )
+    // ── Lógica de Estado y Reinicio ──
+    const ultimoTratamientoGlobal = tratamientosAnteriores.at(-1)
 
-    let estadoNuevoTratamiento: string
+    let esReinicio = false
+    if (ultimoTratamientoGlobal) {
+      esReinicio =
+        esquemaActual!.numero <= ultimoTratamientoGlobal.esquema_dosis.numero
+    }
 
-    if (dosisYaAplicada) {
-      // Solo marcar como INCOMPLETA el último tratamiento EN_CURSO de esta vacuna
-      // (el más reciente que todavía estaba activo)
-      const ultimoEnCurso = tratamientosAnteriores
-        .filter(t => t.estado === StateTreatment.EN_CURSO)
-        .at(-1) // el más reciente
+    let estadoNuevoTratamiento: StateTreatmentType = StateTreatment.EN_CURSO
 
-      if (ultimoEnCurso) {
-        await prisma.tratamientos.update({
-          where: { id: ultimoEnCurso.id },
-          data: {
-            estado: 'INCOMPLETA',
-            actualizado_por: userId,
-            actualizado_en: new Date()
-          }
-        })
-      }
-
-      // El nuevo registro reinicia el ciclo
-      estadoNuevoTratamiento = StateTreatment.EN_CURSO
-
-      // ── Caso COMPLETADA ──────────────────────────────────────────────────────────
-      // Se marca COMPLETADA únicamente cuando:
-      //   1. Es la última dosis del esquema
-      //   2. Todas las dosis anteriores fueron aplicadas (existen como EN_CURSO en la bitácora)
-      //
-      // Solo el nuevo registro (la última dosis) entra como COMPLETADA.
-      // Los anteriores se quedan como EN_CURSO — son la bitácora de lo que ocurrió.
-      // ────────────────────────────────────────────────────────────────────────────
+    if (esReinicio && ultimoTratamientoGlobal) {
+      // Si es reinicio, marcamos el último tratamiento del ciclo anterior como INCOMPLETO
+      await prisma.tratamientos.update({
+        where: { id: ultimoTratamientoGlobal.id },
+        data: {
+          estado: 'INCOMPLETA',
+          actualizado_por: userId,
+          actualizado_en: new Date()
+        }
+      })
     } else if (esUltimaDosis) {
-      // Verificar que existan registros EN_CURSO para todas las dosis anteriores
       const numerosAplicados = new Set(
         tratamientosAnteriores
           .filter(t => t.estado === StateTreatment.EN_CURSO)
@@ -329,18 +314,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         .filter(e => e.numero < esquemaActual!.numero)
         .every(e => numerosAplicados.has(e.numero))
 
-      // Si están todas las dosis previas → la última entra como COMPLETADA
-      // Si falta alguna dosis previa → entra igual como EN_CURSO (esquema incompleto aún)
       estadoNuevoTratamiento = todasLasAnterioresAplicadas
         ? StateTreatment.COMPLETADA
         : StateTreatment.EN_CURSO
+    }
 
-      // ── Caso NORMAL (dosis intermedia) ──────────────────────────────────────────
-      // Dosis aplicada en orden, no es la última → entra como EN_CURSO.
-      // Queda en la bitácora esperando que lleguen las siguientes dosis.
-      // ────────────────────────────────────────────────────────────────────────────
-    } else {
-      estadoNuevoTratamiento = StateTreatment.EN_CURSO
+    // Cancelar o absorber citas pendientes del tratamiento anterior
+    if (ultimoTratamientoGlobal) {
+      const estadoCita = esReinicio ? 'CANCELADA' : 'ABSORBIDA'
+      await prisma.citas.updateMany({
+        where: {
+          tratamiento_id: ultimoTratamientoGlobal.id,
+          estado: 'PENDIENTE',
+          eliminado_en: null
+        },
+        data: {
+          estado: estadoCita,
+          actualizado_por: userId,
+          actualizado_en: new Date()
+        }
+      })
+      console.log(
+        `Citas PENDIENTE del tratamiento anterior ${ultimoTratamientoGlobal.id} marcadas como ${estadoCita}`
+      )
     }
 
     // 4. Crear el tratamiento
