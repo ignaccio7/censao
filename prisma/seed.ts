@@ -300,6 +300,14 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         descripcion: 'API para generar fichas de citas programadas',
         modulo: 'fichas'
       },
+      {
+        nombre: 'API Reasignar Doctor',
+        tipo: 'backend',
+        ruta: '/api/fichas/reasignar-doctor',
+        metodos: ['POST'],
+        descripcion: 'API para reasignar fichas de un doctor a otro',
+        modulo: 'fichas'
+      },
       // - Atención médica
       {
         nombre: 'API Atención Pacientes',
@@ -459,6 +467,14 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         ruta: '/api/estado-doctores',
         metodos: ['GET'],
         descripcion: 'API para ver disponibilidad de médicos',
+        modulo: 'fichas'
+      },
+      {
+        nombre: 'API Reasignar Doctor',
+        tipo: 'backend',
+        ruta: '/api/fichas/reasignar-doctor',
+        metodos: ['POST'],
+        descripcion: 'API para reasignar fichas de un doctor a otro',
         modulo: 'fichas'
       },
       // - Atención médica

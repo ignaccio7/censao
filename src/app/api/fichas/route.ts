@@ -352,6 +352,46 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
     const validData = validationResult.data
 
+    // Datos a actualizar
+    const updateData: any = {
+      estado: validData.status
+    }
+
+    if (validData.especialidad && validData.doctor) {
+      const turno = await getTurnoActual()
+      if (!turno) {
+        return NextResponse.json({
+          success: false,
+          message:
+            'No es posible actualizar la ficha fuera de horario de atención'
+        })
+      }
+
+      const disponibilidad = await prisma.disponibilidades.findFirst({
+        where: {
+          doctores_especialidades: {
+            doctor_id: validData.doctor,
+            especialidad_id: validData.especialidad
+          },
+          turnos_catalogo: {
+            codigo: turno
+          }
+        }
+      })
+
+      if (!disponibilidad) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `No hay disponibilidad para este doctor en el turno ${turno}`
+          },
+          { status: 400 }
+        )
+      }
+
+      updateData.disponibilidad_id = disponibilidad.id
+    }
+
     const ficha = await prisma.fichas.findUnique({
       where: {
         id: validData.id
@@ -368,11 +408,6 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
           status: 404
         }
       )
-    }
-
-    // Datos a actualizar
-    const updateData: any = {
-      estado: validData.status
     }
 
     const fichaActualizada = await prisma.fichas.update({
