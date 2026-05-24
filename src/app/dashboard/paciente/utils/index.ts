@@ -1,25 +1,5 @@
 import { StateTreatment } from '@/lib/constants'
 
-const getColorByStatus = (status: string) => {
-  switch (status) {
-    case 'pendiente': {
-      return 'bg-sky-600'
-    }
-    case 'completado': {
-      return 'bg-green-600'
-    }
-    case 'rechazado': {
-      return 'bg-red-500'
-    }
-    case 'en proceso': {
-      return 'bg-yellow-600'
-    }
-    default: {
-      return 'bg-gray-600'
-    }
-  }
-}
-
 const getColorStatusBadgeTreatment = (status: string) => {
   console.log(status)
 
@@ -39,4 +19,4 @@ const getColorStatusBadgeTreatment = (status: string) => {
   }
 }
 
-export { getColorByStatus, getColorStatusBadgeTreatment }
+export { getColorStatusBadgeTreatment }

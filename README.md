@@ -40,4 +40,6 @@ https://nextjs.org/learn/dashboard-app/mutating-data
 
 ## TODO: hacer que el doctor de fichas no pueda registrar tratamientos ni ver los que tiene.
 
-TODO: completar reasignacion de fichas en doctor fichas y enfermeria
+TODO: ajustar el problema de citas programadas en estado enfermeria ahi debe terminar la vacuna porque se creo la cita para eso.
+en consultas verificar que aparezca directamente donde el doctor y que sea al final tanto en el doctor como pantalla publica
+notificaciones

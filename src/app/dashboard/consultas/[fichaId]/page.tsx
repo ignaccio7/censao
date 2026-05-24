@@ -73,10 +73,14 @@ export default async function ResumenClinicoPage({
 
   const pacienteCi = ficha.pacientes.paciente_id
 
+  const especialidadId =
+    ficha.disponibilidades?.doctores_especialidades?.especialidad_id
+
   // 3. Obtener consultas
   const totalResults = await ConsultasService.countConsultasByPaciente({
     pacienteCi,
-    search
+    search,
+    especialidadId
   })
   const totalPages = Math.ceil(totalResults / numberPerPage)
 
@@ -84,7 +88,8 @@ export default async function ResumenClinicoPage({
     pacienteCi,
     search,
     page,
-    numberPerPage
+    numberPerPage,
+    especialidadId
   })
 
   const especialidadNombre =

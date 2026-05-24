@@ -1,4 +1,8 @@
-import { IconCalendar, IconVaccine } from '@/app/components/icons/icons'
+import {
+  IconCalendar,
+  IconRefresh,
+  IconVaccine
+} from '@/app/components/icons/icons'
 import Title from '@/app/components/ui/title'
 import { notFound } from 'next/navigation'
 import { auth } from '@/auth'
@@ -121,16 +125,16 @@ export default async function Tratamiento({
   const etiquetaEstadoCita: Record<string, string> = {
     PENDIENTE: 'Pendiente de atención',
     GENERADA: 'Ficha generada',
-    ABSORBIDA: 'Atendida con ficha presencial',
-    CANCELADA: 'Cancelada, el doctor reprogramo',
-    VENCIDA: 'No asistió — vencida'
+    ABSORBIDA: 'Atendida previa cita',
+    CANCELADA: 'Cancelada se reprogramó',
+    VENCIDA: 'No asistió'
   }
 
   const colorEstadoCita: Record<string, string> = {
     PENDIENTE: 'bg-blue-600',
     GENERADA: 'bg-green-700',
-    ABSORBIDA: 'bg-violet-700',
-    CANCELADA: 'bg-red-600',
+    ABSORBIDA: 'bg-cyan-700',
+    CANCELADA: 'bg-rose-500',
     VENCIDA: 'bg-gray-500'
   }
 
@@ -143,10 +147,14 @@ export default async function Tratamiento({
 
         // ── Construcción del timeline para este ciclo ──
         const eventosCiclo: Evento[] = []
+
+        const formatoBo = (fecha: Date) =>
+          fecha.toLocaleDateString('es-BO', { timeZone: 'America/La_Paz' })
+
         for (const t of ciclo) {
           eventosCiclo.push({
             tipo: 'tratamiento',
-            fecha: t.fecha_aplicacion.toISOString().split('T')[0],
+            fecha: formatoBo(t.fecha_aplicacion),
             estado: t.estado,
             nombre:
               vac.nombre +
@@ -161,7 +169,7 @@ export default async function Tratamiento({
           for (const c of t.citas) {
             eventosCiclo.push({
               tipo: 'cita',
-              fecha: c.fecha_programada.toISOString().split('T')[0],
+              fecha: formatoBo(c.fecha_programada),
               estado: c.estado,
               observaciones:
                 c.observaciones ?? 'Cita de seguimiento o refuerzo programada',
@@ -172,7 +180,7 @@ export default async function Tratamiento({
               eventosCiclo.push({
                 tipo: 'ficha',
                 subtipo: 'programada',
-                fecha: fg.fecha_ficha.toISOString().split('T')[0],
+                fecha: formatoBo(fg.fecha_ficha),
                 turno:
                   fg.disponibilidades?.turnos_catalogo?.nombre ?? 'Programada',
                 motivo: fg.motivo ?? 'Visita programada por seguimiento',
@@ -188,7 +196,8 @@ export default async function Tratamiento({
               <span
                 className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm uppercase tracking-wider border ${esUltimoCiclo ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-500 border-gray-200'}`}
               >
-                {esUltimoCiclo ? '🔄 Ciclo Actual' : '🔄 Ciclo Anterior'}
+                <IconRefresh className='inline-block' size='20' />
+                {esUltimoCiclo ? 'Ciclo Actual' : 'Ciclo Anterior'}
               </span>
             </div>
 

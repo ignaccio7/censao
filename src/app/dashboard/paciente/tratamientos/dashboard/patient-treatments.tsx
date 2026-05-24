@@ -55,7 +55,9 @@ export default function PatientTreatments({ treatments }: Props) {
 
   return (
     <section className='treatments font-secondary'>
-      <Title>Mis tratamientos</Title>
+      <Title subtitle='Selecciona un tratamiento para ver el detalle completo'>
+        Mis tratamientos
+      </Title>
       <CustomDataTable
         columnas={columnas}
         contenidoTabla={contenidoTabla}

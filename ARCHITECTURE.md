@@ -11,9 +11,9 @@
 | ---------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Administrador    | `ADMINISTRADOR`  | Acceso total: gestiona usuarios, roles, vacunas, horarios, reportes                                                                                 |
 | Doctor de Fichas | `DOCTOR_FICHAS`  | Registra pacientes, crea fichas presenciales (ADMISION), genera lote de citas programadas, ve pacientes del centro de salud y sus fichas históricas |
-| Enfermería       | `ENFERMERIA`     | Triage básico, asigna médico Y aplica vacunas. Gestiona tratamientos, administración de vacunas (UI/APIs) y citas (APIs)                            |
+| Enfermería       | `ENFERMERIA`     | Triage básico, asigna médico Y aplica vacunas. Gestiona tratamientos, vacunas y citas. **NO puede crear pacientes**                                 |
 | Doctor General   | `DOCTOR_GENERAL` | Solo ve fichas asignadas a él, atiende pacientes, registra consultas médicas (NO vacunas), ve la lista de sus pacientes y reprograma citas          |
-| Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas y citas; nunca crea fichas                                                                                      |
+| Paciente         | `PACIENTE`       | Solo ve sus propias fichas, vacunas, **consultas médicas** y citas; nunca crea fichas                                                               |
 
 **Flujo central:** Paciente llega → Doctor de Fichas crea Ficha (ADMISION) → Enfermería llama al paciente (ENFERMERIA, triage) → Enfermería asigna médico y/o aplica vacunas (orden flexible) → Ficha pasa a EN_ESPERA → Ficha aparece en pantalla del Doctor General y pantalla pública → Médico llama al paciente (ATENDIENDO) → Doctor General atiende, registra consulta si corresponde, y marca como ATENDIDA.
 
@@ -61,8 +61,16 @@
 #### Visualización de Pacientes, Historial Clínico y Reprogramación (Seed & Rutas v4)
 
 - **Visualización de Pacientes**: El Doctor General puede listar sus pacientes a través de `/dashboard/atencion/pacientes` (API `/api/atencion/pacientes` [GET]), permitiéndole ver a quiénes ha atendido o tiene asignados.
-- **Historial Clínico**: Tiene acceso al historial completo de consultas de un paciente a través de `/dashboard/consultas/paciente/:uuid` (API `/api/consultas/paciente/:uuid` [GET]) y el detalle de cada consulta histórica en `/dashboard/consultas/paciente/:uuid/consulta/:uuid` (API `/api/consultas/paciente/:uuid/detalle/:uuid` [GET]).
+- **Historial Clínico**: Tiene acceso al historial completo de consultas de un paciente a través de `/dashboard/consultas/paciente/:uuid` (API `/api/consultas/paciente/:uuid` [GET]) y el detalle de cada consulta histórica en `/dashboard/consultas/paciente/:uuid/consulta/:uuid` (API `/api/consultas/paciente/:uuid/detalle/:uuid` [GET]). **Nota:** El historial que ve el doctor se filtra estrictamente por la especialidad bajo la cual está atendiendo la ficha actual.
 - **Reprogramación de Citas**: Cuenta con acceso a `/dashboard/atencion/citas` (API `/api/citas` [POST, PATCH, DELETE]) permitiéndole ver la agenda de citas programadas, reprogramar citas de control (por inasistencia marcando las antiguas como `VENCIDA` o por reprogramación anticipada marcándolas como `CANCELADA`), o eliminarlas lógicamente.
+
+#### Módulo de Consultas para Pacientes (Vista 3 Niveles)
+
+El rol Paciente accede a su historial médico en formato de solo lectura mediante 3 niveles anidados:
+
+1. **Especialidades:** `/dashboard/paciente/consultas` (agrupa por especialidad clínica).
+2. **Listado de Motivos:** `/dashboard/paciente/consultas/[especialidadId]` (lista independiente de cada afección).
+3. **Timeline Clínico:** `/dashboard/paciente/consultas/[especialidadId]/detalle/[consultaId]` (línea de tiempo estricta: Ficha → Consulta → Citas de la raíz, seguido de los seguimientos).
 
 ---
 

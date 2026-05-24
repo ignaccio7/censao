@@ -58,11 +58,10 @@ export default async function PacientesPage({
 
   console.log(pacientes)
 
-  // Solo DOCTOR_FICHAS o ADMINISTRADOR o ENFERMERIA pueden crear pacientes
+  // Solo DOCTOR_FICHAS o ADMINISTRADOR pueden crear pacientes
   const canCreatePaciente =
-    userRole === Roles.DOCTOR_FICHAS ||
-    userRole === Roles.ADMINISTRADOR ||
-    userRole === Roles.ENFERMERIA
+    userRole === Roles.DOCTOR_FICHAS || userRole === Roles.ADMINISTRADOR
+  // userRole === Roles.ENFERMERIA
 
   return (
     <main className='pb-8'>

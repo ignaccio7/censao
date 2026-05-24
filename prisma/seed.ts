@@ -142,6 +142,33 @@ const USUARIO_PACIENTE_1: UsuarioCompleto = {
         modulo: 'mi_salud'
       },
       {
+        nombre: 'Mis Consultas',
+        tipo: 'frontend',
+        ruta: '/dashboard/paciente/consultas',
+        metodos: ['read'],
+        icono: 'history',
+        descripcion: 'Ver mis consultas médicas',
+        modulo: 'mi_salud'
+      },
+      {
+        nombre: 'Detalle Consultas por Especialidad',
+        tipo: 'frontend',
+        ruta: '/dashboard/paciente/consultas/:uuid',
+        metodos: ['read'],
+        icono: 'history',
+        descripcion: 'Ver listado de consultas médicas de esta especialidad',
+        modulo: 'mi_salud'
+      },
+      {
+        nombre: 'Detalle Consulta Médica',
+        tipo: 'frontend',
+        ruta: '/dashboard/paciente/consultas/:uuid/detalle/:uuid',
+        metodos: ['read'],
+        icono: 'history',
+        descripcion: 'Ver detalle de una consulta específica',
+        modulo: 'mi_salud'
+      },
+      {
         nombre: 'Mis Citas',
         tipo: 'frontend',
         ruta: '/dashboard/paciente/citas',
@@ -165,6 +192,30 @@ const USUARIO_PACIENTE_1: UsuarioCompleto = {
         ruta: '/api/paciente/:uuid/tratamientos/:uuid',
         metodos: ['GET'],
         descripcion: 'API para ver detalle de tratamiento',
+        modulo: 'mi_salud'
+      },
+      {
+        nombre: 'API Mis Consultas',
+        tipo: 'backend',
+        ruta: '/api/paciente/:uuid/consultas',
+        metodos: ['GET'],
+        descripcion: 'API para ver consultas del paciente',
+        modulo: 'mi_salud'
+      },
+      {
+        nombre: 'API Detalle consultas',
+        tipo: 'backend',
+        ruta: '/api/paciente/:uuid/consultas/:uuid',
+        metodos: ['GET'],
+        descripcion: 'API para ver detalle de las consultas por especialidad',
+        modulo: 'mi_salud'
+      },
+      {
+        nombre: 'API Detalle consulta',
+        tipo: 'backend',
+        ruta: '/api/paciente/:uuid/consultas/:uuid/detalle/:uuid',
+        metodos: ['GET'],
+        descripcion: 'API para ver detalle de una consulta médica',
         modulo: 'mi_salud'
       },
       {
@@ -379,18 +430,9 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         nombre: 'Pacientes',
         tipo: 'frontend',
         ruta: '/dashboard/atencion/pacientes',
-        metodos: ['read', 'create', 'update'],
+        metodos: ['read'],
         icono: 'list',
         descripcion: 'Gestionar pacientes asignados',
-        modulo: 'atencion'
-      },
-      {
-        nombre: 'Crear Pacientes',
-        tipo: 'frontend',
-        ruta: '/dashboard/atencion/pacientes/crear',
-        metodos: ['create'],
-        icono: 'plus',
-        descripcion: 'Crear pacientes',
         modulo: 'atencion'
       },
       {
@@ -482,7 +524,7 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         nombre: 'API Atención Pacientes',
         tipo: 'backend',
         ruta: '/api/atencion/pacientes',
-        metodos: ['GET', 'POST'],
+        metodos: ['GET'],
         descripcion: 'API para obtener y asignar pacientes del Centro',
         modulo: 'atencion'
       },

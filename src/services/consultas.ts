@@ -5,6 +5,7 @@ interface ConsultasParams {
   search?: string
   page?: number
   numberPerPage?: number
+  especialidadId?: string
 }
 
 export class ConsultasService {
@@ -12,14 +13,22 @@ export class ConsultasService {
     pacienteCi,
     search,
     page = 1,
-    numberPerPage = 5
+    numberPerPage = 5,
+    especialidadId
   }: ConsultasParams) {
     const filters: any = {
       where: {
         eliminado_en: null,
         consulta_padre_id: null, // Solo consultas raíz — los seguimientos se muestran dentro del detalle
         ficha_origen: {
-          paciente_id: pacienteCi
+          paciente_id: pacienteCi,
+          ...(especialidadId && {
+            disponibilidades: {
+              doctores_especialidades: {
+                especialidad_id: especialidadId
+              }
+            }
+          })
         }
       }
     }
@@ -109,13 +118,21 @@ export class ConsultasService {
 
   static async countConsultasByPaciente({
     pacienteCi,
-    search
+    search,
+    especialidadId
   }: Omit<ConsultasParams, 'page' | 'numberPerPage'>) {
     const where: any = {
       eliminado_en: null,
       consulta_padre_id: null, // Solo consultas raíz
       ficha_origen: {
-        paciente_id: pacienteCi
+        paciente_id: pacienteCi,
+        ...(especialidadId && {
+          disponibilidades: {
+            doctores_especialidades: {
+              especialidad_id: especialidadId
+            }
+          }
+        })
       }
     }
 

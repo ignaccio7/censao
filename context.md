@@ -102,10 +102,16 @@ Por ejemplo:
   - Atendida
   - Cancelada
 
-- Consultar su tratamiento de vacunación:
+- Consultar su historial de **Consultas Médicas**:
+  - Vista general por Especialidades atendidas.
+  - Listado de Motivos de Consulta independientes (Activas o Cerradas).
+  - Línea de tiempo detallada de cada enfermedad (Consulta Raíz -> Seguimientos -> Citas -> Fichas).
+
+- Consultar su tratamiento de **Vacunación**:
   - Vacunas aplicadas
   - Vacunas pendientes
   - Próxima dosis
+
 - Consultar sus siguientes citas programadas
 - Ver recordatorios enviados.
 - Ver la pantalla pública de fichas.
@@ -115,7 +121,7 @@ Por ejemplo:
 - No puede crear fichas.
 - No puede reservar atención.
 - No puede modificar citas.
-- Solo puede ver sus propias vacunas y fichas.
+- Solo puede ver sus propias vacunas, consultas y fichas.
 - No puede ver información de otros pacientes.
 - No puede administrar usuarios ni permisos.
 
@@ -125,8 +131,8 @@ Por ejemplo:
 2. Pasa por Admisión o directamente a Enfermería si ya tiene su ficha de cita generada
 3. Observa la pantalla pública hasta que le corresponda.
 4. Es atendido por el Doctor Correspondiente.
-5. Si tiene seguimiento de vacunación, se le crea acceso al sistema.
-6. Más adelante puede ingresar al sistema para consultar próximas dosis y recordatorios.
+5. Si tiene seguimiento de vacunación o consulta médica, se le crea acceso al sistema.
+6. Más adelante puede ingresar al sistema para consultar próximas dosis, citas y su historial médico.
 
 ---
 
@@ -136,7 +142,7 @@ Este rol corresponde al personal que registra pacientes, asigna fichas y control
 
 ## Funciones principales
 
-- Registrar pacientes nuevos.
+- **Registrar pacientes nuevos (exclusivo junto con Admin)**.
 - Buscar pacientes existentes.
 - Generar fichas presenciales sin asignación médica inicial (Estado ADMISION).
 - Generar en lote las fichas de las citas programadas correspondientes a ese turno (mañana o tarde), disparando las notificaciones a los pacientes.
@@ -181,7 +187,7 @@ Las fichas tendrán seis estados que reflejan el flujo real de atención:
 
 ---
 
-3. Rol: Enfermería
+# 3. Rol: Enfermería
 
 Este rol es responsable de la clasificación del paciente antes de la atención médica, cumpliendo una función de triage básico. **Ahora también es responsable de la aplicación de vacunas y el registro de tratamientos de vacunación.**
 
@@ -198,6 +204,10 @@ Este rol es responsable de la clasificación del paciente antes de la atención 
 - **Gestión de Citas:** Permiso para interactuar con la API `/api/citas` para administrar citas de vacunación.
 - Ver carga de trabajo de médicos.
 - Reasignar fichas si es necesario.
+
+## Restricciones
+
+- **No puede registrar pacientes nuevos** (exclusivo de Admisión y Admin).
 - Visualizar la pantalla pública.
 
 ## Restricciones
