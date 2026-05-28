@@ -24,7 +24,10 @@ export const tratamientoCreateSchema = z.object({
       observaciones: z
         .string()
         .max(500, 'Las observaciones no pueden exceder 500 caracteres')
-        .optional()
+        .optional(),
+      turnoCodigo: z.enum(['AM', 'PM'], {
+        message: 'Turno inválido'
+      })
     })
     .optional()
 })
@@ -54,13 +57,17 @@ const tratamientoItemSchema = z.object({
       observaciones: z
         .string()
         .max(500, 'Las observaciones no pueden exceder 500 caracteres')
-        .optional()
+        .optional(),
+      turnoCodigo: z.enum(['AM', 'PM'], {
+        message: 'Turno inválido'
+      })
     })
     .optional()
 })
 
 export const tratamientoBatchCreateSchema = z.object({
-  pacienteId: z.string().min(1, 'ID del paciente es requerido'),
+  pacienteId: z.string().min(1, 'El ID del paciente es requerido'),
+  fichaOrigenId: z.string().uuid().optional(),
   tratamientos: z
     .array(tratamientoItemSchema)
     .min(1, 'Debe registrar al menos un tratamiento')

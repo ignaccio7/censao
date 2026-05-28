@@ -11,10 +11,10 @@ import {
   IconCalendar,
   IconCheck
   // IconAlertTriangle,
-  // IconChevronLeft,
   // IconChevronRight
 } from '@/app/components/icons/icons'
 import { useTratamientos } from '@/app/services/tratamientos'
+import { useFichaDetalle } from '@/app/services/fichas'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import esLocale from '@fullcalendar/core/locales/es'
@@ -55,6 +55,7 @@ type PendingTreatment = {
     fechaProgramada: string
     tipo: 'VACUNA' | 'CONTROL' | 'CONSULTA'
     observaciones: string
+    turnoCodigo: 'AM' | 'PM'
   }
 }
 
@@ -63,27 +64,46 @@ interface CrearTratamientoFormProps {
   pacienteNombre: string
   pacienteCi: string
   vacunas: Vacuna[]
+  fichaOrigenId: string | null
 }
 
-const TIPOS_CITA = [
-  { value: 'VACUNA', label: 'Vacuna (próxima dosis)' },
-  { value: 'CONTROL', label: 'Control médico' },
-  { value: 'CONSULTA', label: 'Consulta general' }
-]
+// const TIPOS_CITA = [
+//   { value: 'VACUNA', label: 'Vacuna (próxima dosis)' },
+//   { value: 'CONTROL', label: 'Control médico' },
+//   { value: 'CONSULTA', label: 'Consulta general' }
+// ]
 
 export default function CrearTratamientoForm({
   pacienteId,
   pacienteNombre,
   pacienteCi,
-  vacunas
+  vacunas,
+  fichaOrigenId
 }: CrearTratamientoFormProps) {
   const router = useRouter()
   const { createTratamientoBatch } = useTratamientos()
+  const { data: fichaDetalle, isLoading: isLoadingFicha } =
+    useFichaDetalle(fichaOrigenId)
+  console.log(isLoadingFicha)
 
   // ── Selector de vacuna / dosis ──
   const [selectedVacunaId, setSelectedVacunaId] = useState('')
   const [selectedEsquemaId, setSelectedEsquemaId] = useState('')
   const [tratamientoObservaciones, setTratamientoObservaciones] = useState('')
+
+  // Precargar datos si viene de cita programada
+  //desactivar eslint-plugin-react-hooks(exhaustive-deps)
+  useMemo(() => {
+    if (fichaDetalle && !selectedVacunaId && !selectedEsquemaId) {
+      if (fichaDetalle.vacuna_id) {
+        setSelectedVacunaId(fichaDetalle.vacuna_id)
+      }
+      if (fichaDetalle.siguiente_esquema_id) {
+        setSelectedEsquemaId(fichaDetalle.siguiente_esquema_id)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fichaDetalle])
 
   // ── Carrito: tratamientos pendientes (aún no enviados) ──
   const [pendingTreatments, setPendingTreatments] = useState<
@@ -94,9 +114,8 @@ export default function CrearTratamientoForm({
   const [activeSchedulingId, setActiveSchedulingId] = useState<string | null>(
     null
   )
-  const [citaTipo, setCitaTipo] = useState<'VACUNA' | 'CONTROL' | 'CONSULTA'>(
-    'VACUNA'
-  )
+  const citaTipo: 'VACUNA' | 'CONTROL' | 'CONSULTA' = 'VACUNA'
+  const [citaTurno, setCitaTurno] = useState<'AM' | 'PM'>('AM')
   const [citaObservaciones, setCitaObservaciones] = useState('')
   const [citaFecha, setCitaFecha] = useState<Date | undefined>()
 
@@ -199,11 +218,11 @@ export default function CrearTratamientoForm({
     const treatment = pendingTreatments.find(t => t.localId === localId)
 
     if (treatment?.cita) {
-      setCitaTipo(treatment.cita.tipo)
+      setCitaTurno(treatment.cita.turnoCodigo)
       setCitaObservaciones(treatment.cita.observaciones)
       setCitaFecha(new Date(treatment.cita.fechaProgramada))
     } else {
-      setCitaTipo('VACUNA')
+      setCitaTurno('AM')
       setCitaObservaciones('')
       const suggested = getSuggestedDate(treatment?.intervaloDias || 0)
       setCitaFecha(suggested ? new Date(suggested + 'T00:00:00') : undefined)
@@ -240,6 +259,7 @@ export default function CrearTratamientoForm({
               cita: {
                 fechaProgramada: appointmentDate.toISOString(),
                 tipo: citaTipo,
+                turnoCodigo: citaTurno,
                 observaciones: citaObservaciones.trim()
               }
             }
@@ -271,6 +291,7 @@ export default function CrearTratamientoForm({
     try {
       const payload = {
         pacienteId: pacienteId,
+        fichaOrigenId: fichaOrigenId ?? undefined,
         tratamientos: pendingTreatments.map(t => ({
           esquemaId: t.esquemaId,
           dosisNumero: t.dosisNumero,
@@ -282,6 +303,7 @@ export default function CrearTratamientoForm({
             cita: {
               fechaProgramada: t.cita.fechaProgramada,
               tipo: t.cita.tipo,
+              turnoCodigo: t.cita.turnoCodigo,
               ...(t.cita.observaciones && {
                 observaciones: t.cita.observaciones
               })
@@ -306,7 +328,9 @@ export default function CrearTratamientoForm({
             { duration: 5000 }
           )
         }
-        router.push('/dashboard/atencion/pacientes')
+        router.push(
+          fichaOrigenId ? '/dashboard/fichas' : '/dashboard/atencion/pacientes'
+        )
       } else {
         toast.error(result.message || 'Error al registrar tratamientos')
       }
@@ -343,7 +367,26 @@ export default function CrearTratamientoForm({
         Registrar Tratamiento
       </Title>
 
-      {/* Info paciente */}
+      {fichaOrigenId && (
+        <div className='mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3 shadow-sm'>
+          <div className='bg-emerald-100 p-2 rounded-lg mt-0.5'>
+            <IconVaccine className='text-emerald-600' size='24' />
+          </div>
+          <div>
+            <h3 className='text-step-1 font-bold text-emerald-800 uppercase tracking-wide font-primary'>
+              Vacunación Programada
+            </h3>
+            <p className='text-emerald-700 text-step-0'>
+              Atendiendo ficha <strong>#{fichaDetalle?.orden_turno}</strong>.
+              {fichaDetalle?.vacuna_nombre &&
+                ` Vacuna precargada: ${fichaDetalle.vacuna_nombre} (Dosis #${fichaDetalle.siguiente_dosis_numero}).`}
+              Puedes ajustar la selección si es necesario.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── SECCIÓN 1: Selección ── */}
       <div className='bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6'>
         <div className='flex items-center gap-3'>
           <div className='w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0'>
@@ -562,26 +605,25 @@ export default function CrearTratamientoForm({
                                   />
                                 </div>
                               </div>
-                              <div>
-                                <label
-                                  className='block text-[11px] font-semibold text-gray-500 mb-1'
-                                  htmlFor='citaTipo'
-                                >
-                                  TIPO
-                                </label>
-                                <select
-                                  value={citaTipo}
-                                  onChange={e =>
-                                    setCitaTipo(e.target.value as any)
-                                  }
-                                  className='w-full border border-gray-300 rounded p-1.5 text-step--2'
-                                >
-                                  {TIPOS_CITA.map(tipo => (
-                                    <option key={tipo.value} value={tipo.value}>
-                                      {tipo.label}
-                                    </option>
-                                  ))}
-                                </select>
+                              <div className='flex gap-2 w-full'>
+                                <div className='flex-1'>
+                                  <label
+                                    className='block text-[11px] font-semibold text-gray-500 mb-1'
+                                    htmlFor='citaTurno'
+                                  >
+                                    TURNO
+                                  </label>
+                                  <select
+                                    value={citaTurno}
+                                    onChange={e =>
+                                      setCitaTurno(e.target.value as any)
+                                    }
+                                    className='w-full border border-gray-300 rounded p-1.5 text-step--2'
+                                  >
+                                    <option value='AM'>Mañana (AM)</option>
+                                    <option value='PM'>Tarde (PM)</option>
+                                  </select>
+                                </div>
                               </div>
                             </div>
                             <div className='mb-3'>
@@ -632,7 +674,7 @@ export default function CrearTratamientoForm({
                                 {formatDate(
                                   t.cita.fechaProgramada.split('T')[0]
                                 )}{' '}
-                                · {t.cita.tipo}
+                                · {t.cita.tipo} ({t.cita.turnoCodigo})
                               </span>
                               <button
                                 type='button'
@@ -765,9 +807,9 @@ export default function CrearTratamientoForm({
                 </p>
               </div>
               <div>
-                <p className='text-gray-500 font-semibold mb-1'>Tipo de Cita</p>
+                <p className='text-gray-500 font-semibold mb-1'>Tipo y Turno</p>
                 <p className='text-gray-800 font-medium'>
-                  {eventTreatment.cita.tipo}
+                  {eventTreatment.cita.tipo} ({eventTreatment.cita.turnoCodigo})
                 </p>
               </div>
             </div>

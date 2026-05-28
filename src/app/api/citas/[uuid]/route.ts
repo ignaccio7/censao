@@ -10,6 +10,7 @@ const updateCitaSchema = z.object({
     .refine(v => !isNaN(Date.parse(v)), { message: 'Fecha inválida' })
     .optional(),
   tipo: z.enum(['VACUNA', 'CONTROL', 'CONSULTA']).optional(),
+  turnoCodigo: z.enum(['AM', 'PM']).optional(),
   observaciones: z.string().max(500).nullable().optional()
 })
 
@@ -69,7 +70,6 @@ export async function PATCH(
     if (parsed.data.fechaProgramada) {
       const nuevaFecha = new Date(parsed.data.fechaProgramada)
       const hoy = new Date()
-      hoy.setHours(0, 0, 0, 0)
       if (nuevaFecha < hoy) {
         return NextResponse.json(
           { success: false, message: 'No puedes agendar citas en el pasado' },
@@ -95,6 +95,9 @@ export async function PATCH(
           fecha_programada: new Date(parsed.data.fechaProgramada)
         }),
         ...(parsed.data.tipo && { tipo: parsed.data.tipo }),
+        ...(parsed.data.turnoCodigo && {
+          turno_codigo: parsed.data.turnoCodigo
+        }),
         ...(parsed.data.observaciones !== undefined && {
           observaciones: parsed.data.observaciones
         }),

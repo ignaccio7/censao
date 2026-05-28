@@ -10,6 +10,10 @@ import {
 import { StatusBadge } from './statusBadge'
 import { StateRecord } from '@/lib/constants'
 
+// Helper para formatear números de ficha (c = Cita Programada)
+const formatTurno = (num: number) =>
+  num < 0 ? `${Math.abs(num)} (c)` : num.toString()
+
 type FichaActionData = {
   fichaId: string
   cedula: string
@@ -18,6 +22,7 @@ type FichaActionData = {
   doctorId?: string
   especialidadNombre?: string
   doctorNombre?: string
+  citaOrigenTipo?: string | null
 }
 
 interface FichasStatusTableProps {
@@ -32,6 +37,7 @@ interface FichasStatusTableProps {
   onCallPatient?: (data: FichaActionData) => void // EN_ESPERA → ATENDIENDO
   onFinishAttention?: (data: FichaActionData) => void // ATENDIENDO → ATENDIDA
   onRegisterTreatment?: (fichaId: string) => void // navega a tratamientos
+  onRegisterVaccine?: (data: FichaActionData) => void // ENFERMERIA → VACUNACION
   onCancel?: (data: FichaActionData) => void // → CANCELADA
 }
 
@@ -68,8 +74,9 @@ export default function FichasStatusTable({
   onCallTriage,
   onCallPatient,
   onFinishAttention,
-  onRegisterTreatment
-  // onCancel
+  onRegisterTreatment,
+  onRegisterVaccine,
+  onCancel
 }: FichasStatusTableProps) {
   const [activeTab, setActiveTab] = useState(
     waitingMode ? StateRecord.ADMISION : 'all'
@@ -108,8 +115,14 @@ export default function FichasStatusTable({
       ) {
         return 1
       }
-      // Mantener el orden por orden_turno para el resto
-      return (a.orden_turno || 0) - (b.orden_turno || 0)
+      // Mantener el orden por orden_turno para el resto: presenciales (>0) primero, programadas (<0) después
+      const oA = a.orden_turno || 0
+      const oB = b.orden_turno || 0
+
+      if (oA > 0 && oB < 0) return -1
+      if (oA < 0 && oB > 0) return 1
+
+      return Math.abs(oA) - Math.abs(oB)
     })
 
   const tableContent = filteredFichas.map((ficha: any, index: number) => {
@@ -117,10 +130,11 @@ export default function FichasStatusTable({
       fichaId: ficha.ficha_id,
       cedula: ficha.paciente_id,
       nombre: ficha.paciente_nombres,
-      especialidadId: ficha.especialidad_id,
-      doctorId: ficha.doctor_id,
-      especialidadNombre: ficha.especialidad_nombre,
-      doctorNombre: ficha.doctor_nombre
+      especialidadId: ficha.especialidad_id as string,
+      doctorId: ficha.doctor_id as string,
+      especialidadNombre: ficha.especialidad_nombre as string,
+      doctorNombre: ficha.doctor_nombre as string,
+      citaOrigenTipo: ficha.cita_origen_tipo as string | null
     }
 
     return [
@@ -128,7 +142,7 @@ export default function FichasStatusTable({
         className='font-semibold text-primary-700 text-step-1'
         key={`id-${index}`}
       >
-        # {ficha.orden_turno}
+        # {formatTurno(ficha.orden_turno || 0)}
       </span>,
       ficha?.paciente_nombres,
       ficha?.especialidad_nombre || (
@@ -159,15 +173,38 @@ export default function FichasStatusTable({
           </button>
         )}
 
-        {/* ENFERMERIA → Asignar médico (abre FormAssign) */}
-        {ficha.estado === StateRecord.ENFERMERIA && onAssignDoctor && (
+        {/* ENFERMERIA → Asignar médico (abre FormAssign) o Registrar Vacuna */}
+        {ficha.estado === StateRecord.ENFERMERIA &&
+          (d.citaOrigenTipo === 'VACUNA'
+            ? onRegisterVaccine && (
+                <button
+                  onClick={() => onRegisterVaccine(d)}
+                  title='Registrar Vacuna'
+                  className='px-2 py-1 bg-emerald-600 text-white text-xs rounded-md hover:bg-emerald-700 transition-colors font-medium cursor-pointer flex items-center gap-1'
+                >
+                  <IconCheckupList size='14' />
+                  Registrar Vacuna
+                </button>
+              )
+            : onAssignDoctor && (
+                <button
+                  onClick={() => onAssignDoctor(d)}
+                  title='Asignar médico y especialidad'
+                  className='px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors font-medium cursor-pointer flex items-center gap-1'
+                >
+                  <IconCheckupList size='14' />
+                  Asignar médico
+                </button>
+              ))}
+
+        {/* ENFERMERIA → Cancelar ficha (solo cuando fue llamado por enfermeria) */}
+        {ficha.estado === StateRecord.ENFERMERIA && onCancel && (
           <button
-            onClick={() => onAssignDoctor(d)}
-            title='Asignar médico y especialidad'
-            className='px-2 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors font-medium cursor-pointer flex items-center gap-1'
+            onClick={() => onCancel(d)}
+            title='Cancelar ficha'
+            className='px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700 transition-colors font-medium cursor-pointer flex items-center gap-1'
           >
-            <IconCheckupList size='14' />
-            Asignar médico
+            Cancelar
           </button>
         )}
 

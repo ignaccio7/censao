@@ -26,8 +26,8 @@ export default function FormReassign({
   fichaId,
   pacienteNombres,
   pacienteCedula,
-  especialidadId,
-  doctorId,
+  // especialidadId,
+  // doctorId,
   especialidadNombre,
   doctorNombre
 }: FormReassignProps) {
@@ -37,17 +37,10 @@ export default function FormReassign({
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!especialidadId || !doctorId) {
-      toast.error('Faltan datos de especialidad o doctor para reasignar.')
-      return
-    }
-
     try {
       const result = await updateFicha.mutateAsync({
         id: fichaId,
-        status: StateRecord.EN_ESPERA,
-        especialidad: especialidadId,
-        doctor: doctorId
+        status: StateRecord.EN_ESPERA
       })
 
       if (result.success) {

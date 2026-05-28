@@ -187,9 +187,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
         disponibilidades: {
           select: {
+            turno_codigo: true,
             doctores_especialidades: {
               select: {
-                doctor_id: true
+                doctor_id: true,
+                especialidad_id: true
               }
             }
           }
@@ -257,29 +259,37 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 3. Crear cita de retorno si fue solicitada
     let citaCreada = false
     if (validData.cita) {
-      const doctorId =
-        ficha.disponibilidades?.doctores_especialidades?.doctor_id
+      const doctorEspecialidad = ficha.disponibilidades?.doctores_especialidades
+      const doctorId = doctorEspecialidad?.doctor_id
+      const especialidadId = doctorEspecialidad?.especialidad_id
       const pacienteCi = ficha.pacientes.paciente_id
+      const turnoAsignado = ficha.disponibilidades?.turno_codigo
 
-      if (!doctorId) {
-        console.warn(
-          'No se pudo obtener el doctor_id de la ficha para crear la cita de retorno'
+      if (!doctorId || !especialidadId || !turnoAsignado) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              'No se pudo obtener el doctor, especialidad o turno de la ficha actual'
+          },
+          { status: 400 }
         )
-      } else {
-        await prisma.citas.create({
-          data: {
-            paciente_id: pacienteCi,
-            doctor_id: doctorId,
-            consulta_id: consulta.id,
-            fecha_programada: new Date(validData.cita.fechaProgramada),
-            tipo: validData.cita.tipo,
-            estado: 'PENDIENTE',
-            observaciones: validData.cita.observaciones || null,
-            creado_por: userId
-          }
-        })
-        citaCreada = true
       }
+
+      await prisma.citas.create({
+        data: {
+          paciente_id: pacienteCi,
+          doctor_id: doctorId,
+          consulta_id: consulta.id,
+          fecha_programada: new Date(validData.cita.fechaProgramada),
+          tipo: validData.cita.tipo,
+          turno_codigo: turnoAsignado,
+          estado: 'PENDIENTE',
+          observaciones: validData.cita.observaciones || null,
+          creado_por: userId
+        }
+      })
+      citaCreada = true
     }
 
     // 4. (Removido: La ficha ya no se marca como ATENDIDA automáticamente)

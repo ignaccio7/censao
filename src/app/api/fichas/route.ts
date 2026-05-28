@@ -105,11 +105,14 @@ export async function GET() {
         especialidad_id:
           ficha?.disponibilidades?.doctores_especialidades.especialidad_id ??
           '',
-        especialidad_nombre: especialidad
+        especialidad_nombre: especialidad,
+        // Cita Origen
+        cita_origen_id: (ficha as any).cita_origen?.id ?? null,
+        cita_origen_tipo: (ficha as any).cita_origen?.tipo ?? null,
+        cita_origen_tratamiento_id:
+          (ficha as any).cita_origen?.tratamiento_id ?? null
       }
     })
-
-    console.log(fichasDto)
 
     return NextResponse.json({ success: true, data: fichasDto })
   } catch (error) {
@@ -251,7 +254,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         fecha_ficha: {
           gte: inicioUTC,
           lte: finUTC
-        }
+        },
+        turno_codigo: turno,
+        orden_turno: { gt: 0 }
       }
     })
 

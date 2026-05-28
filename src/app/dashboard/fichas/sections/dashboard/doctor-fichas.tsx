@@ -1,6 +1,12 @@
 'use client'
 import { useState } from 'react'
-import { IconMonitor, IconPlus, IconTeam } from '@/app/components/icons/icons'
+import {
+  IconMonitor,
+  IconPlus,
+  IconSchedule,
+  IconSpin,
+  IconTeam
+} from '@/app/components/icons/icons'
 import Modal from '@/app/components/ui/modal/modal'
 import FormRegister from '../../components/FormRegister'
 import FormReassign from '../../components/FormReassign'
@@ -18,7 +24,7 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
   const { modal, closeModal, openModal } = useModal()
 
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
-  useFichas(refetchInterval)
+  const { generarProgramadas } = useFichas(refetchInterval)
 
   const [reassignData, setReassignData] = useState<{
     fichaId: string
@@ -88,7 +94,7 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
 
       {/* ACTIONS Y POLLING */}
       <div className='actions flex flex-wrap gap-4 justify-between items-center my-4'>
-        <div>
+        <div className='flex flex-wrap gap-2'>
           {create && (
             <button
               className='flex gap-2 items-center bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer'
@@ -97,6 +103,29 @@ export default function DashboardDoctorFichas({ fichas }: { fichas: any }) {
             >
               <IconPlus />
               Registrar nueva ficha
+            </button>
+          )}
+
+          {create && (
+            <button
+              className={`flex gap-2 items-center border-2 py-2 px-4 text-step-1 rounded-lg transition-colors duration-200 cursor-pointer ${
+                generarProgramadas.isPending
+                  ? 'border-secondary-400 bg-secondary-50 text-secondary-500 cursor-not-allowed opacity-70'
+                  : 'border-secondary-600 text-secondary-600 hover:bg-secondary-600 hover:text-white'
+              }`}
+              onClick={() => generarProgramadas.mutate()}
+              disabled={generarProgramadas.isPending}
+              data-testid='btn-generar-fichas-programadas'
+              title='Generar fichas de las citas programadas para el turno actual'
+            >
+              {generarProgramadas.isPending ? (
+                <IconSpin className='animate-spin ' />
+              ) : (
+                <IconSchedule />
+              )}
+              {generarProgramadas.isPending
+                ? 'Generando...'
+                : 'Generar fichas programadas'}
             </button>
           )}
         </div>

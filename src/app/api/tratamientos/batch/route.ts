@@ -261,6 +261,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               tratamiento_id: tratamiento.id,
               fecha_programada: new Date(item.cita.fechaProgramada),
               tipo: item.cita.tipo,
+              turno_codigo: item.cita.turnoCodigo,
               estado: 'PENDIENTE',
               observaciones: item.cita.observaciones || null,
               creado_por: userId
@@ -268,7 +269,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           })
           citasCreadas++
           console.log(
-            `[BATCH] Cita creada para ${pacienteCi} — ${item.cita.tipo} el ${item.cita.fechaProgramada}`
+            `[BATCH] Cita creada para ${pacienteCi} — ${item.cita.tipo} (${item.cita.turnoCodigo}) el ${item.cita.fechaProgramada}`
           )
         }
 
@@ -277,6 +278,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           vacuna: esquemaDosis.vacunas.nombre,
           dosis: item.dosisNumero,
           estado: estadoNuevoTratamiento
+        })
+      }
+
+      // Marcar ficha como ATENDIDA si venimos de una ficha programada
+      if (validData.fichaOrigenId) {
+        await tx.fichas.update({
+          where: { id: validData.fichaOrigenId },
+          data: {
+            estado: 'ATENDIDA',
+            actualizado_en: new Date(),
+            actualizado_por: userId
+          }
         })
       }
 

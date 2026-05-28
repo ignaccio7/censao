@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import 'react-day-picker/dist/style.css'
 import {
@@ -12,12 +12,14 @@ import Modal from '@/app/components/ui/modal/modal'
 import { useCitas } from '@/app/services/citas'
 import { useTratamientos } from '@/app/services/tratamientos'
 import CitaForm from './citaForm'
+import { useRouter } from 'next/navigation'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Cita = {
   id: string
   fecha_programada: string
   tipo: string
+  turno_codigo: string
   estado: string
   observaciones: string | null
 }
@@ -97,11 +99,10 @@ export default function TratamientoAccordion({
 }) {
   const [open, setOpen] = useState(false)
   const [modal, setModal] = useState<ModalState>({ type: 'none' })
+  const router = useRouter()
 
   // Estado del formulario — compartido entre "editar cita" y "nueva cita"
-  const [citaTipo, setCitaTipo] = useState<'VACUNA' | 'CONTROL' | 'CONSULTA'>(
-    'VACUNA'
-  )
+  const [citaTurno, setCitaTurno] = useState<'AM' | 'PM'>('AM')
   const [citaObs, setCitaObs] = useState('')
   const [citaFecha, setCitaFecha] = useState<Date | undefined>()
   // Estado del formulario — editar tratamiento
@@ -109,6 +110,11 @@ export default function TratamientoAccordion({
 
   // Lista de citas con actualización optimista (refleja cambios sin recargar)
   const [localCitas, setLocalCitas] = useState<Cita[]>(tratamiento.citas)
+
+  // Sincronizar estado local cuando los datos del servidor (prop) cambien por un router.refresh()
+  useEffect(() => {
+    setLocalCitas(tratamiento.citas)
+  }, [tratamiento.citas])
 
   const { createCita, updateCita, cancelCita } = useCitas(pacienteId)
   const { updateTratamiento } = useTratamientos()
@@ -127,7 +133,7 @@ export default function TratamientoAccordion({
   }
 
   const openEditCita = (cita: Cita) => {
-    setCitaTipo((cita.tipo as 'VACUNA' | 'CONTROL' | 'CONSULTA') ?? 'VACUNA')
+    setCitaTurno((cita.turno_codigo as 'AM' | 'PM') ?? 'AM')
     setCitaObs(cita.observaciones || '')
     const d = new Date(cita.fecha_programada)
     d.setHours(0, 0, 0, 0)
@@ -136,7 +142,7 @@ export default function TratamientoAccordion({
   }
 
   const openNewCita = () => {
-    setCitaTipo('VACUNA')
+    setCitaTurno('AM')
     setCitaObs('')
     setCitaFecha(undefined)
     setModal({ type: 'newCita' })
@@ -190,7 +196,8 @@ export default function TratamientoAccordion({
         id: modal.cita.id,
         data: {
           fechaProgramada: buildIso(citaFecha!),
-          tipo: citaTipo,
+          tipo: 'VACUNA',
+          turnoCodigo: citaTurno,
           observaciones: citaObs.trim() || null
         }
       })
@@ -200,6 +207,7 @@ export default function TratamientoAccordion({
         )
         toast.success('Cita actualizada')
         closeModal()
+        router.refresh()
       } else {
         toast.error(result.message)
       }
@@ -220,6 +228,7 @@ export default function TratamientoAccordion({
         )
         toast.success('Cita cancelada')
         closeModal()
+        router.refresh()
       } else {
         toast.error(result.message)
       }
@@ -234,15 +243,24 @@ export default function TratamientoAccordion({
       const result = await createCita.mutateAsync({
         tratamientoId: tratamiento.id,
         fechaProgramada: buildIso(citaFecha!),
-        tipo: citaTipo,
+        tipo: 'VACUNA',
+        turnoCodigo: citaTurno,
         observaciones: citaObs.trim() || undefined
       })
       if (result.success) {
-        setLocalCitas(prev => [result.data as Cita, ...prev])
+        // Optimistic update: cancelamos las citas previas que estaban pendientes,
+        // igual que lo hace el backend, y agregamos la nueva al inicio.
+        setLocalCitas(prev => [
+          result.data as Cita,
+          ...prev.map(c =>
+            c.estado === 'PENDIENTE' ? { ...c, estado: 'CANCELADA' } : c
+          )
+        ])
         toast.success(
           `Cita programada para el ${formatDateLong(result.data.fecha_programada)}`
         )
         closeModal()
+        router.refresh()
       } else {
         toast.error(result.message)
       }
@@ -353,7 +371,7 @@ export default function TratamientoAccordion({
                       {formatDate(cita.fecha_programada)}
                     </span>
                     <span className='text-sm text-gray-600 font-medium'>
-                      {cita.tipo}
+                      {cita.tipo} ({cita.turno_codigo})
                     </span>
                     <span
                       className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase border w-fit ${
@@ -477,10 +495,10 @@ export default function TratamientoAccordion({
         maxWidth='lg'
       >
         <CitaForm
-          tipo={citaTipo}
+          turno={citaTurno}
           observaciones={citaObs}
           fecha={citaFecha}
-          onTipoChange={setCitaTipo}
+          onTurnoChange={setCitaTurno}
           onObsChange={setCitaObs}
           onFechaChange={setCitaFecha}
           onCancel={closeModal}
@@ -499,10 +517,10 @@ export default function TratamientoAccordion({
         maxWidth='lg'
       >
         <CitaForm
-          tipo={citaTipo}
+          turno={citaTurno}
           observaciones={citaObs}
           fecha={citaFecha}
-          onTipoChange={setCitaTipo}
+          onTurnoChange={setCitaTurno}
           onObsChange={setCitaObs}
           onFechaChange={setCitaFecha}
           onCancel={closeModal}
@@ -531,10 +549,16 @@ export default function TratamientoAccordion({
                 </span>
               </p>
               <p>
-                Tipo: <span className='font-bold'>{modal.cita.tipo}</span>
+                Tipo:{' '}
+                <span className='font-bold'>
+                  {modal.cita.tipo} ({modal.cita.turno_codigo})
+                </span>
               </p>
               {modal.cita.observaciones && (
-                <p className='mt-1 italic'>{modal.cita.observaciones}</p>
+                <p className='mt-1'>
+                  Observaciones:{' '}
+                  <span className='italic'>{modal.cita.observaciones}</span>
+                </p>
               )}
               <p className='mt-2 text-red-500 text-xs'>
                 Esta acción no se puede deshacer.

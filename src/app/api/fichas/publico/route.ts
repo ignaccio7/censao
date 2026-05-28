@@ -21,6 +21,41 @@ export async function GET() {
   const { inicioUTC, finUTC } = getRangoUTCBoliviaHoy()
   const turno = await getTurnoActual()
 
+  if (!turno) {
+    return NextResponse.json({
+      success: true,
+      data: {
+        turno: null,
+        fecha: new Date().toLocaleDateString('es-BO', {
+          timeZone: 'America/La_Paz',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        especialidades: [],
+        fichas_en_admision: [],
+        total_en_admision: 0
+      },
+      message: 'Fuera de horario'
+    })
+  }
+
+  // Helper para ordenar fichas: Presenciales (> 0) van antes que Programadas (< 0).
+  // Dentro de cada grupo, se ordenan por su valor absoluto ascendente (orden de llegada).
+  const sortFichas = (
+    a: { orden_turno: number | null },
+    b: { orden_turno: number | null }
+  ) => {
+    const oA = a.orden_turno ?? 0
+    const oB = b.orden_turno ?? 0
+
+    if (oA > 0 && oB < 0) return -1 // Presencial primero
+    if (oA < 0 && oB > 0) return 1 // Programada después
+
+    // Ambos del mismo tipo: gana el que llegó antes (menor valor absoluto)
+    return Math.abs(oA) - Math.abs(oB)
+  }
+
   const selectDocEsp = {
     select: {
       doctores_especialidades: {
@@ -54,24 +89,26 @@ export async function GET() {
 
   try {
     // 1. Fichas ATENDIENDO: el médico está atendiendo al paciente ahora
-    const fichasAtendiendo = await prisma.fichas.findMany({
-      where: { ...baseWhere, estado: 'ATENDIENDO' },
-      orderBy: [{ orden_turno: 'asc' }, { fecha_ficha: 'asc' }],
-      select: {
-        orden_turno: true,
-        disponibilidades: selectDocEsp
-      }
-    })
+    const fichasAtendiendo = (
+      await prisma.fichas.findMany({
+        where: { ...baseWhere, estado: 'ATENDIENDO' },
+        select: {
+          orden_turno: true,
+          disponibilidades: selectDocEsp
+        }
+      })
+    ).sort(sortFichas)
 
     // 2. Fichas EN_ESPERA: pacientes en sala de espera con médico asignado
-    const fichasEnEspera = await prisma.fichas.findMany({
-      where: { ...baseWhere, estado: 'EN_ESPERA' },
-      orderBy: [{ orden_turno: 'asc' }, { fecha_ficha: 'asc' }],
-      select: {
-        orden_turno: true,
-        disponibilidades: selectDocEsp
-      }
-    })
+    const fichasEnEspera = (
+      await prisma.fichas.findMany({
+        where: { ...baseWhere, estado: 'EN_ESPERA' },
+        select: {
+          orden_turno: true,
+          disponibilidades: selectDocEsp
+        }
+      })
+    ).sort(sortFichas)
 
     const fichas = await prisma.fichas.findMany({
       where: {
@@ -100,14 +137,15 @@ export async function GET() {
     console.log('Fichas: ', fichas)
 
     // 3. Fichas ADMISION y ENFERMERIA: sin médico asignado aún (deben ir a Enfermería o están en triage)
-    const fichasEnfermeriaBase = await prisma.fichas.findMany({
-      where: {
-        ...baseWhere,
-        estado: { in: [RECORD_TYPES.ADMISION, RECORD_TYPES.ENFERMERIA] }
-      },
-      orderBy: [{ orden_turno: 'asc' }, { fecha_ficha: 'asc' }],
-      select: { orden_turno: true, estado: true }
-    })
+    const fichasEnfermeriaBase = (
+      await prisma.fichas.findMany({
+        where: {
+          ...baseWhere,
+          estado: { in: [RECORD_TYPES.ADMISION, RECORD_TYPES.ENFERMERIA] }
+        },
+        select: { orden_turno: true, estado: true }
+      })
+    ).sort(sortFichas)
 
     console.log(
       '--------------------------------------------------------------------------'
@@ -201,12 +239,10 @@ export async function GET() {
         fecha: fechaBolivia,
         especialidades,
         // Fichas sin médico asignado o en triage (presentarse a Enfermería)
-        fichas_en_admision: fichasEnfermeriaBase
-          .filter(f => (f.orden_turno ?? 0) > 0) // solo presenciales (positivos)
-          .map(f => ({
-            turno: f.orden_turno ?? 0,
-            estado: f.estado
-          })),
+        fichas_en_admision: fichasEnfermeriaBase.map(f => ({
+          turno: f.orden_turno ?? 0,
+          estado: f.estado
+        })),
         total_en_admision: fichasEnfermeriaBase.length
       }
     })

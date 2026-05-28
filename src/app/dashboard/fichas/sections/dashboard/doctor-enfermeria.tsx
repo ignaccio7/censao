@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { IconMonitor, IconTeam } from '@/app/components/icons/icons'
 import Modal from '@/app/components/ui/modal/modal'
 import FormReassign from '../../components/FormReassign'
@@ -18,17 +19,18 @@ type FichaActionData = {
   doctorId?: string
   especialidadNombre?: string
   doctorNombre?: string
+  citaOrigenTipo?: string | null
 }
 
 export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
-  // const { create } = useProfileRoutes() TODO
   const { modal, closeModal, openModal } = useModal()
+  const router = useRouter()
 
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
   const { updateFicha } = useFichas(refetchInterval)
 
-  const [reassignData, setReassignData] = useState<FichaActionData | null>(null)
   const [assignData, setAssignData] = useState<FichaActionData | null>(null)
+  const [reassignData, setReassignData] = useState<FichaActionData | null>(null)
 
   // ADMISION → ENFERMERIA: PATCH directo, sin modal
   const handleCallTriage = async (data: FichaActionData) => {
@@ -38,7 +40,22 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
     })
   }
 
-  // ENFERMERIA → EN_ESPERA: abre FormAssign
+  // Redirigir a crear tratamiento para vacunas programadas
+  const handleRegisterVaccine = (data: FichaActionData) => {
+    router.push(
+      `/dashboard/tratamientos/${data.cedula}/crear?ficha=${data.fichaId}`
+    )
+  }
+
+  // ENFERMERIA → ADMISION: el paciente no estaba cuando lo llamaron, vuelve a cola
+  const handleCancelTriage = async (data: FichaActionData) => {
+    await updateFicha.mutateAsync({
+      id: data.fichaId,
+      status: StateRecord.ADMISION
+    })
+  }
+
+  // ENFERMERIA → EN_ESPERA: abre FormAssign para asignar médico
   const handleAssignDoctor = (data: FichaActionData) => {
     setReassignData(null)
     setAssignData(data)
@@ -52,14 +69,13 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
     openModal()
   }
 
-  // Fichas activas (en cualquier estado no terminal)
+  // Fichas activas (ADMISION + ENFERMERIA + EN_ESPERA)
   const globalActive = fichas.filter(
     (f: any) =>
       f.estado === StateRecord.ADMISION ||
       f.estado === StateRecord.ENFERMERIA ||
       f.estado === StateRecord.EN_ESPERA
   )
-  // Fichas específicamente en triage (para tarjeta)
   const globalInTriage = fichas.filter(
     (f: any) => f.estado === StateRecord.ENFERMERIA
   )
@@ -146,7 +162,8 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
         waitingMode={true}
         onCallTriage={handleCallTriage}
         onAssignDoctor={handleAssignDoctor}
-        onRevertToQueue={handleRevertToQueue}
+        onRegisterVaccine={handleRegisterVaccine}
+        onCancel={handleCancelTriage}
       />
       <FichasStatusTable
         title='Pacientes atendidos'

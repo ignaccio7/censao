@@ -274,6 +274,7 @@ model citas {
   fecha_programada DateTime  @db.Timestamptz(0) // Cuándo debe volver el paciente
   tipo             String // "VACUNA", "CONTROL", "CONSULTA"
   estado           String    @default("PENDIENTE") // "PENDIENTE", "GENERADA", "ABSORBIDA", "CANCELADA", "VENCIDA"
+  turno_codigo     String    @default("AM") // "AM" | "PM" — turno en el que debe presentarse el paciente
   observaciones    String?
   creado_en        DateTime  @default(now()) @db.Timestamptz(0)
   creado_por       String?
@@ -282,12 +283,13 @@ model citas {
   eliminado_en     DateTime? @db.Timestamptz(0)
   eliminado_por    String?
 
-  ficha_generada fichas[]         @relation("CitaToFicha")
-  pacientes      pacientes        @relation(fields: [paciente_id], references: [paciente_id])
-  doctores       doctores         @relation(fields: [doctor_id], references: [doctor_id])
-  tratamientos   tratamientos?    @relation(fields: [tratamiento_id], references: [id])
-  consultas      consultas?       @relation(fields: [consulta_id], references: [id])
-  notificaciones notificaciones[]
+  ficha_generada  fichas[]         @relation("CitaToFicha")
+  pacientes       pacientes        @relation(fields: [paciente_id], references: [paciente_id])
+  doctores        doctores         @relation(fields: [doctor_id], references: [doctor_id])
+  tratamientos    tratamientos?    @relation(fields: [tratamiento_id], references: [id])
+  consultas       consultas?       @relation(fields: [consulta_id], references: [id])
+  turnos_catalogo turnos_catalogo  @relation(fields: [turno_codigo], references: [codigo], onDelete: NoAction, onUpdate: NoAction)
+  notificaciones  notificaciones[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -303,6 +305,7 @@ model turnos_catalogo {
   eliminado_en     DateTime?          @db.Timestamptz(0)
   eliminado_por    String?
   disponibilidades disponibilidades[]
+  citas            citas[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

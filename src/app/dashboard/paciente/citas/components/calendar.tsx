@@ -30,7 +30,7 @@ export default function Calendar({ events = [] }: { events?: any[] }) {
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridDay,timeGridWeek'
+          right: 'dayGridMonth'
         }}
         height='auto'
         locale={esLocale}
@@ -65,9 +65,19 @@ export default function Calendar({ events = [] }: { events?: any[] }) {
               </span>
               <span className='text-gray-900'>
                 {selectedEvent.start?.toLocaleString('es-BO', {
-                  dateStyle: 'long',
-                  timeStyle: 'short'
+                  dateStyle: 'long'
                 })}
+              </span>
+            </div>
+
+            <div className='flex justify-between items-center border-b pb-2'>
+              <span className='font-bold text-gray-500 uppercase text-xs tracking-wider'>
+                Turno
+              </span>
+              <span className='text-gray-900 font-bold'>
+                {selectedEvent.turno_codigo === 'PM'
+                  ? 'Tarde (PM)'
+                  : 'Mañana (AM)'}
               </span>
             </div>
 

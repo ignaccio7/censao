@@ -103,8 +103,14 @@ export default function DashboardDoctorGeneral({ fichas }: { fichas: any }) {
       ) {
         return 1
       }
-      // Mantener el orden por orden_turno para el resto
-      return (a.orden_turno || 0) - (b.orden_turno || 0)
+      // Mantener el orden por orden_turno para el resto: presenciales (>0) primero, programadas (<0) después
+      const oA = a.orden_turno || 0
+      const oB = b.orden_turno || 0
+
+      if (oA > 0 && oB < 0) return -1
+      if (oA < 0 && oB > 0) return 1
+
+      return Math.abs(oA) - Math.abs(oB)
     })
 
   const contenidoTabla: any[] = filteredFichas.map(

@@ -43,3 +43,13 @@ https://nextjs.org/learn/dashboard-app/mutating-data
 TODO: ajustar el problema de citas programadas en estado enfermeria ahi debe terminar la vacuna porque se creo la cita para eso.
 en consultas verificar que aparezca directamente donde el doctor y que sea al final tanto en el doctor como pantalla publica
 notificaciones
+
+arreglar
+Un doctor solo atiende una especialidad por turno. La búsqueda de disponibilidad_id se filtra por doctor_id + turno_codigo — siempre habrá como máximo una coincidencia. osea validar que un doctor no pueda estar atendiendo 2 especialidades en el mismo turno
+
+verificar
+aqui asi es la cosa digamos el doctorx tiene especialidad doctorgeneral y odontologia en el turno am podria atender doctorgeneral y en elturno pm atender odontologia pero no podria atender 2 especialidades en el mismo turno por lo que la disponibilidad registrada deberia arrojar solo el turno especifico que se esta registrando
+
+arreglar esta vista para que solo liste los doctores en ese turno
+http://localhost:3000/dashboard/estado-doctores
+no asignar a otros que no sean de ese turno ya que deberia ser dinamico por turno eso

@@ -195,6 +195,12 @@ export default function AtencionPublicaPage() {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Helper para formatear números de ficha (c = Cita Programada)                    */
+/* -------------------------------------------------------------------------- */
+const formatTurno = (num: number) =>
+  num < 0 ? `${Math.abs(num)} (c)` : num.toString()
+
+/* -------------------------------------------------------------------------- */
 /*  Fila de especialidad con cola de fichas                                    */
 /* -------------------------------------------------------------------------- */
 
@@ -267,7 +273,7 @@ function EspecialidadRow({
                 Atendiendo
               </p>
               <span className='text-step-5 font-bold block leading-none'>
-                # {atendiendo}
+                # {formatTurno(atendiendo)}
               </span>
             </div>
           )}
@@ -279,7 +285,7 @@ function EspecialidadRow({
                 Siguiente
               </p>
               <span className='text-step-5 font-bold block leading-none'>
-                # {siguiente}
+                # {formatTurno(siguiente)}
               </span>
             </div>
           )}
@@ -303,7 +309,7 @@ function EspecialidadRow({
                       1}
                   </p>
                   <span className='text-step-2 font-bold text-gray-600 block leading-none'>
-                    {orden}
+                    {formatTurno(orden)}
                   </span>
                 </div>
               ))}
@@ -367,30 +373,38 @@ function EnfermeriaRow({
         <div className='flex flex-wrap items-start gap-3'>
           {fichas.length > 0 ? (
             <div className='flex items-center gap-2 flex-wrap'>
-              {fichas.map((ficha, i) => {
-                const enTriage = ficha.estado === 'ENFERMERIA'
-                return (
-                  <div
-                    key={`enf-${ficha.turno}-${i}`}
-                    className={`border rounded-xl px-4 py-3 min-w-[80px] text-center transition-all duration-300 ${
-                      enTriage
-                        ? 'bg-emerald-600 border-emerald-700 text-white shadow-md shadow-emerald-200 scale-105'
-                        : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
-                    }`}
-                  >
-                    <p
-                      className={`text-[10px] uppercase tracking-wider font-bold leading-none mb-1 ${
-                        enTriage ? 'text-emerald-100' : 'text-gray-400'
+              {[...fichas]
+                .sort((a, b) => {
+                  if (a.estado === 'ENFERMERIA' && b.estado !== 'ENFERMERIA')
+                    return -1
+                  if (a.estado !== 'ENFERMERIA' && b.estado === 'ENFERMERIA')
+                    return 1
+                  return 0
+                })
+                .map((ficha, i) => {
+                  const enTriage = ficha.estado === 'ENFERMERIA'
+                  return (
+                    <div
+                      key={`enf-${ficha.turno}-${i}`}
+                      className={`border rounded-xl px-4 py-3 min-w-[80px] text-center transition-all duration-300 ${
+                        enTriage
+                          ? 'bg-emerald-600 border-emerald-700 text-white shadow-md shadow-emerald-200 scale-105'
+                          : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
                       }`}
                     >
-                      {enTriage ? 'ENFERMERIA' : 'ESPERANDO'}
-                    </p>
-                    <span className='text-step-4 font-bold block leading-none'>
-                      {ficha.turno}
-                    </span>
-                  </div>
-                )
-              })}
+                      <p
+                        className={`text-[10px] uppercase tracking-wider font-bold leading-none mb-1 ${
+                          enTriage ? 'text-emerald-100' : 'text-gray-400'
+                        }`}
+                      >
+                        {enTriage ? 'ENFERMERIA' : 'ESPERANDO'}
+                      </p>
+                      <span className='text-step-4 font-bold block leading-none'>
+                        {formatTurno(ficha.turno)}
+                      </span>
+                    </div>
+                  )
+                })}
             </div>
           ) : (
             <div className='bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 text-center'>

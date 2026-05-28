@@ -66,6 +66,7 @@ export default async function Page() {
         tipo: cita.tipo,
         estado: cita.estado,
         observaciones: cita.observaciones,
+        turno_codigo: cita.turno_codigo,
         doctor: cita.doctores?.personas
           ? `${cita.doctores.personas.nombres} ${cita.doctores.personas.paterno}`
           : 'Doctor no asignado'

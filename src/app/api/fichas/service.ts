@@ -160,6 +160,13 @@ export class FichasService {
             }
           }
         }
+      },
+      cita_origen: {
+        select: {
+          id: true,
+          tipo: true,
+          tratamiento_id: true
+        }
       }
     }
   }

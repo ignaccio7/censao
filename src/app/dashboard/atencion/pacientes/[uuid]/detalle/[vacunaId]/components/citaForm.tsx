@@ -1,18 +1,11 @@
 import { DayPicker } from 'react-day-picker'
 import { es } from 'react-day-picker/locale'
 
-const TIPOS_CITA = [
-  { value: 'VACUNA', label: 'Vacuna (próxima dosis)' },
-  { value: 'CONTROL', label: 'Control médico' },
-  { value: 'CONSULTA', label: 'Consulta general' }
-] as const
-
-// ── Subcomponente: formulario de cita (reutilizado en editar y nueva cita) ────
 export default function CitaForm({
-  tipo,
+  turno,
   observaciones,
   fecha,
-  onTipoChange,
+  onTurnoChange,
   onObsChange,
   onFechaChange,
   onCancel,
@@ -22,10 +15,10 @@ export default function CitaForm({
   submitColor = 'bg-primary-600 hover:bg-primary-700',
   today
 }: {
-  tipo: 'VACUNA' | 'CONTROL' | 'CONSULTA'
+  turno: 'AM' | 'PM'
   observaciones: string
   fecha: Date | undefined
-  onTipoChange: (v: 'VACUNA' | 'CONTROL' | 'CONSULTA') => void
+  onTurnoChange: (v: 'AM' | 'PM') => void
   onObsChange: (v: string) => void
   onFechaChange: (v: Date | undefined) => void
   onCancel: () => void
@@ -37,24 +30,23 @@ export default function CitaForm({
 }) {
   return (
     <div className='space-y-4'>
-      <div>
-        <label
-          className='block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide'
-          htmlFor='tipo-de-cita'
-        >
-          Tipo de cita
-        </label>
-        <select
-          value={tipo}
-          onChange={e => onTipoChange(e.target.value as any)}
-          className='w-full p-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-primary-500'
-        >
-          {TIPOS_CITA.map(t => (
-            <option key={t.value} value={t.value}>
-              {t.label}
-            </option>
-          ))}
-        </select>
+      <div className='flex gap-2 w-full'>
+        <div className='flex-1'>
+          <label
+            className='block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide'
+            htmlFor='turno-de-cita'
+          >
+            Turno
+          </label>
+          <select
+            value={turno}
+            onChange={e => onTurnoChange(e.target.value as 'AM' | 'PM')}
+            className='w-full p-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-primary-500'
+          >
+            <option value='AM'>Mañana (AM)</option>
+            <option value='PM'>Tarde (PM)</option>
+          </select>
+        </div>
       </div>
       <div>
         <label

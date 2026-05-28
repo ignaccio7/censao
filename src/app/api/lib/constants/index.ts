@@ -40,3 +40,21 @@ export const TREATMENT_STATUS = {
   COMPLETADA: 'COMPLETADA',
   INCOMPLETA: 'INCOMPLETA'
 } as const
+
+export const StateCita = {
+  PENDIENTE: 'PENDIENTE',
+  GENERADA: 'GENERADA',
+  ABSORBIDA: 'ABSORBIDA',
+  CANCELADA: 'CANCELADA',
+  VENCIDA: 'VENCIDA'
+} as const
+
+export type StateCitaType = keyof typeof StateCita
+
+export const TipoCita = {
+  VACUNA: 'VACUNA',
+  CONTROL: 'CONTROL',
+  CONSULTA: 'CONSULTA'
+} as const
+
+export type TipoCitaType = keyof typeof TipoCita

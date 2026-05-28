@@ -352,6 +352,15 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
         modulo: 'fichas'
       },
       {
+        nombre: 'API Generar Fichas Programadas',
+        tipo: 'backend',
+        ruta: '/api/fichas/generar-programadas',
+        metodos: ['POST'],
+        descripcion:
+          'Convierte citas pendientes del turno actual en fichas reales del día',
+        modulo: 'fichas'
+      },
+      {
         nombre: 'API Reasignar Doctor',
         tipo: 'backend',
         ruta: '/api/fichas/reasignar-doctor',

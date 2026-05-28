@@ -9,12 +9,14 @@ export type CitaCreateData = {
   consultaId?: string
   fechaProgramada: string
   tipo: 'VACUNA' | 'CONTROL' | 'CONSULTA'
+  turnoCodigo: 'AM' | 'PM'
   observaciones?: string
 }
 
 export type CitaUpdateData = {
   fechaProgramada?: string
   tipo?: 'VACUNA' | 'CONTROL' | 'CONSULTA'
+  turnoCodigo?: 'AM' | 'PM'
   observaciones?: string | null
 }
 

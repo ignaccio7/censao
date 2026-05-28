@@ -74,6 +74,7 @@ export default function AccionesConsulta({
       const message =
         error?.response?.data?.message || 'Error al programar cita'
       toast.error(message)
+      setModalCita(false)
     }
   })
 

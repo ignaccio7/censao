@@ -2,11 +2,19 @@ import prisma from '@/lib/prisma/prisma'
 import CrearTratamientoForm from './crear-tratamiento-form'
 
 type Params = Promise<{ fichaId: string }>
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
 
-export default async function Page({ params }: { params: Params }) {
+export default async function Page({
+  params,
+  searchParams
+}: {
+  params: Params
+  searchParams: SearchParams
+}) {
   // fichaId aquí en realidad es el paciente_id (CI)
   // Mantenemos el nombre del param dinámico por compatibilidad de rutas TODO: urgente cambiar
   const { fichaId: pacienteId } = await params
+  const { ficha: fichaOrigenId } = await searchParams
 
   // Server Component: fetch vacunas con esquema_dosis directamente con Prisma
   const vacunas = await prisma.vacunas.findMany({
@@ -63,7 +71,7 @@ export default async function Page({ params }: { params: Params }) {
   }
 
   const pacienteNombre =
-    `${paciente.personas.nombres} ${paciente.personas.paterno} ${paciente.personas.materno}`.trim()
+    `${paciente.personas.nombres} ${paciente.personas.paterno || ''} ${paciente.personas.materno || ''}`.trim()
 
   return (
     <main className='font-secondary'>
@@ -72,6 +80,7 @@ export default async function Page({ params }: { params: Params }) {
         pacienteNombre={pacienteNombre}
         pacienteCi={paciente.personas.ci}
         vacunas={vacunas}
+        fichaOrigenId={typeof fichaOrigenId === 'string' ? fichaOrigenId : null}
       />
     </main>
   )

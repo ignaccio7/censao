@@ -13,6 +13,8 @@ const createCitaSchema = z
       .string()
       .refine(v => !isNaN(Date.parse(v)), { message: 'Fecha inválida' }),
     tipo: z.enum(['VACUNA', 'CONTROL', 'CONSULTA']),
+    // El turno es opcional en Zod porque para Consultas se infiere automáticamente
+    turnoCodigo: z.enum(['AM', 'PM']).optional(),
     observaciones: z.string().max(500).optional()
   })
   .refine(
@@ -27,6 +29,8 @@ const createCitaSchema = z
  * Crea una nueva cita vinculada a un tratamiento existente.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  console.log('validando alog')
+
   const validation = await AuthService.validateApiPermission(
     '/api/citas',
     'POST'
@@ -42,6 +46,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body = await request.json()
+    console.log(body)
+
     const parsed = createCitaSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
@@ -54,8 +60,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    const { tratamientoId, consultaId, fechaProgramada, tipo, observaciones } =
-      parsed.data
+    let {
+      tratamientoId,
+      consultaId,
+      fechaProgramada,
+      tipo,
+      turnoCodigo,
+      observaciones
+    } = parsed.data
+
+    console.log(parsed.data)
 
     // Validar fecha
     const fecha = new Date(fechaProgramada)
@@ -96,7 +110,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         where: { id: consultaId!, eliminado_en: null },
         select: {
           ficha_origen: {
-            select: { paciente_id: true }
+            select: {
+              paciente_id: true,
+              disponibilidades: {
+                select: { turno_codigo: true }
+              }
+            }
           }
         }
       })
@@ -107,6 +126,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         )
       }
       pacienteId = consulta.ficha_origen.paciente_id
+      // Inferir turnoCodigo de la ficha origen
+      if (
+        !turnoCodigo &&
+        consulta.ficha_origen.disponibilidades?.turno_codigo
+      ) {
+        turnoCodigo = consulta.ficha_origen.disponibilidades.turno_codigo as
+          | 'AM'
+          | 'PM'
+      }
+    }
+
+    if (!turnoCodigo) {
+      return NextResponse.json(
+        { success: false, message: 'El turno (AM/PM) es requerido' },
+        { status: 400 }
+      )
     }
 
     if (!pacienteId) {
@@ -220,6 +255,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         consulta_id: consultaId || null,
         fecha_programada: fecha,
         tipo,
+        turno_codigo: turnoCodigo,
         estado: 'PENDIENTE',
         observaciones: observaciones || null,
         creado_por: userId

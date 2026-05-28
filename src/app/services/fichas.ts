@@ -1,6 +1,7 @@
 // oxlint-disable prefer-default-export
 // oxlint-disable func-style
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import apiClient from './client'
 import { FichaUpdateFormData } from '../dashboard/fichas/schemas'
 
@@ -59,6 +60,30 @@ export function useFichas(refetchInterval: number | false = false) {
     }
   })
 
+  // Generar fichas programadas del turno actual desde citas PENDIENTE
+  const generarProgramadas = useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.post('fichas/generar-programadas')
+      return response.data
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['fichas'] })
+      const { generadas = 0, omitidas = 0 } = data
+      if (generadas === 0) {
+        toast.info('No había citas pendientes para generar en este turno.')
+      } else {
+        toast.success(
+          `✅ ${generadas} ficha(s) programada(s) generadas correctamente.${omitidas > 0 ? ` ${omitidas} omitidas.` : ''}`
+        )
+      }
+    },
+    onError: (error: any) => {
+      const msg =
+        error?.response?.data?.message ?? 'Error al generar fichas programadas'
+      toast.error(`❌ ${msg}`)
+    }
+  })
+
   return {
     // ...fichasQuery, // expone data, isLoading, error, etc
     fichas: fichasQuery.data || [],
@@ -70,6 +95,18 @@ export function useFichas(refetchInterval: number | false = false) {
     refetch: fichasQuery.refetch,
     // Mutations
     createFicha,
-    updateFicha
+    updateFicha,
+    generarProgramadas
   }
+}
+
+export function useFichaDetalle(fichaId: string | null) {
+  return useQuery({
+    queryKey: ['ficha-detalle', fichaId],
+    queryFn: async () => {
+      const res = await apiClient.get(`/fichas/${fichaId}`)
+      return res.data.data
+    },
+    enabled: !!fichaId
+  })
 }

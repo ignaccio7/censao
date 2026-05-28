@@ -92,6 +92,7 @@ export default async function Tratamiento({
   type EventoCita = {
     tipo: 'cita'
     fecha: string
+    turnoCodigo: string | null
     estado: string
     observaciones: string
     tieneFichaGenerada: boolean
@@ -170,6 +171,7 @@ export default async function Tratamiento({
             eventosCiclo.push({
               tipo: 'cita',
               fecha: formatoBo(c.fecha_programada),
+              turnoCodigo: c.turno_codigo,
               estado: c.estado,
               observaciones:
                 c.observaciones ?? 'Cita de seguimiento o refuerzo programada',
@@ -243,7 +245,7 @@ export default async function Tratamiento({
                 } else if (esCita) {
                   const c = evento as EventoCita
                   titulo = 'Cita programada'
-                  subtitulo = etiquetaEstadoCita[c.estado] ?? c.estado
+                  subtitulo = `${etiquetaEstadoCita[c.estado] ?? c.estado}${c.turnoCodigo ? ` (${c.turnoCodigo})` : ''}`
                   descripcion = c.observaciones
                 }
 
