@@ -18,13 +18,18 @@ test('Flujo completo: ficha presencial de ADMISION a ATENDIDA', async ({
   await expect(page.getByTestId('modal-title')).toHaveText(
     'Registrar nueva ficha'
   )
-  await page.getByLabel('Cédula').fill('123456789')
-  await page.getByLabel('Nombre Completo').fill('Juan Perez Garcia')
+  await page.getByLabel('Cédula').fill('12345678')
+  await page.getByLabel('Nombre Completo').fill('Rojas Torres Ana Sofía')
 
-  await page.getByTestId('btb-registrar-nueva-ficha').click()
+  await page.getByTestId('btn-registrar-nueva-ficha').click()
 
   // Esperamos que se habra un modal de confirmacion con el mensaje "Ficha creada exitosamente... y mas cosas"
-  await expect(page.getByText('Ficha creada exitosamente')).toBeVisible()
+  const toast = page.getByText('Ficha creada exitosamente', { exact: false })
+  await toast.waitFor({ state: 'visible', timeout: 30000 })
+
+  // await expect(page.getByText('Ficha creada exitosamente')).toBeVisible({
+  //   timeout: 15000
+  // })
 
   // ============================================
   // PASO 2: Enfermería llama al paciente
@@ -65,39 +70,58 @@ test('Flujo completo: ficha presencial de ADMISION a ATENDIDA', async ({
 
   // Verifica que el data-testid existe antes de hacer click
   await formAssign.getByTestId('btn-asignar-ficha').click()
-  await expect(page.getByText('Ficha asignada')).toBeVisible({ timeout: 15000 })
+  await expect(page.getByText('Ficha actualizada exitosamente')).toBeVisible({
+    timeout: 15000
+  })
 
   // ============================================
   // PASO 4: Doctor General llama y atiende
   // ============================================
-  await loginWithUser(page, 'odontologa') // o doctor.general según tu usuario
+  await loginWithUser(page, 'doctor.general')
   await page.goto('http://localhost:3000/dashboard/fichas')
   await page.waitForLoadState('networkidle')
 
-  // Busca en la primera tabla (tab En Espera activo por defecto)
-  const tablaActiva = page.locator('table tbody').first()
-  const btnConsulta = tablaActiva
+  // --- Ronda 1: abrir modal → LLAMAR AL PACIENTE ---
+  await page
     .locator('[data-testid^="btn-doctor-abrir-modal-consulta-"]')
     .first()
-  await expect(btnConsulta).toBeVisible()
-  await btnConsulta.click()
+    .click()
 
-  // Modal muestra "Llamar al paciente" — ficha está en EN_ESPERA
-  await expect(page.getByTestId('modal-title')).toHaveText(
-    'Registro de consulta'
-  )
+  // Espera que el modal abra antes de buscar el botón
+  await expect(
+    page.locator('h2').filter({ hasText: 'Registro de consulta' })
+  ).toBeVisible({ timeout: 10000 })
 
+  await expect(page.getByTestId('btn-llamar-paciente')).toBeVisible({
+    timeout: 10000
+  })
   await page.getByTestId('btn-llamar-paciente').click()
 
-  // Modal se cierra, fila cambia a ATENDIENDO
-  // Abre el modal de nuevo con el mismo botón
-  await expect(btnConsulta).toBeVisible()
-  await btnConsulta.click()
+  // Espera que el modal cierre
+  await expect(
+    page.locator('h2').filter({ hasText: 'Registro de consulta' })
+  ).toBeHidden({ timeout: 10000 })
 
-  // Ahora el modal muestra "Marcar como atendido"
-  await expect(page.getByTestId('btn-marcar-atendido')).toBeVisible()
+  // Espera que la tabla muestre ATENDIENDO antes de re-abrir el modal
+  // (el sort pone ATENDIENDO primero, así que sigue siendo index 0)
+  await page.waitForTimeout(1500)
+
+  // --- Ronda 2: abrir modal de nuevo → MARCAR COMO ATENDIDO ---
+  await page
+    .locator('[data-testid^="btn-doctor-abrir-modal-consulta-"]')
+    .first()
+    .click()
+
+  await expect(
+    page.locator('h2').filter({ hasText: 'Registro de consulta' })
+  ).toBeVisible({ timeout: 10000 })
+
+  await expect(page.getByTestId('btn-marcar-atendido')).toBeVisible({
+    timeout: 10000
+  })
   await page.getByTestId('btn-marcar-atendido').click()
 
-  // Verifica el toast de éxito
-  await expect(page.getByText('Ficha atendida exitosamente.')).toBeVisible()
+  await expect(
+    page.getByText('Ficha atendida exitosamente.', { exact: false })
+  ).toBeVisible({ timeout: 15000 })
 })

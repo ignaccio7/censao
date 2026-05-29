@@ -211,8 +211,11 @@ export default function TratamientoAccordion({
       } else {
         toast.error(result.message)
       }
-    } catch {
-      toast.error('Error al actualizar la cita')
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message || 'Error al actualizar la cita'
+      toast.error(msg)
+      closeModal()
     }
   }
 
@@ -232,8 +235,9 @@ export default function TratamientoAccordion({
       } else {
         toast.error(result.message)
       }
-    } catch {
-      toast.error('Error al cancelar la cita')
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || 'Error al cancelar la cita'
+      toast.error(msg)
     }
   }
 
@@ -264,12 +268,11 @@ export default function TratamientoAccordion({
       } else {
         toast.error(result.message)
       }
-    } catch {
-      toast.error('Error al programar la cita')
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || 'Error al programar la cita'
+      toast.error(msg)
     }
   }
-
-  console.log(tratamiento)
 
   return (
     <>

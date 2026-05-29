@@ -48,7 +48,8 @@ const Icons: Record<string, React.FC<{ className?: string; size?: string }>> = {
   system: IconSystem,
   email: IconEmail,
   notification: IconNotification,
-  clock: IconClock
+  clock: IconClock,
+  sistema: IconMonitor
 }
 
 export default Icons

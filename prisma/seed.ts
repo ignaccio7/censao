@@ -225,6 +225,32 @@ const USUARIO_PACIENTE_1: UsuarioCompleto = {
         metodos: ['GET'],
         descripcion: 'API para ver citas del paciente',
         modulo: 'mi_salud'
+      },
+      // NOTIFICACIONES
+      {
+        nombre: 'Mis Notificaciones',
+        tipo: 'frontend',
+        ruta: '/dashboard/notificaciones',
+        metodos: ['read'],
+        icono: 'notification',
+        descripcion: 'Ver mis notificaciones del sistema',
+        modulo: 'mi_salud'
+      },
+      {
+        nombre: 'API Mis Notificaciones',
+        tipo: 'backend',
+        ruta: '/api/notificaciones',
+        metodos: ['GET', 'PATCH'],
+        descripcion: 'API para ver y marcar notificaciones como leídas',
+        modulo: 'mi_salud'
+      },
+      {
+        nombre: 'API Ficha Hoy',
+        tipo: 'backend',
+        ruta: '/api/paciente/ficha-hoy',
+        metodos: ['GET'],
+        descripcion: 'API para consultar la ficha activa del día del paciente',
+        modulo: 'mi_salud'
       }
     ]
   }
@@ -595,6 +621,24 @@ const USUARIO_ENFERMERIA: UsuarioCompleto = {
         metodos: ['PATCH', 'POST', 'DELETE'],
         descripcion: 'API para administrar citas',
         modulo: 'administracion'
+      },
+      // CITAS DEL DIA
+      {
+        nombre: 'Citas',
+        tipo: 'frontend',
+        ruta: '/dashboard/atencion/citas',
+        metodos: ['read'],
+        icono: 'calendar',
+        descripcion: 'Ver citas de vacuna programadas para el día',
+        modulo: 'atencion'
+      },
+      {
+        nombre: 'API Citas Atencion',
+        tipo: 'backend',
+        ruta: '/api/atencion/citas',
+        metodos: ['GET'],
+        descripcion: 'API para ver citas programadas del día',
+        modulo: 'atencion'
       }
     ]
   }
@@ -840,6 +884,14 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         metodos: ['GET', 'PATCH', 'DELETE'],
         descripcion: 'API para detalle de consulta específico',
         modulo: 'consultas'
+      },
+      {
+        nombre: 'API Citas Atencion',
+        tipo: 'backend',
+        ruta: '/api/atencion/citas',
+        metodos: ['GET'],
+        descripcion: 'API para ver las citas del doctor para el día',
+        modulo: 'atencion'
       }
     ]
   }
@@ -1271,6 +1323,8 @@ async function limpiarBaseDatos() {
     // Primero eliminar tablas con más dependencias (hijos)
     await prisma.auditoria_log.deleteMany()
     await prisma.notificaciones.deleteMany()
+    await prisma.citas.deleteMany()
+    await prisma.consultas.deleteMany()
     await prisma.tratamientos.deleteMany()
     await prisma.fichas.deleteMany()
     await prisma.disponibilidades.deleteMany()

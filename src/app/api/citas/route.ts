@@ -74,14 +74,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Validar fecha
     const fecha = new Date(fechaProgramada)
     const hoy = new Date()
-    hoy.setHours(0, 0, 0, 0)
-    if (fecha < hoy) {
+
+    // NORMALIZAMOS AMBOS A "SOLO FECHA" EN UTC
+    // Esto ignora las horas y las zonas horarias del servidor
+    const soloFechaProgramada = new Date(fecha.toISOString().split('T')[0])
+    const soloFechaHoyBolivia = new Date(
+      new Date(hoy.getTime() - 4 * 60 * 60 * 1000).toISOString().split('T')[0]
+    )
+
+    if (soloFechaProgramada < soloFechaHoyBolivia) {
       return NextResponse.json(
         { success: false, message: 'No puedes agendar citas en el pasado' },
         { status: 400 }
       )
     }
-    const dia = fecha.getDay()
+
+    // Usamos getUTCDay() porque soloFechaProgramada es estrictamente UTC (T00:00:00.000Z)
+    const dia = soloFechaProgramada.getUTCDay()
     if (dia === 0 || dia === 6) {
       return NextResponse.json(
         {

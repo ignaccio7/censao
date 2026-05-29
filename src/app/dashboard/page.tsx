@@ -65,18 +65,27 @@ import useProfileRoutes from '@/hooks/useProfileRoutes'
 //   }
 // ]
 
+import useUser from '@/hooks/useUser'
+import { Roles } from '@/app/api/lib/constants'
+import FichaActivaBanner from './components/FichaActivaBanner'
+
 export default function Dashboard() {
   // const session = await auth()
   // const { data: session } = useSession()
   const { routes } = useProfileRoutes()
   const permissions = getPermissions(routes)
+  const { user } = useUser()
 
   console.log(permissions)
 
   return (
     <div className='inicio font-secondary'>
-      <Title>Bienvenid@ Juan Perez</Title>
-      <p className=''>Tienes acceso a los siguientes modulos</p>
+      <Title>Bienvenid@ {user?.name || 'Usuario'}</Title>
+
+      {/* Banner de ficha activa (solo para PACIENTE) */}
+      {user?.role === Roles.PACIENTE && <FichaActivaBanner />}
+
+      <p className='mt-4'>Tienes acceso a los siguientes módulos:</p>
       {permissions.map((permission: any) => (
         <div className='content-submenu' key={permission.label}>
           <h2 className='font-semibold text-step-0 my-2'>{permission.label}</h2>

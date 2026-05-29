@@ -38,6 +38,9 @@ export async function PATCH(
 
   try {
     const body = await request.json()
+    console.log(body)
+    console.log(uuid)
+
     const parsed = updateCitaSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
@@ -53,12 +56,15 @@ export async function PATCH(
     const cita = await prisma.citas.findUnique({
       where: { id: uuid, eliminado_en: null }
     })
+    console.log('1')
+
     if (!cita) {
       return NextResponse.json(
         { success: false, message: 'Cita no encontrada' },
         { status: 404 }
       )
     }
+    console.log('2')
     if (cita.estado === 'CANCELADA') {
       return NextResponse.json(
         { success: false, message: 'No se puede modificar una cita cancelada' },
@@ -66,17 +72,30 @@ export async function PATCH(
       )
     }
 
+    console.log('3')
     // Validar que la nueva fecha no sea en el pasado ni fin de semana
     if (parsed.data.fechaProgramada) {
       const nuevaFecha = new Date(parsed.data.fechaProgramada)
       const hoy = new Date()
-      if (nuevaFecha < hoy) {
+
+      // NORMALIZAMOS AMBOS A "SOLO FECHA" EN UTC
+      // Esto ignora las horas y las zonas horarias del servidor
+      const soloFechaProgramada = new Date(
+        nuevaFecha.toISOString().split('T')[0]
+      )
+      const soloFechaHoyBolivia = new Date(
+        new Date(hoy.getTime() - 4 * 60 * 60 * 1000).toISOString().split('T')[0]
+      )
+
+      if (soloFechaProgramada < soloFechaHoyBolivia) {
         return NextResponse.json(
           { success: false, message: 'No puedes agendar citas en el pasado' },
           { status: 400 }
         )
       }
-      const dia = nuevaFecha.getDay()
+
+      // Usamos getUTCDay() porque soloFechaProgramada es estrictamente UTC (T00:00:00.000Z)
+      const dia = soloFechaProgramada.getUTCDay()
       if (dia === 0 || dia === 6) {
         return NextResponse.json(
           {
@@ -88,6 +107,7 @@ export async function PATCH(
       }
     }
 
+    console.log('4')
     const updated = await prisma.citas.update({
       where: { id: uuid },
       data: {

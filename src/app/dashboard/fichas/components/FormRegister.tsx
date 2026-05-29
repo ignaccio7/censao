@@ -33,6 +33,7 @@ export default function FormRegister() {
         // Notificación de éxito
         toast.success(result.message)
         reset() // Limpiar formulario
+        closeModal()
       } else {
         toast.error(result.message)
       }
@@ -47,9 +48,11 @@ export default function FormRegister() {
       } else {
         toast.error(error.response?.data?.message || 'Error al crear la ficha')
       }
-    } finally {
       closeModal()
     }
+    // finally {
+    //   closeModal()
+    // }
   }
 
   return (
@@ -121,7 +124,7 @@ export default function FormRegister() {
           type='submit'
           disabled={createFicha.isPending}
           className='w-full bg-primary-700 text-white py-2 px-4 text-step-1 rounded-lg hover:bg-primary-800 transition-colors duration-200 cursor-pointer flex gap-2 items-center justify-center col-span-1 md:col-span-2 disabled:opacity-50 disabled:cursor-not-allowed'
-          data-testid='btb-registrar-nueva-ficha'
+          data-testid='btn-registrar-nueva-ficha'
         >
           {createFicha.isPending ? (
             <>

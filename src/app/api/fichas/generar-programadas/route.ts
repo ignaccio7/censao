@@ -197,7 +197,7 @@ export async function POST(): Promise<NextResponse> {
             cita_id: cita.id,
             titulo: `Tu ficha ha sido generada — Turno ${turnoLabel}`,
             mensaje: `N° ficha: #${nroFicha}. Hay aproximadamente ${nroPacientesDelante} paciente(s) antes que tú. Ve la pantalla de atención en: /atencion`,
-            medio: 'SISTEMA',
+            medio: 'sistema',
             leido: false,
             fecha_envio: new Date(),
             creado_por: userId

@@ -4,9 +4,13 @@ import useSidebar from '@/hooks/useSidebar'
 import Logo from '../logo'
 import DropdownMenu from './dropdownMenu'
 import Notifications from './notifications'
+import useUser from '@/hooks/useUser'
+import { Roles } from '@/app/api/lib/constants'
 
 export default function NavbarUser() {
   const { sidebarMenu, openSidebar, closeSidebar } = useSidebar()
+  const { user } = useUser()
+  const role = user.role || ''
 
   const handleSidebar = () => {
     if (sidebarMenu) {
@@ -25,7 +29,7 @@ export default function NavbarUser() {
           </Logo>
         </button>
         <div className='user secondary-font relative flex flex-row gap-1'>
-          <Notifications />
+          {role === Roles.PACIENTE && <Notifications />}
           <DropdownMenu />
         </div>
       </nav>

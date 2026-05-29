@@ -1,56 +1,77 @@
+'use client'
 // oxlint-disable sort-keys
+import { useEffect } from 'react'
 import Title from '@/app/components/ui/title'
 import CardNotification from './components/cardNotification'
+import { useNotificaciones } from '@/app/services/notificaciones'
+import { IconNotification } from '@/app/components/icons/icons'
 
-export interface NotificacionProps {
-  // id: string
-  // paciente_id: string
-  titulo: string
-  mensaje: string
-  fecha_envio: string
-  leido: boolean
-  medio: string
-  // tratamiento_id: string
+function formatFechaEnvio(isoString: string): string {
+  return new Date(isoString).toLocaleDateString('es-BO', {
+    timeZone: 'America/La_Paz',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  })
 }
 
-const notifications = [
-  {
-    titulo: 'Cita para seguimiento Covid 19',
-    mensaje:
-      'Tu cita para el seguimiento del tratamiento Covid 19 esta programada para el dia 15 de septiembre de 2025',
-    fecha_envio: '15 de septiembre de 2026',
-    leido: false,
-    medio: 'system'
-  },
-  {
-    titulo: 'Cita para seguimiento Covid 19',
-    mensaje:
-      'Tu cita para el seguimiento del tratamiento Covid 19 esta programada para el dia 15 de septiembre de 2025',
-    fecha_envio: '15 de septiembre de 2025',
-    leido: false,
-    medio: 'email'
-  }
-]
-
 export default function Page() {
+  const { notificaciones, noLeidas, isLoading, marcarLeidas } =
+    useNotificaciones()
+
+  // Marcar todas como leídas al entrar a la página
+  useEffect(() => {
+    if (!isLoading && noLeidas > 0) {
+      marcarLeidas.mutate()
+    }
+    // oxlint-disable-next-line exhaustive-deps
+  }, [isLoading])
+
   return (
     <section className='notifications font-secondary'>
-      <Title className='mb-2'>Tus notificaciones</Title>
-      <div className='content-notifications flex flex-col gap-2'>
-        {notifications.map(notification => {
-          console.log('a')
+      <Title className='mb-2'>
+        Tus notificaciones
+        {noLeidas > 0 && (
+          <span className='ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-600 text-white'>
+            {noLeidas} nuevas
+          </span>
+        )}
+      </Title>
 
-          return (
+      {isLoading && (
+        <div className='flex flex-col gap-2'>
+          {[1, 2, 3].map(i => (
+            <div
+              key={i}
+              className='h-14 rounded-md bg-gray-200 animate-pulse'
+            />
+          ))}
+        </div>
+      )}
+
+      {!isLoading && notificaciones.length === 0 && (
+        <div className='flex flex-col items-center justify-center py-16 text-gray-400 gap-2'>
+          <span className='text-4xl'>
+            <IconNotification size='48' />{' '}
+          </span>
+          <p className='text-step-0'>No tienes notificaciones aún</p>
+        </div>
+      )}
+
+      {!isLoading && notificaciones.length > 0 && (
+        <div className='content-notifications flex flex-col gap-2'>
+          {notificaciones.map(notification => (
             <CardNotification
-              key={notification.fecha_envio}
+              key={notification.id}
               title={notification.titulo}
               description={notification.mensaje}
-              dateNotification={notification.fecha_envio}
+              dateNotification={formatFechaEnvio(notification.fecha_envio)}
               icon={notification.medio}
+              leido={notification.leido}
             />
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

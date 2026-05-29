@@ -19,7 +19,9 @@ export default async function Page() {
   const citas = await prisma.citas.findMany({
     where: {
       paciente_id: usuario.persona_ci,
-      estado: 'PENDIENTE',
+      estado: {
+        in: ['PENDIENTE', 'GENERADA']
+      },
       eliminado_en: null
     },
     include: {
