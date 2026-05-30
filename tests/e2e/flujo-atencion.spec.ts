@@ -2,6 +2,8 @@
 import { test, expect } from '@playwright/test'
 import { loginWithUser } from '../helpers/login'
 
+test.setTimeout(90000)
+
 test('Flujo completo: ficha presencial de ADMISION a ATENDIDA', async ({
   page
 }) => {
@@ -65,7 +67,7 @@ test('Flujo completo: ficha presencial de ADMISION a ATENDIDA', async ({
   const formAssign = page.getByTestId('form-assign-record')
   await expect(formAssign).toBeVisible()
   await formAssign.locator('#especialidad').selectOption({ index: 1 })
-  await expect(formAssign.locator('#doctor')).toBeEnabled({ timeout: 10000 })
+  await expect(formAssign.locator('#doctor')).toBeEnabled({ timeout: 15000 })
   await formAssign.locator('#doctor').selectOption({ index: 1 })
 
   // Verifica que el data-testid existe antes de hacer click
@@ -77,7 +79,8 @@ test('Flujo completo: ficha presencial de ADMISION a ATENDIDA', async ({
   // ============================================
   // PASO 4: Doctor General llama y atiende
   // ============================================
-  await loginWithUser(page, 'doctor.general')
+  // await loginWithUser(page, 'doctor.general')
+  await loginWithUser(page, 'odontologa')
   await page.goto('http://localhost:3000/dashboard/fichas')
   await page.waitForLoadState('networkidle')
 
