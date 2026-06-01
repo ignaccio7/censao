@@ -1,6 +1,7 @@
 // oxlint-disable prefer-default-export
 // oxlint-disable func-style
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import apiClient from './client'
 
 export interface NotificacionAPI {
@@ -54,4 +55,36 @@ export function useNotificaciones() {
     refetch: notificacionesQuery.refetch,
     marcarLeidas
   }
+}
+
+export function useAdminNotificaciones() {
+  const queryClient = useQueryClient()
+
+  // Envía los recordatorios de citas
+  const enviarRecordatorios = useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.post(
+        '/notificaciones/recordatorio-citas'
+      )
+      return response.data
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['notificaciones'] })
+      const { enviadas = 0, omitidas = 0 } = data
+      if (enviadas === 0 && omitidas === 0) {
+        toast.info('No hay citas pendientes para las próximas 24 horas.')
+      } else {
+        toast.success(
+          `✅ ${enviadas} recordatorio(s) enviado(s) correctamente.${omitidas > 0 ? ` ${omitidas} omitidos (ya enviados).` : ''}`
+        )
+      }
+    },
+    onError: (error: any) => {
+      const msg =
+        error?.response?.data?.message ?? 'Error al enviar recordatorios'
+      toast.error(`❌ ${msg}`)
+    }
+  })
+
+  return { enviarRecordatorios }
 }

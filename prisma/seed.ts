@@ -1293,6 +1293,15 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         metodos: ['GET', 'PATCH'],
         descripcion: 'API para editar un turno específico',
         modulo: 'administracion'
+      },
+      // ************ RECORDATORIO DE CITAS
+      {
+        nombre: 'API Recordatorio de Citas',
+        tipo: 'backend',
+        ruta: '/api/notificaciones/recordatorio-citas',
+        metodos: ['POST'],
+        descripcion: 'API para enviar recordatorios de citas',
+        modulo: 'atencion'
       }
     ]
   }
