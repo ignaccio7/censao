@@ -92,7 +92,13 @@ export default async function DetalleConsultaPage({
       },
       citas: {
         where: { eliminado_en: null },
-        include: { ficha_generada: true }
+        include: {
+          ficha_generada: {
+            include: {
+              disponibilidades: { include: { turnos_catalogo: true } }
+            }
+          }
+        }
       },
       seguimientos: {
         where: { eliminado_en: null },

@@ -12,12 +12,12 @@ import DoctoresTable from './components/doctoresTable'
 export default async function DoctoresPage({
   searchParams
 }: {
-  searchParams?: {
+  searchParams?: Promise<{
     search?: string
     page?: string
     estado?: string
     especialidad?: string
-  }
+  }>
 }) {
   // Validar que el usuario tenga permisos para acceder a esta pagina
   const validation = await AuthService.validateApiPermission(

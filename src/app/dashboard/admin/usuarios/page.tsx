@@ -13,10 +13,11 @@ import Link from 'next/link'
 export default async function UsuariosPage({
   searchParams
 }: {
-  searchParams?: {
+  searchParams?: Promise<{
     search?: string
     page?: string
-  }
+    estado?: string
+  }>
 }) {
   // Validar que el usuario tenga permisos para acceder a esta pagina
   const validation = await AuthService.validateApiPermission(

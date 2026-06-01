@@ -7,17 +7,19 @@ import FormVacuna from '../../components/formVacuna'
 import { VacunasService } from '@/services/vacunas'
 
 interface Props {
-  params: { uuid: string }
+  params: Promise<{ uuid: string }>
 }
 
 export default async function EditarVacunaPage({ params }: Props) {
+  const { uuid } = await params
+
   const validation = await AuthService.validateApiPermission(
     '/api/admin/vacunas/:uuid',
     'PATCH'
   )
   if (!validation.success) redirect('/dashboard')
 
-  const vacuna = await VacunasService.getVacunaById(params.uuid)
+  const vacuna = await VacunasService.getVacunaById(uuid)
   if (!vacuna) notFound()
 
   // Pre-poblar defaultValues con los datos actuales
@@ -44,7 +46,7 @@ export default async function EditarVacunaPage({ params }: Props) {
         </Link>
         <Title subtitle={`Modificando: ${vacuna.nombre}`}>Editar vacuna</Title>
       </div>
-      <FormVacuna vacunaId={params.uuid} defaultValues={defaultValues} />
+      <FormVacuna vacunaId={uuid} defaultValues={defaultValues} />
     </main>
   )
 }

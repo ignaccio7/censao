@@ -7,8 +7,14 @@
 
 import { revalidatePath } from 'next/cache'
 import prisma from '@/lib/prisma/prisma'
-import { fichaSchema } from '@/app/dashboard/fichas/schemas'
 import { z } from 'zod'
+
+const fichaSchema = z.object({
+  cedula: z.string().min(5).max(20),
+  nombre: z.string().min(3).max(200),
+  especialidad: z.string().min(1).max(50),
+  doctor: z.string().min(1).max(50)
+})
 
 interface ActionResult {
   success: boolean
@@ -124,11 +130,11 @@ export async function createFichaAction(
     // Calcular siguiente orden para HOY
     const siguienteOrden = disponibilidad._count.fichas + 1
 
-    // Crear la ficha
     const nuevaFicha = await prisma.fichas.create({
       data: {
         paciente_id: validData.cedula,
         disponibilidad_id: disponibilidad.id,
+        turno_codigo: turno, // Añadido para coincidir con el schema de Prisma actualizado
         fecha_ficha: fechaFicha, // Fecha de hoy
         orden_turno: siguienteOrden, // Orden secuencial para hoy
         creado_por: 'sistema' // Para auditoría

@@ -14,10 +14,10 @@ import { Roles } from '@/lib/constants'
 export default async function PacientesPage({
   searchParams
 }: {
-  searchParams?: {
+  searchParams?: Promise<{
     search?: string
     page?: string
-  }
+  }>
 }) {
   // Validar que el usuario tenga permisos para acceder a esta pagina
   const validation = await AuthService.validateApiPermission(

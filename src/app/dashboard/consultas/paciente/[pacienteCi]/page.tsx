@@ -12,7 +12,7 @@ export default async function ConsultasPacientePage({
   searchParams
 }: {
   params: Promise<{ pacienteCi: string }>
-  searchParams?: { search?: string; page?: string }
+  searchParams?: Promise<{ search?: string; page?: string }>
 }) {
   const { pacienteCi } = await params
 
@@ -24,7 +24,7 @@ export default async function ConsultasPacientePage({
     redirect('/dashboard')
   }
 
-  const sParams = searchParams || {}
+  const sParams = (await searchParams) || {}
   const search = sParams.search ?? ''
   const page = Number(sParams.page) || 1
   const numberPerPage = 5

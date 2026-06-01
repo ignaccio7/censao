@@ -1,28 +1,40 @@
 // oxlint-disable sort-keys
-'use client'
+import { auth } from '@/auth'
 import { IconUser } from '@/app/components/icons/icons'
 import Title from '@/app/components/ui/title'
-import type { PersonaCompleta } from '@/interfaces'
+import prisma from '@/lib/prisma/prisma'
+import { redirect } from 'next/navigation'
 import FormProfileData from './components/formProfileData'
-// import { useSession } from 'next-auth/react'
 
-export default function Page() {
-  // const { data: session } = useSession()
+export default async function Page() {
+  const session = await auth()
 
-  const data = {
-    personas: {
-      nombres: 'Juan',
-      paterno: 'Perez',
-      materno: 'Lopez',
-      correo: 'juanperez@gmail.com',
-      direccion: 'Avenida siempre vivda, 123'
-    },
-    usuarios: {
-      username: 'juanperez'
-    }
+  if (!session?.user?.id) {
+    redirect('/dashboard')
   }
 
-  const profileData: PersonaCompleta = Object.assign({}, ...Object.values(data))
+  const usuario = await prisma.usuarios.findUnique({
+    where: { usuario_id: session.user.id },
+    select: {
+      username: true,
+      personas: {
+        select: {
+          ci: true,
+          nombres: true,
+          paterno: true,
+          materno: true,
+          correo: true,
+          direccion: true
+        }
+      }
+    }
+  })
+
+  if (!usuario || !usuario.personas) {
+    redirect('/dashboard')
+  }
+
+  const { ci, nombres, paterno, materno, correo, direccion } = usuario.personas
 
   return (
     <section className='font-secondary'>
@@ -32,7 +44,14 @@ export default function Page() {
           <IconUser size='64' />
         </div>
         <div className='data text-step-1 grow basis-xs'>
-          <FormProfileData {...profileData} />
+          <FormProfileData
+            ci={ci}
+            nombres={nombres}
+            paterno={paterno ?? undefined}
+            materno={materno ?? undefined}
+            correo={correo ?? undefined}
+            direccion={direccion ?? undefined}
+          />
         </div>
       </div>
     </section>

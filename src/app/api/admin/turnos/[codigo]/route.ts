@@ -44,7 +44,7 @@ function boliviaTimeToUTC(hhmm: string): Date {
 // ─── GET /api/admin/turnos/[codigo] ──────────────────────────────────────────
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { codigo: string } }
+  { params }: { params: Promise<{ codigo: string }> }
 ) {
   const validation = await AuthService.validateApiPermission(
     '/api/admin/turnos/:codigo',
@@ -57,8 +57,10 @@ export async function GET(
     )
   }
 
+  const { codigo } = await params
+
   const turno = await prisma.turnos_catalogo.findUnique({
-    where: { codigo: params.codigo, eliminado_en: null }
+    where: { codigo: codigo, eliminado_en: null }
   })
 
   if (!turno) {
@@ -74,7 +76,7 @@ export async function GET(
 // ─── PATCH /api/admin/turnos/[codigo] ────────────────────────────────────────
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { codigo: string } }
+  { params }: { params: Promise<{ codigo: string }> }
 ) {
   const validation = await AuthService.validateApiPermission(
     '/api/admin/turnos/:codigo',
@@ -86,6 +88,8 @@ export async function PATCH(
       { status: 403 }
     )
   }
+
+  const { codigo } = await params
 
   const idUser = validation.data?.id
 
@@ -105,7 +109,7 @@ export async function PATCH(
     }
 
     const turno = await prisma.turnos_catalogo.findUnique({
-      where: { codigo: params.codigo, eliminado_en: null }
+      where: { codigo: codigo, eliminado_en: null }
     })
     if (!turno) {
       return NextResponse.json(
@@ -119,7 +123,7 @@ export async function PATCH(
     const horaFinUTC = boliviaTimeToUTC(hora_fin)
 
     await prisma.turnos_catalogo.update({
-      where: { codigo: params.codigo },
+      where: { codigo: codigo },
       data: {
         nombre,
         hora_inicio: horaInicioUTC,

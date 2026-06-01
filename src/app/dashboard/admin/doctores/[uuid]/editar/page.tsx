@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma/prisma'
 import FormConfigDoctor from './components/formConfigDoctor'
 
 interface Props {
-  params: { uuid: string }
+  params: Promise<{ uuid: string }>
 }
 
 export default async function ConfigurarDoctorPage({ params }: Props) {

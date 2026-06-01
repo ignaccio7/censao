@@ -13,7 +13,7 @@ import { VacunasService } from '@/services/vacunas'
 export default async function VacunasPage({
   searchParams
 }: {
-  searchParams?: { search?: string; page?: string }
+  searchParams?: Promise<{ search?: string; page?: string }>
 }) {
   const validation = await AuthService.validateApiPermission(
     '/api/admin/vacunas',

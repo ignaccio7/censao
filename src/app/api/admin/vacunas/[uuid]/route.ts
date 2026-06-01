@@ -24,7 +24,7 @@ const vacunaUpdateSchema = z.object({
 // Estrategia: Actualizar solo los esquemas que cambiaron, mantener los existentes
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { uuid: string } }
+  { params }: { params: Promise<{ uuid: string }> }
 ) {
   const validation = await AuthService.validateApiPermission(
     '/api/admin/vacunas/:uuid',
@@ -36,6 +36,8 @@ export async function PATCH(
       { status: 403 }
     )
   }
+
+  const { uuid } = await params
 
   const idUser = validation.data?.id
 
@@ -74,7 +76,7 @@ export async function PATCH(
           }
         }
       },
-      where: { id: params.uuid, eliminado_en: null }
+      where: { id: uuid, eliminado_en: null }
     })
 
     if (!vacuna) {
@@ -88,7 +90,7 @@ export async function PATCH(
 
     // Verificar nombre único (excluyendo la vacuna actual)
     const nombreDuplicado = await prisma.vacunas.findFirst({
-      where: { nombre, eliminado_en: null, NOT: { id: params.uuid } }
+      where: { nombre, eliminado_en: null, NOT: { id: uuid } }
     })
     if (nombreDuplicado) {
       return NextResponse.json(
@@ -155,7 +157,7 @@ export async function PATCH(
     for (const [numero, esquemaNuevo] of esquemasNuevosMap) {
       if (!esquemasActualesMap.has(numero)) {
         esquemasParaCrear.push({
-          vacuna_id: params.uuid,
+          vacuna_id: uuid,
           numero: esquemaNuevo.numero,
           intervalo_dias: esquemaNuevo.intervalo_dias,
           edad_min_meses: esquemaNuevo.edad_min_meses ?? null,
@@ -174,7 +176,7 @@ export async function PATCH(
       await prisma.$transaction(async tx => {
         // 1. Actualizar datos de la vacuna
         await tx.vacunas.update({
-          where: { id: params.uuid },
+          where: { id: uuid },
           data: {
             nombre,
             descripcion: descripcion || null,
@@ -218,7 +220,7 @@ export async function PATCH(
     } else {
       // Si solo actualizamos datos de la vacuna sin cambios en esquemas
       await prisma.vacunas.update({
-        where: { id: params.uuid },
+        where: { id: uuid },
         data: {
           nombre,
           descripcion: descripcion || null,
@@ -254,8 +256,9 @@ export async function PATCH(
 // ─── DELETE /api/admin/vacunas/[uuid] ────────────────────────────────────────
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { uuid: string } }
+  { params }: { params: Promise<{ uuid: string }> }
 ) {
+  const { uuid } = await params
   const validation = await AuthService.validateApiPermission(
     '/api/admin/vacunas/:uuid',
     'DELETE'
@@ -271,7 +274,7 @@ export async function DELETE(
 
   try {
     const vacuna = await prisma.vacunas.findUnique({
-      where: { id: params.uuid, eliminado_en: null }
+      where: { id: uuid, eliminado_en: null }
     })
     if (!vacuna) {
       return NextResponse.json(
@@ -283,7 +286,7 @@ export async function DELETE(
     // Verificar si tiene tratamientos activos — no se puede eliminar si está en uso
     const enUso = await prisma.esquema_dosis.findFirst({
       where: {
-        vacuna_id: params.uuid,
+        vacuna_id: uuid,
         eliminado_en: null,
         tratamientos: { some: { eliminado_en: null } }
       }
@@ -302,12 +305,12 @@ export async function DELETE(
     await prisma.$transaction(async tx => {
       // Soft-delete esquemas
       await tx.esquema_dosis.updateMany({
-        where: { vacuna_id: params.uuid, eliminado_en: null },
+        where: { vacuna_id: uuid, eliminado_en: null },
         data: { eliminado_en: new Date(), eliminado_por: idUser }
       })
       // Soft-delete vacuna
       await tx.vacunas.update({
-        where: { id: params.uuid },
+        where: { id: uuid },
         data: { eliminado_en: new Date(), eliminado_por: idUser }
       })
     })

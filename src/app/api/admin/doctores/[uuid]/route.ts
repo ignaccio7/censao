@@ -8,7 +8,7 @@ import { configDoctorSchema } from '@/app/dashboard/admin/doctores/schemas'
 // disponibilidades, y las listas de especialidades activas y turnos del catálogo.
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { uuid: string } }
+  { params }: { params: Promise<{ uuid: string }> }
 ) {
   const validation = await AuthService.validateApiPermission(
     '/api/admin/doctores/:uuid',
@@ -89,7 +89,7 @@ export async function GET(
 // Las disponibilidades que ya no están se INACTIVAN (estado=false), NO se eliminan.
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { uuid: string } }
+  { params }: { params: Promise<{ uuid: string }> }
 ) {
   const validation = await AuthService.validateApiPermission(
     '/api/admin/doctores/:uuid',

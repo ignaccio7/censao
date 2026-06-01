@@ -7,18 +7,19 @@ import { IconChevronLeft } from '@/app/components/icons/icons'
 import FormEditUser from '../../components/editar/formEditUser'
 
 interface Props {
-  params: { uuid: string }
+  params: Promise<{ uuid: string }>
 }
 
 export default async function EditarUsuarioPage({ params }: Props) {
+  const { uuid: uuidParam } = await params
+
   const validation = await AuthService.validateApiPermission(
     '/api/admin/usuarios/:uuid',
     'PATCH'
   )
   if (!validation.success) redirect('/dashboard')
 
-  console.log(params.uuid)
-  let uuidParam = params.uuid
+  console.log(uuidParam)
 
   const usuario = await prisma.usuarios.findUnique({
     where: { usuario_id: uuidParam, eliminado_en: null },

@@ -26,7 +26,7 @@ const updateSchema = z.object({
 // ─── PATCH ────────────────────────────────────────────────────────────────────
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { uuid: string } }
+  { params }: { params: Promise<{ uuid: string }> }
 ) {
   const validation = await AuthService.validateApiPermission(
     '/api/admin/usuarios/:uuid',
@@ -39,9 +39,11 @@ export async function PATCH(
     )
   }
 
+  const { uuid } = await params
+
   const idUser = validation.data?.id
   console.log(idUser)
-  console.log(params.uuid)
+  console.log(uuid)
 
   try {
     const body = await req.json()
@@ -61,7 +63,7 @@ export async function PATCH(
     }
 
     const usuario = await prisma.usuarios.findUnique({
-      where: { usuario_id: params.uuid, eliminado_en: null },
+      where: { usuario_id: uuid, eliminado_en: null },
       include: {
         usuarios_roles: {
           where: { eliminado_en: null },
@@ -116,7 +118,7 @@ export async function PATCH(
       if (password && password.trim() !== '') {
         const password_hash = await bcrypt.hash(password, 12)
         await tx.usuarios.update({
-          where: { usuario_id: params.uuid },
+          where: { usuario_id: uuid },
           data: { password_hash, actualizado_por: idUser }
         })
       }
@@ -127,12 +129,12 @@ export async function PATCH(
       if (rolActualId && rolActualId !== rol_id) {
         await tx.usuarios_roles.update({
           where: {
-            usuario_id_rol_id: { usuario_id: params.uuid, rol_id: rolActualId }
+            usuario_id_rol_id: { usuario_id: uuid, rol_id: rolActualId }
           },
           data: { eliminado_en: new Date(), eliminado_por: idUser }
         })
         await tx.usuarios_roles.create({
-          data: { usuario_id: params.uuid, rol_id, creado_por: idUser }
+          data: { usuario_id: uuid, rol_id, creado_por: idUser }
         })
       }
 
@@ -190,6 +192,56 @@ export async function PATCH(
         { status: 409 }
       )
     }
+    return NextResponse.json(
+      { success: false, message: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+
+// ─── DELETE /api/admin/usuarios/[uuid] ─────────────────────────────────────────
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ uuid: string }> }
+) {
+  const validation = await AuthService.validateApiPermission(
+    '/api/admin/usuarios/:uuid',
+    'DELETE'
+  )
+  if (!validation.success) {
+    return NextResponse.json(
+      { success: false, message: 'No autorizado' },
+      { status: 403 }
+    )
+  }
+
+  const { uuid } = await params
+
+  try {
+    const usuario = await prisma.usuarios.findUnique({
+      where: { usuario_id: uuid, eliminado_en: null }
+    })
+    if (!usuario) {
+      return NextResponse.json(
+        { success: false, message: 'Usuario no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    await prisma.usuarios.update({
+      where: { usuario_id: uuid },
+      data: {
+        eliminado_en: new Date(),
+        eliminado_por: validation.data?.id ?? 'sistema'
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Usuario eliminado correctamente'
+    })
+  } catch (error) {
+    console.error('[DELETE /api/admin/usuarios/:uuid]', error)
     return NextResponse.json(
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }
