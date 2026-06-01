@@ -51,7 +51,7 @@ function EstadoTratamientoBadge({ estado }: { estado: string }) {
 
 export default function PacienteDetallePage() {
   const params = useParams()
-  const uuid = params.uuid as string
+  const uuid = decodeURIComponent(params.uuid as string)
   const { user } = useUser()
   // const { create } = useProfileRoutes()
 
@@ -199,7 +199,7 @@ export default function PacienteDetallePage() {
         <EstadoTratamientoBadge key={`est-${t.id}`} estado={t.estado} />,
         <Link
           key={`action-${t.id}`}
-          href={`/dashboard/atencion/pacientes/${uuid}/detalle/${agrupado.vacunaId}`}
+          href={`/dashboard/atencion/pacientes/${encodeURIComponent(uuid)}/detalle/${agrupado.vacunaId}`}
           className='px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors text-sm font-medium rounded-lg flex items-center justify-center gap-2 border border-gray-200 hover:border-primary-200'
         >
           <IconHistory size='16' />
@@ -328,7 +328,7 @@ export default function PacienteDetallePage() {
               // create &&
             }
             <Link
-              href={`/dashboard/tratamientos/${uuid}/crear`}
+              href={`/dashboard/tratamientos/${encodeURIComponent(uuid)}/crear`}
               className='px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm cursor-pointer flex items-center gap-2'
             >
               <IconVaccine size='18' />

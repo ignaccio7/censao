@@ -575,3 +575,20 @@ La diferencia con tratamientos:
 - **Después de crear el seguimiento #2**:
   - Seguimiento #1 → Cita: `ABSORBIDA` ❌
   - Seguimiento #2 → Cita: `PENDIENTE` ✅
+
+---
+
+# Actualizaciones de Sistema (v4.1)
+
+## 1. Soporte de Carnet de Identidad con Extensión
+
+- El sistema ahora soporta Carnets de Identidad de **4 a 11 caracteres** para admitir documentos con complemento (ej. `6565204-1B`).
+- **Seguridad en URLs**: Todo enlace o ruta dinámica que utilice el CI como parámetro está envuelto con `encodeURIComponent` al construirse, y utiliza `decodeURIComponent` en el backend para prevenir roturas en el router de Next.js debido a los caracteres especiales (`-` y letras).
+
+## 2. Compatibilidad Next.js 15
+
+- Las páginas y rutas de API (App Router) ahora tratan los parámetros dinámicos (ej. `params.uuid` o `params.pacienteCi`) de manera asíncrona mediante el tipo `Promise<{ paramName: string }>`, realizando el `await` de los params de acuerdo a los estándares de Next.js 15.
+
+## 3. Lógica de Turnos en Reasignación
+
+- La vista de "Estado de los Doctores" y el modal de "Reasignar Ficha" ahora **filtran estrictamente** a los doctores para asegurar que solo aparezcan aquellos que tienen disponibilidad activa en el turno actual. Doctores de turnos posteriores o anteriores no figuran en la lista de opciones para reasignación, evitando confusiones en Admisión o Enfermería.

@@ -13,7 +13,8 @@ export default async function Page({
 }) {
   // fichaId aquí en realidad es el paciente_id (CI)
   // Mantenemos el nombre del param dinámico por compatibilidad de rutas TODO: urgente cambiar
-  const { fichaId: pacienteId } = await params
+  const { fichaId: rawPacienteId } = await params
+  const pacienteId = decodeURIComponent(rawPacienteId)
   const { ficha: fichaOrigenId } = await searchParams
 
   // Server Component: fetch vacunas con esquema_dosis directamente con Prisma

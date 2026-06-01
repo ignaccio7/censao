@@ -12,9 +12,8 @@ const createUsuarioSchema = z.object({
   // Persona
   ci: z
     .string()
-    .min(5, 'La cédula debe tener al menos 5 caracteres')
-    .max(20)
-    .regex(/^\d+$/, 'La cédula solo debe contener números'),
+    .min(4, 'La cédula debe tener al menos 4 caracteres')
+    .max(11, 'La cédula no puede exceder 11 caracteres'),
   nombres: z.string().min(2).max(100),
   paterno: z.string().max(50).optional().or(z.literal('')),
   materno: z.string().max(50).optional().or(z.literal('')),

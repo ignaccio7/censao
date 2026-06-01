@@ -40,6 +40,11 @@ function transformarDoctores(data: any[]): DoctorTurno[] {
       const nombre =
         `${persona.nombres} ${persona.paterno || ''} ${persona.materno || ''}`.trim()
 
+      // Si el doctor no tiene disponibilidades para el turno actual, no lo mostramos
+      if (!docEsp.disponibilidades || docEsp.disponibilidades.length === 0) {
+        return
+      }
+
       // Aplanar todas las fichas de todas las disponibilidades de este doctor
       const todasLasFichas: FichaEstado[] = docEsp.disponibilidades.flatMap(
         (disp: any) => disp.fichas || []

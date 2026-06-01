@@ -4,8 +4,8 @@ import { z } from 'zod'
 export const stepPersonaSchema = z.object({
   ci: z
     .string()
-    .min(5, 'La cédula debe tener al menos 5 caracteres')
-    .max(20, 'La cédula no puede tener más de 20 caracteres'),
+    .min(4, 'La cédula debe tener al menos 4 caracteres')
+    .max(11, 'La cédula no puede tener más de 11 caracteres'),
   // .regex(/^\d+$/, 'La cédula solo debe contener números'),
   nombres: z
     .string()

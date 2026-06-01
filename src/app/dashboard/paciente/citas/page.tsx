@@ -42,6 +42,8 @@ export default async function Page() {
     }
   })
 
+  console.log(citas)
+
   // Estructurar para FullCalendar
   const reservationsForUser = citas.map(cita => {
     // Generar la fecha final sumando 30 mins a la programada

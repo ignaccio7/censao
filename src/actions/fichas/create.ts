@@ -10,7 +10,7 @@ import prisma from '@/lib/prisma/prisma'
 import { z } from 'zod'
 
 const fichaSchema = z.object({
-  cedula: z.string().min(5).max(20),
+  cedula: z.string().min(4).max(11),
   nombre: z.string().min(3).max(200),
   especialidad: z.string().min(1).max(50),
   doctor: z.string().min(1).max(50)

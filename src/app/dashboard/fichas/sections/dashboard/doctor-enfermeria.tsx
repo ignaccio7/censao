@@ -43,7 +43,7 @@ export default function DashboardDoctorEnfermeria({ fichas }: { fichas: any }) {
   // Redirigir a crear tratamiento para vacunas programadas
   const handleRegisterVaccine = (data: FichaActionData) => {
     router.push(
-      `/dashboard/tratamientos/${data.cedula}/crear?ficha=${data.fichaId}`
+      `/dashboard/tratamientos/${encodeURIComponent(data.cedula)}/crear?ficha=${data.fichaId}`
     )
   }
 

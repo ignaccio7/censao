@@ -17,7 +17,8 @@ export default async function DetalleConsultaPacientePage({
 }: {
   params: Promise<{ pacienteCi: string; consultaId: string }>
 }) {
-  const { pacienteCi, consultaId } = await params
+  const { pacienteCi: rawPacienteCi, consultaId } = await params
+  const pacienteCi = decodeURIComponent(rawPacienteCi)
 
   const validation = await AuthService.validateApiPermission(
     '/api/consultas',

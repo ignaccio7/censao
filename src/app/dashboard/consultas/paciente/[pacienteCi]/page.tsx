@@ -14,7 +14,8 @@ export default async function ConsultasPacientePage({
   params: Promise<{ pacienteCi: string }>
   searchParams?: Promise<{ search?: string; page?: string }>
 }) {
-  const { pacienteCi } = await params
+  const { pacienteCi: rawPacienteCi } = await params
+  const pacienteCi = decodeURIComponent(rawPacienteCi)
 
   const validation = await AuthService.validateApiPermission(
     '/api/consultas',

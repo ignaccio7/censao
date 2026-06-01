@@ -60,7 +60,7 @@ export default function PacientesTableClient({
             className='flex gap-2 items-center'
           >
             <Link
-              href={`/dashboard/consultas/paciente/${paciente.paciente_id}`}
+              href={`/dashboard/consultas/paciente/${encodeURIComponent(paciente.paciente_id)}`}
             >
               <button
                 className='px-3 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium shadow-sm cursor-pointer'
@@ -130,7 +130,9 @@ export default function PacientesTableClient({
           >
             <IconTrash />
           </button> */}
-          <Link href={`/dashboard/atencion/pacientes/${paciente.paciente_id}`}>
+          <Link
+            href={`/dashboard/atencion/pacientes/${encodeURIComponent(paciente.paciente_id)}`}
+          >
             <button
               className='px-3 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium shadow-sm cursor-pointer'
               title='Ver detalle'
