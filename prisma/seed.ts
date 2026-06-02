@@ -1337,7 +1337,7 @@ async function limpiarBaseDatos() {
     await prisma.tratamientos.deleteMany()
     await prisma.fichas.deleteMany()
     await prisma.disponibilidades.deleteMany()
-    await prisma.refresh_tokens.deleteMany()
+    // await prisma.refresh_tokens.deleteMany()
     await prisma.usuarios_roles.deleteMany()
     await prisma.roles_permisos.deleteMany()
 

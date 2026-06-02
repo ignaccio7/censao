@@ -322,7 +322,7 @@ model usuarios {
   eliminado_en    DateTime?        @db.Timestamptz(0)
   eliminado_por   String?
   auditoria_log   auditoria_log[]
-  refresh_tokens  refresh_tokens[]
+  // refresh_tokens  refresh_tokens[]
   personas        personas         @relation(fields: [persona_ci], references: [ci], onDelete: Cascade, onUpdate: NoAction, map: "fk_usuarios_personas")
   usuarios_roles  usuarios_roles[]
 }
@@ -362,19 +362,19 @@ model vacunas {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model refresh_tokens {
-  token_id        String    @id @db.Uuid
-  user_id         String    @db.Uuid
-  token_hash      String
-  expira_en       DateTime  @db.Timestamptz(0)
-  creado_en       DateTime  @default(now()) @db.Timestamptz(0)
-  creado_por      String?   @db.Uuid
-  actualizado_en  DateTime  @default(now()) @db.Timestamptz(0)
-  actualizado_por String?   @db.Uuid
-  eliminado_en    DateTime? @db.Timestamptz(0)
-  eliminado_por   String?   @db.Uuid
-  usuarios        usuarios  @relation(fields: [user_id], references: [usuario_id], onDelete: Cascade, map: "fk_refresh_tokens_usuario")
-}
+// model refresh_tokens {
+//   token_id        String    @id @db.Uuid
+//   user_id         String    @db.Uuid
+//   token_hash      String
+//   expira_en       DateTime  @db.Timestamptz(0)
+//   creado_en       DateTime  @default(now()) @db.Timestamptz(0)
+//   creado_por      String?   @db.Uuid
+//   actualizado_en  DateTime  @default(now()) @db.Timestamptz(0)
+//   actualizado_por String?   @db.Uuid
+//   eliminado_en    DateTime? @db.Timestamptz(0)
+//   eliminado_por   String?   @db.Uuid
+//   usuarios        usuarios  @relation(fields: [user_id], references: [usuario_id], onDelete: Cascade, map: "fk_refresh_tokens_usuario")
+// }
 
 model doctores_especialidades {
   id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
