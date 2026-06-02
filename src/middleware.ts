@@ -13,6 +13,8 @@ export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   console.log('Middleware de Verificacion')
+  console.log(req)
+  console.log(secret)
   console.log(token)
   console.log(pathname)
 
