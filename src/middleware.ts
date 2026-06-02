@@ -9,7 +9,8 @@ const PATRON_COMBINADO =
   '(?:\\d+|\\d+-\\d+[A-Za-z]|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})'
 
 export default async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret })
+  console.log(req.cookies.getAll())
+  const token = await getToken({ req, secret, secureCookie: true })
   const { pathname } = req.nextUrl
 
   console.log('Middleware de Verificacion')
