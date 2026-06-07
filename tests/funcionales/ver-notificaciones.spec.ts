@@ -8,8 +8,8 @@ test.describe('Bandeja de Notificaciones del Paciente', () => {
     await page.goto('http://localhost:3000/auth/ingresar')
     // await page.locator('input[name="username"]').fill('paciente1')
     // await page.locator('input[name="password"]').fill('123')
-    await page.locator('input[name="username"]').fill('1000000011')
-    await page.locator('input[name="password"]').fill('1000000011')
+    await page.locator('input[name="username"]').fill('paciente1')
+    await page.locator('input[name="password"]').fill('123')
     await page.getByRole('button', { name: 'Inicia sesión' }).click()
 
     // Esperar a que el dashboard cargue completamente
@@ -31,5 +31,29 @@ test.describe('Bandeja de Notificaciones del Paciente', () => {
     await expect(
       page.getByText(/No tienes notificaciones aún/i).first()
     ).toBeVisible()
+  })
+
+  test('Redirige al login si se intenta acceder a notificaciones sin sesión', async ({
+    page
+  }) => {
+    await page.goto('http://localhost:3000/dashboard/notificaciones')
+    // El middleware debe atrapar esto y enviarnos al login
+    await expect(page).toHaveURL(/.*\/auth\/ingresar/)
+  })
+
+  test('Usuarios sin rol PACIENTE no pueden ver la campana de notificaciones', async ({
+    page
+  }) => {
+    // Login como Enfermería
+    await page.goto('http://localhost:3000/auth/ingresar')
+    await page.locator('input[name="username"]').fill('enfermeria')
+    await page.locator('input[name="password"]').fill('123')
+    await page.getByRole('button', { name: 'Inicia sesión' }).click()
+    await expect(page).toHaveURL('http://localhost:3000/dashboard')
+
+    // Validar que el ícono de notificaciones no existe para este rol
+    await expect(
+      page.getByRole('button', { name: /Abrir notificaciones/i })
+    ).not.toBeVisible()
   })
 })

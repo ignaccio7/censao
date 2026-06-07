@@ -13,7 +13,11 @@ const createUsuarioSchema = z.object({
   ci: z
     .string()
     .min(4, 'La cédula debe tener al menos 4 caracteres')
-    .max(11, 'La cédula no puede exceder 11 caracteres'),
+    .max(11, 'La cédula no puede exceder 11 caracteres')
+    .regex(
+      /^[1-9]\d{3,7}(?:-\d[A-Z])?$/,
+      'Formato inválido. Ej: 1234567 o 1234567-1B'
+    ),
   nombres: z.string().min(2).max(100),
   paterno: z.string().max(50).optional().or(z.literal('')),
   materno: z.string().max(50).optional().or(z.literal('')),

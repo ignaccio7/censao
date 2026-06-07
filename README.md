@@ -57,3 +57,5 @@ no asignar a otros que no sean de ese turno ya que deberia ser dinamico por turn
 cuando tengo citas con el pacientex dias despues y saco ficha dias antes y si me hago atender sea vacuna o seguimiento esas citas quedan como absorvidas eso esta bien pero que pasa si viene el mismo dia de cita pero presencial eso como lo resolveriamos osea como admision genera fichas programadas pero ya tendra ficha presencial volvera a generar gichas para ese paciente aunque tenga la presencial eso tomar en cuenta
 
 si programo 2 citas de diferentes vacunas para el mismo dia como se estan generando estas citas y como generan su ficha eso ver
+
+npx playwright test --ui

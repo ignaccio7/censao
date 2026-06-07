@@ -1,11 +1,20 @@
 import { z } from 'zod'
 
 // ─── Paso 1: Datos de la persona ───────────────────────────────────────────
+/**
+ 1. ^[1-9]: Obliga a que el primer dígito jamás sea 0.
+ 2. \d{3,7}: Asegura que el número principal tenga entre 4 y 8 dígitos en total.
+ 3. (?:-\d[A-Z])?: Permite de forma opcional (?) un guion - seguido de un número y una letra mayúscula (ej: -1A, -1B).
+ */
 export const stepPersonaSchema = z.object({
   ci: z
     .string()
     .min(4, 'La cédula debe tener al menos 4 caracteres')
-    .max(11, 'La cédula no puede tener más de 11 caracteres'),
+    .max(11, 'La cédula no puede tener más de 11 caracteres')
+    .regex(
+      /^[1-9]\d{3,7}(?:-\d[A-Z])?$/,
+      'Formato inválido. Ej: 1234567 o 1234567-1B'
+    ),
   // .regex(/^\d+$/, 'La cédula solo debe contener números'),
   nombres: z
     .string()

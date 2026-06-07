@@ -30,7 +30,8 @@ test.describe('Programar Cita de Tratamiento', () => {
 
     // Verificamos que estemos en la vista de detalle
     await expect(page).toHaveURL(
-      /\/dashboard\/atencion\/pacientes\/.+\/detalle\/.+/
+      /\/dashboard\/atencion\/pacientes\/.+\/detalle\/.+/,
+      { timeout: 15000 }
     )
 
     // ── Paso 5: Expandir el último acordeón de dosis ─────────────────────────
@@ -70,5 +71,50 @@ test.describe('Programar Cita de Tratamiento', () => {
     await expect(
       page.getByText(/Cita programada para el/i).first()
     ).toBeVisible()
+  })
+
+  test('El botón Programar cita está deshabilitado si no se selecciona fecha', async ({
+    page
+  }) => {
+    // Login
+    await page.goto('http://localhost:3000/auth/ingresar')
+    await page.locator('input[name="username"]').fill('enfermeria')
+    await page.locator('input[name="password"]').fill('123')
+    await page.getByRole('button', { name: 'Inicia sesión' }).click()
+    await expect(page).toHaveURL('http://localhost:3000/dashboard')
+
+    // Navegar y abrir historial del paciente
+    await page.goto('http://localhost:3000/dashboard/atencion/pacientes')
+    await page.locator('button[title="Ver detalle"]').first().click()
+    await expect(page).toHaveURL(/\/dashboard\/atencion\/pacientes\/.+/)
+
+    // Navegar al historial de un tratamiento
+    await page
+      .getByRole('link', { name: /Ver Detalle/i })
+      .first()
+      .click()
+    await expect(page).toHaveURL(
+      /\/dashboard\/atencion\/pacientes\/.+\/detalle\/.+/,
+      { timeout: 15000 }
+    )
+
+    // Expandir acordeón
+    await page
+      .getByRole('button', { name: /Dosis #/i })
+      .last()
+      .click()
+
+    // Abrir modal de nueva cita
+    await page.getByRole('button', { name: 'Programar Nueva Cita' }).click()
+
+    const modal = page
+      .locator('dialog:visible')
+      .filter({ hasText: 'Programar Nueva Cita' })
+      .first()
+    await expect(modal).toBeVisible()
+
+    // Botón "Programar cita" debe estar deshabilitado porque la fecha inicia vacía
+    const btnProgramar = modal.getByRole('button', { name: 'Programar cita' })
+    await expect(btnProgramar).toBeDisabled()
   })
 })

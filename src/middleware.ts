@@ -10,7 +10,11 @@ const PATRON_COMBINADO =
 
 export default async function middleware(req: NextRequest) {
   console.log(req.cookies.getAll())
-  const token = await getToken({ req, secret, secureCookie: true })
+  const token = await getToken({
+    req,
+    secret
+    // secureCookie: true
+  })
   const { pathname } = req.nextUrl
 
   console.log('Middleware de Verificacion')

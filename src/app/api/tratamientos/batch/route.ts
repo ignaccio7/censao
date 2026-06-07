@@ -51,6 +51,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const validData = validationResult.data
     const pacienteCi = validData.pacienteId
 
+    console.log(validData)
+
     // ══════════════════════════════════════════════════════════════════════
     // TRANSACCIÓN: todo o nada
     // ══════════════════════════════════════════════════════════════════════

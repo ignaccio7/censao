@@ -4,10 +4,27 @@ export const editarPacienteSchema = z.object({
   ci: z
     .string()
     .min(4, 'El CI debe tener al menos 4 caracteres')
-    .max(11, 'El CI no puede exceder 11 caracteres'),
-  nombres: z.string().min(2, 'Mínimo 2 caracteres').max(100),
-  paterno: z.string().min(2, 'Mínimo 2 caracteres').max(100),
-  materno: z.string().max(100).optional().or(z.literal('')),
+    .max(11, 'El CI no puede exceder 11 caracteres')
+    .regex(
+      /^[1-9]\d{3,7}(?:-\d[A-Z])?$/,
+      'Formato inválido. Ej: 1234567 o 1234567-1B'
+    ),
+  nombres: z
+    .string()
+    .min(2, 'Mínimo 2 caracteres')
+    .max(100)
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜćĆšŠ\s']+$/, 'Formato de nombre inválido'),
+  paterno: z
+    .string()
+    .min(2, 'Mínimo 2 caracteres')
+    .max(100)
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜćĆšŠ\s']+$/, 'Formato de apellido inválido'),
+  materno: z
+    .string()
+    .max(100)
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜćĆšŠ\s']*$/, 'Formato de apellido inválido')
+    .optional()
+    .or(z.literal('')),
   telefono: z
     .string()
     .min(7, 'Mínimo 7 dígitos')
@@ -32,16 +49,27 @@ export const crearPacienteSchema = z.object({
   ci: z
     .string()
     .min(4, 'El CI debe tener al menos 4 caracteres')
-    .max(11, 'El CI no puede exceder 11 caracteres'),
+    .max(11, 'El CI no puede exceder 11 caracteres')
+    .regex(
+      /^[1-9]\d{3,7}(?:-\d[A-Z])?$/,
+      'Formato inválido. Ej: 1234567 o 1234567-1B'
+    ),
   nombres: z
     .string()
     .min(2, 'El nombre debe tener al menos 2 caracteres')
-    .max(100),
+    .max(100)
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜćĆšŠ\s']+$/, 'Formato de nombre inválido'),
   paterno: z
     .string()
     .min(2, 'El apellido paterno debe tener al menos 2 caracteres')
-    .max(100),
-  materno: z.string().max(100).optional().or(z.literal('')),
+    .max(100)
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜćĆšŠ\s']+$/, 'Formato de apellido inválido'),
+  materno: z
+    .string()
+    .max(100)
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜćĆšŠ\s']*$/, 'Formato de apellido inválido')
+    .optional()
+    .or(z.literal('')),
   telefono: z.string().max(20).optional().or(z.literal('')),
   correo: z.string().email('Correo inválido').optional().or(z.literal('')),
   direccion: z.string().max(200).optional().or(z.literal('')),

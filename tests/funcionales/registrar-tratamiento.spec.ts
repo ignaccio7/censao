@@ -54,4 +54,78 @@ test.describe('Registro de Tratamiento (Vacunación)', () => {
       'http://localhost:3000/dashboard/atencion/pacientes'
     )
   })
+
+  test('Validaciones del carrito de vacunas en el frontend', async ({
+    page
+  }) => {
+    // Login
+    await page.goto('http://localhost:3000/auth/ingresar')
+    await page.locator('input[name="username"]').fill('enfermeria')
+    await page.locator('input[name="password"]').fill('123')
+    await page.getByRole('button', { name: 'Inicia sesión' }).click()
+    await expect(page).toHaveURL('http://localhost:3000/dashboard')
+
+    // Navegar a listado de pacientes y luego al primer paciente para registrar
+    await page.goto('http://localhost:3000/dashboard/atencion/pacientes')
+    await page.locator('button[title="Ver detalle"]').first().click()
+    await expect(page).toHaveURL(/\/dashboard\/atencion\/pacientes\/.+/)
+    await page.getByRole('link', { name: /Registrar tratamiento/i }).click()
+    await expect(page).toHaveURL(/\/dashboard\/tratamientos\/.+\/crear/)
+
+    // 1. Validar que la sección de "Registrar todo" NO es visible con carrito vacío
+    await expect(
+      page.getByRole('button', { name: /Registrar todo/i })
+    ).not.toBeVisible()
+
+    // 2. Botón "+ Agregar al registro" deshabilitado si no hay esquema
+    const btnAgregar = page.getByRole('button', {
+      name: '+ Agregar al registro'
+    })
+    await expect(btnAgregar).toBeDisabled()
+
+    // Seleccionar solo vacuna y no esquema, verificar que sigue disabled
+    await page.locator('select').first().selectOption({ index: 1 })
+    await expect(btnAgregar).toBeDisabled()
+  })
+
+  test('El backend rechaza peticiones con tratamientos vacíos (seguridad API)', async ({
+    page,
+    request
+  }) => {
+    // Iniciar sesión por UI para capturar la sesión y las cookies
+    await page.goto('http://localhost:3000/auth/ingresar')
+    await page.locator('input[name="username"]').fill('enfermeria')
+    await page.locator('input[name="password"]').fill('123')
+    await page.getByRole('button', { name: 'Inicia sesión' }).click()
+    await expect(page).toHaveURL('http://localhost:3000/dashboard')
+
+    // Extraer cookies para hacer una petición directa al backend simulando un atacante o bypass del frontend
+    const cookies = await page.context().cookies()
+    const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ')
+
+    // Enviar POST vacío a la ruta de batch
+    const response = await request.post(
+      'http://localhost:3000/api/tratamientos/batch',
+      {
+        headers: {
+          Cookie: cookieHeader,
+          'Content-Type': 'application/json'
+        },
+        data: {
+          pacienteId: 'cualquier-id',
+          tratamientos: [] // ARRAY VACÍO: Esto es lo que el backend debe rechazar
+        }
+      }
+    )
+
+    // Debe ser Bad Request 400
+    expect(response.status()).toBe(400)
+
+    const responseBody = await response.json()
+    expect(responseBody.success).toBe(false)
+    expect(responseBody.message).toBe('Error de validación')
+
+    // Zod debe devolver que el array tiene menos elementos del mínimo requerido (.min(1))
+    expect(responseBody.errors.tratamientos).toBeDefined()
+  })
 })

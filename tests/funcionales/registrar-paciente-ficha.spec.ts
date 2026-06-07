@@ -55,4 +55,87 @@ test.describe('Registro de Paciente y Ficha', () => {
       page.getByText(/Ficha creada exitosamente/i).first()
     ).toBeVisible()
   })
+
+  test('Muestra errores de validación con formulario vacío', async ({
+    page
+  }) => {
+    await page.goto('http://localhost:3000/auth/ingresar')
+    await page.locator('input[name="username"]').fill('doctor.fichas')
+    await page.locator('input[name="password"]').fill('123')
+    await page.getByRole('button', { name: 'Inicia sesión' }).click()
+    await expect(page).toHaveURL('http://localhost:3000/dashboard')
+
+    await page.goto('http://localhost:3000/dashboard/atencion/pacientes/crear')
+
+    // Clic en registrar sin llenar nada
+    await page.getByRole('button', { name: 'Registrar Paciente' }).click()
+
+    // Validar errores requeridos
+    await expect(page.getByText(/El CI debe tener al menos/i)).toBeVisible()
+    await expect(page.getByText(/El nombre debe tener al menos/i)).toBeVisible()
+  })
+
+  test('Muestra error de validación si el nombre tiene números', async ({
+    page
+  }) => {
+    await page.goto('http://localhost:3000/auth/ingresar')
+    await page.locator('input[name="username"]').fill('doctor.fichas')
+    await page.locator('input[name="password"]').fill('123')
+    await page.getByRole('button', { name: 'Inicia sesión' }).click()
+    await expect(page).toHaveURL('http://localhost:3000/dashboard')
+
+    await page.goto('http://localhost:3000/dashboard/atencion/pacientes/crear')
+
+    // Llenar nombre con números para disparar el regex
+    await page.locator('input[name="ci"]').fill('12345678')
+    await page.locator('input[name="nombres"]').fill('Pac1ente123')
+    await page.locator('input[name="paterno"]').fill('Prueba')
+
+    await page.getByRole('button', { name: 'Registrar Paciente' }).click()
+
+    // Validar mensaje del regex de nombres
+    await expect(page.getByText(/Formato de nombre inválido/i)).toBeVisible()
+  })
+
+  test('El backend rechaza un paciente con CI duplicado', async ({ page }) => {
+    await page.goto('http://localhost:3000/auth/ingresar')
+    await page.locator('input[name="username"]').fill('doctor.fichas')
+    await page.locator('input[name="password"]').fill('123')
+    await page.getByRole('button', { name: 'Inicia sesión' }).click()
+    await expect(page).toHaveURL('http://localhost:3000/dashboard')
+
+    await page.goto('http://localhost:3000/dashboard/atencion/pacientes/crear')
+
+    // Usamos el CI_TEST creado en el primer test (que ya existe en BD)
+    await page.locator('input[name="ci"]').fill('12345678')
+    await page.locator('input[name="nombres"]').fill('Clon')
+    await page.locator('input[name="paterno"]').fill('Duplicado')
+
+    await page.getByRole('button', { name: 'Registrar Paciente' }).click()
+
+    // Validar toast del backend (puede decir ya existe, error, etc.)
+    await expect(page.getByText(/Error|Ya existe/i).first()).toBeVisible()
+  })
+
+  test('Muestra error al registrar ficha con CI inexistente', async ({
+    page
+  }) => {
+    await page.goto('http://localhost:3000/auth/ingresar')
+    await page.locator('input[name="username"]').fill('doctor.fichas')
+    await page.locator('input[name="password"]').fill('123')
+    await page.getByRole('button', { name: 'Inicia sesión' }).click()
+    await expect(page).toHaveURL('http://localhost:3000/dashboard')
+
+    await page.goto('http://localhost:3000/dashboard/fichas')
+    await page.getByTestId('btn-abrir-modal-crear-ficha').click()
+
+    // Usar un CI inventado que no existe en el sistema
+    await page.locator('input[name="cedula"]').fill('999999999')
+    await page.locator('input[name="nombre"]').fill('No Existo')
+
+    await page.getByTestId('btn-registrar-nueva-ficha').click()
+
+    // Validar toast del backend que diga "no encontrado" o "Error"
+    await expect(page.getByText(/Error|no encontrad/i).first()).toBeVisible()
+  })
 })
