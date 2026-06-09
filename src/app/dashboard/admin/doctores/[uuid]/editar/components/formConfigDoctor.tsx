@@ -378,6 +378,12 @@ function EspecialidadCard({
                     {dispErrors.cupos.message}
                   </span>
                 )}
+                {dispErrors?.turno_codigo && (
+                  <span className='text-red-500 text-xs flex items-center gap-1'>
+                    <IconAlertCircle size='14' />
+                    {dispErrors.turno_codigo.message}
+                  </span>
+                )}
               </div>
             </div>
           )

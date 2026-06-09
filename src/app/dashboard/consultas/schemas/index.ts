@@ -22,6 +22,12 @@ export const consultaCreateSchema = z.object({
       tipo: z.enum(['CONTROL', 'CONSULTA'], {
         message: 'Tipo de cita inválido (solo CONTROL o CONSULTA)'
       }),
+      // Doctor override: si viene, se usa este doctor en lugar del de la ficha.
+      // Útil cuando la ficha fue reasignada por Enfermería y el doctor quiere
+      // programar la cita con el médico original del paciente.
+      doctorId: z.string().min(1).optional(),
+      // Turno override: el usuario también puede seleccionar el turno específico del doctor.
+      turnoCodigo: z.enum(['AM', 'PM']).optional(),
       observaciones: z
         .string()
         .max(500, 'Las observaciones no pueden exceder 500 caracteres')

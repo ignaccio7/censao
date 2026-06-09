@@ -23,6 +23,7 @@ export interface DoctorTurno {
   especialidadId: string
   especialidadNombre: string
   fichasActivas: FichaEstado[] // EN_ESPERA, ATENDIENDO, CANCELADA
+  fichasAtendidas: number // fichas con estado ATENDIDA en el turno
   fichasTotal: number
   cuposMaximos: number
 }
@@ -54,6 +55,10 @@ function transformarDoctores(data: any[]): DoctorTurno[] {
         estadosActivos.includes(f.estado)
       )
 
+      const fichasAtendidas = todasLasFichas.filter(
+        f => f.estado === 'ATENDIDA'
+      ).length
+
       const cuposMaximos = docEsp.disponibilidades.reduce(
         (total: number, disp: any) => total + (disp.cupos || 0),
         0
@@ -67,6 +72,7 @@ function transformarDoctores(data: any[]): DoctorTurno[] {
           especialidadId: especialidad.id,
           especialidadNombre: especialidad.nombre,
           fichasActivas,
+          fichasAtendidas,
           fichasTotal: todasLasFichas.length,
           cuposMaximos
         })

@@ -182,4 +182,47 @@ export class DoctoresService {
       orderBy: { nombre: 'asc' }
     })
   }
+
+  /**
+   * Obtiene todos los doctores de una especialidad específica con sus turnos activos.
+   * Utilizado para selectores de citas médicas.
+   */
+  static async getDoctoresConTurnosPorEspecialidad(especialidadId: string) {
+    if (!especialidadId) return []
+
+    const rows = await prisma.doctores_especialidades.findMany({
+      where: {
+        especialidad_id: especialidadId,
+        doctores: { eliminado_en: null }
+      },
+      select: {
+        doctor_id: true,
+        doctores: {
+          select: {
+            personas: {
+              select: { nombres: true, paterno: true, materno: true }
+            }
+          }
+        },
+        disponibilidades: {
+          where: { estado: true },
+          select: { turno_codigo: true }
+        }
+      }
+    })
+
+    return rows.map(r => ({
+      id: r.doctor_id,
+      nombre: [
+        r.doctores.personas.nombres,
+        r.doctores.personas.paterno,
+        r.doctores.personas.materno
+      ]
+        .filter(Boolean)
+        .join(' '),
+      turnos: [
+        ...new Set(r.disponibilidades.map(d => d.turno_codigo))
+      ].sort() as ('AM' | 'PM')[]
+    }))
+  }
 }

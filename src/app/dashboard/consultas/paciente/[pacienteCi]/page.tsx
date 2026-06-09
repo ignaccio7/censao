@@ -6,6 +6,7 @@ import Pagination from '@/app/components/ui/pagination'
 import InputSearch from '@/app/components/ui/inputSearch'
 import ConsultasTable from '@/app/dashboard/consultas/components/consultasTable'
 import prisma from '@/lib/prisma/prisma'
+import { getTurnoActual } from '@/app/utils/date'
 
 export default async function ConsultasPacientePage({
   params,
@@ -25,6 +26,46 @@ export default async function ConsultasPacientePage({
     redirect('/dashboard')
   }
 
+  // Obtener la especialidad del doctor logueado para filtrar sus consultas
+  // Se usa getTurnoActual() para respetar los horarios reales de turnos_catalogo
+  const turnoActual = await getTurnoActual()
+
+  let especialidadId: string | undefined = undefined
+
+  if (turnoActual) {
+    const doctorLogueado = await prisma.doctores.findFirst({
+      where: {
+        personas: {
+          usuarios: {
+            some: {
+              usuario_id: validation.data!.id,
+              eliminado_en: null
+            }
+          }
+        },
+        eliminado_en: null
+      },
+      select: {
+        doctores_especialidades: {
+          where: {
+            disponibilidades: {
+              some: {
+                turno_codigo: turnoActual,
+                estado: true,
+                eliminado_en: null
+              }
+            }
+          },
+          take: 1,
+          select: { especialidad_id: true }
+        }
+      }
+    })
+
+    especialidadId =
+      doctorLogueado?.doctores_especialidades[0]?.especialidad_id ?? undefined
+  }
+
   const sParams = (await searchParams) || {}
   const search = sParams.search ?? ''
   const page = Number(sParams.page) || 1
@@ -32,7 +73,8 @@ export default async function ConsultasPacientePage({
 
   const totalResults = await ConsultasService.countConsultasByPaciente({
     pacienteCi,
-    search
+    search,
+    especialidadId
   })
   const totalPages = Math.ceil(totalResults / numberPerPage)
 
@@ -40,7 +82,8 @@ export default async function ConsultasPacientePage({
     pacienteCi,
     search,
     page,
-    numberPerPage
+    numberPerPage,
+    especialidadId
   })
 
   // Obtener datos básicos del paciente para el encabezado

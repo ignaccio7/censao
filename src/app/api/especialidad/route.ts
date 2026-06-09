@@ -123,7 +123,8 @@ export async function GET() {
                   codigo: {
                     equals: turno
                   }
-                }
+                },
+                estado: true
               }
             },
             doctores: {

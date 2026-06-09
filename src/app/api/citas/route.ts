@@ -9,6 +9,9 @@ const createCitaSchema = z
   .object({
     tratamientoId: z.string().min(1, 'Se requiere el tratamiento').optional(),
     consultaId: z.string().min(1, 'Se requiere la consulta').optional(),
+    // doctorId explícito: solo aplica para citas de consulta (no vacuna).
+    // Permite elegir un doctor distinto al de la ficha cuando fue reasignada.
+    doctorId: z.string().min(1).optional(),
     fechaProgramada: z
       .string()
       .refine(v => !isNaN(Date.parse(v)), { message: 'Fecha inválida' }),
@@ -163,18 +166,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Buscar doctor asociado al usuario actual (mismo fallback que batch)
+    // Resolver el doctor de la cita:
+    // 1. Si viene doctorId explícito en el body Y es una cita de consulta → usarlo directamente.
+    // 2. Si no, buscar el doctor del usuario logueado (lógica original).
+    // El path de tratamientos (Enfermería/vacunas) nunca manda doctorId, por lo que
+    // siempre cae al fallback del usuario logueado — comportamiento intacto.
     let doctorId: string | null = null
-    const usuarioActual = await prisma.usuarios.findUnique({
-      where: { usuario_id: userId },
-      select: { persona_ci: true }
-    })
-    if (usuarioActual?.persona_ci) {
-      const doctor = await prisma.doctores.findUnique({
-        where: { doctor_id: usuarioActual.persona_ci }
+
+    if (parsed.data.doctorId && parsed.data.consultaId) {
+      // Override explícito: verificar que el doctor existe
+      const doctorOverride = await prisma.doctores.findUnique({
+        where: { doctor_id: parsed.data.doctorId }
       })
-      if (doctor) doctorId = doctor.doctor_id
+      if (doctorOverride) doctorId = doctorOverride.doctor_id
     }
+
+    if (!doctorId) {
+      // Fallback: doctor del usuario logueado
+      const usuarioActual = await prisma.usuarios.findUnique({
+        where: { usuario_id: userId },
+        select: { persona_ci: true }
+      })
+      if (usuarioActual?.persona_ci) {
+        const doctor = await prisma.doctores.findUnique({
+          where: { doctor_id: usuarioActual.persona_ci }
+        })
+        if (doctor) doctorId = doctor.doctor_id
+      }
+    }
+
     if (!doctorId) {
       const fallback = await prisma.doctores.findFirst({
         where: { eliminado_en: null }

@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma/prisma'
+import { DoctoresService } from '@/services/doctores'
 import CrearConsultaForm from './crear-consulta-form'
 
 type Params = Promise<{ fichaId: string }>
@@ -36,8 +37,11 @@ export default async function Page({
       },
       disponibilidades: {
         select: {
+          turno_codigo: true,
           doctores_especialidades: {
             select: {
+              doctor_id: true,
+              especialidad_id: true,
               especialidades: {
                 select: { nombre: true }
               }
@@ -68,6 +72,23 @@ export default async function Page({
   const especialidadNombre =
     ficha.disponibilidades?.doctores_especialidades?.especialidades?.nombre
 
+  // ID del doctor y especialidad actuales de la ficha (pueden ser Doctor 2 si hubo reasignación)
+  const doctorDefaultId =
+    ficha.disponibilidades?.doctores_especialidades?.doctor_id
+  const turnoDefaultCodigo = ficha.disponibilidades?.turno_codigo
+  const especialidadId =
+    ficha.disponibilidades?.doctores_especialidades?.especialidad_id
+
+  // Obtener todos los doctores de esa especialidad con sus turnos activos
+  // para poblar el selector de doctor en la cita de retorno
+  const doctoresDisponibles = especialidadId
+    ? await DoctoresService.getDoctoresConTurnosPorEspecialidad(especialidadId)
+    : []
+
+  const doctorDefaultNombre = doctoresDisponibles.find(
+    d => d.id === doctorDefaultId
+  )?.nombre
+
   let motivoPadre = undefined
   if (consultaPadreId) {
     const consultaPadre = await prisma.consultas.findUnique({
@@ -89,6 +110,10 @@ export default async function Page({
         ordenTurno={ficha.orden_turno}
         consultaPadreId={consultaPadreId}
         motivoPadre={motivoPadre}
+        doctorDefaultId={doctorDefaultId}
+        doctorDefaultNombre={doctorDefaultNombre}
+        turnoDefaultCodigo={turnoDefaultCodigo}
+        doctoresDisponibles={doctoresDisponibles}
       />
     </main>
   )

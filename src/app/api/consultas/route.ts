@@ -260,10 +260,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let citaCreada = false
     if (validData.cita) {
       const doctorEspecialidad = ficha.disponibilidades?.doctores_especialidades
-      const doctorId = doctorEspecialidad?.doctor_id
       const especialidadId = doctorEspecialidad?.especialidad_id
       const pacienteCi = ficha.pacientes.paciente_id
-      const turnoAsignado = ficha.disponibilidades?.turno_codigo
+      const turnoAsignado =
+        validData.cita.turnoCodigo ?? ficha.disponibilidades?.turno_codigo
+
+      // Si el formulario mandó un doctorId explícito (override), verificar que existe.
+      // Si no, usar el doctor de la ficha (comportamiento original).
+      let doctorId = validData.cita.doctorId ?? doctorEspecialidad?.doctor_id
+
+      if (validData.cita.doctorId) {
+        const doctorExiste = await prisma.doctores.findUnique({
+          where: { doctor_id: validData.cita.doctorId }
+        })
+        if (!doctorExiste) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: 'El doctor seleccionado no existe'
+            },
+            { status: 400 }
+          )
+        }
+        doctorId = doctorExiste.doctor_id
+      }
 
       if (!doctorId || !especialidadId || !turnoAsignado) {
         return NextResponse.json(

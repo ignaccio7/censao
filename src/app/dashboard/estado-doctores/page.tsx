@@ -8,9 +8,12 @@ import {
 } from '@/app/services/estado-doctores'
 import ModalReasignarDoctor from './components/ModalReasignarDoctor'
 
-function getBarColor(activas: number, total: number): string {
-  if (total === 0) return 'bg-gray-300'
-  const ratio = activas / Math.max(total, 1)
+function getBarColor(activas: number, cuposRestantes: number): string {
+  // Sin actividad en absoluto
+  if (cuposRestantes === 0 && activas === 0) return 'bg-gray-300'
+  // Sin cupos disponibles pero con fichas activas → sobrecargado
+  if (cuposRestantes === 0) return 'bg-red-500'
+  const ratio = activas / cuposRestantes
   if (ratio >= 0.8) return 'bg-red-500'
   if (ratio >= 0.5) return 'bg-yellow-500'
   return 'bg-green-500'
@@ -64,12 +67,16 @@ export default function EstadoDoctores() {
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
           {doctores.map(doctor => {
             const activas = doctor.fichasActivas.length
-            const atendidas = doctor.fichasTotal - activas
-            const cuposRestantes = Math.max(doctor.cuposMaximos - atendidas, 0)
-            const porcentaje =
-              cuposRestantes > 0
-                ? Math.min((activas / Math.max(cuposRestantes, 1)) * 100, 100)
-                : 0
+            // cuposRestantes = slots aún disponibles para asignar nuevas fichas
+            const cuposRestantes = Math.max(
+              doctor.cuposMaximos - doctor.fichasTotal,
+              0
+            )
+            // porcentaje visual: fichas activas respecto al tope máximo del doctor
+            const porcentaje = Math.min(
+              (activas / Math.max(doctor.cuposMaximos, 1)) * 100,
+              100
+            )
 
             return (
               <div
@@ -122,6 +129,10 @@ export default function EstadoDoctores() {
                       </span>
                     )
                   })}
+                  {/* Fichas ya atendidas en el turno */}
+                  <span className='px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700'>
+                    {doctor.fichasAtendidas} Atendidas
+                  </span>
                 </div>
 
                 {/* Barra de progreso */}

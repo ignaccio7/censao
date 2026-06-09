@@ -31,18 +31,28 @@ interface AccionesConsultaProps {
   esSeguimiento?: boolean
   esAbsorbida?: boolean
   isFromPatientePath?: boolean
+  // Datos para el selector de doctor en la cita de retorno
+  doctorDefaultNombre?: string
+  turnoDefaultCodigo?: 'AM' | 'PM' | string
+  doctoresDisponibles?: {
+    id: string
+    nombre: string
+    turnos: ('AM' | 'PM')[]
+  }[]
 }
 
 export default function AccionesConsulta({
   fichaId,
   consultaId,
   motivo,
-  pacienteCi,
   doctorId,
   estadoFicha,
   esSeguimiento = false,
   esAbsorbida = false,
-  isFromPatientePath = false
+  isFromPatientePath = false,
+  doctorDefaultNombre,
+  turnoDefaultCodigo,
+  doctoresDisponibles
 }: AccionesConsultaProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -53,6 +63,18 @@ export default function AccionesConsulta({
   const [citaTipo, setCitaTipo] = useState<'CONTROL' | 'CONSULTA'>('CONTROL')
   const [citaFecha, setCitaFecha] = useState<Date | undefined>()
   const [citaObservaciones, setCitaObservaciones] = useState('')
+
+  // Selector de doctor: override manual sobre el doctorId de la ficha
+  const [doctorOverride, setDoctorOverride] = useState<string | undefined>()
+  const [turnoOverride, setTurnoOverride] = useState<'AM' | 'PM' | undefined>()
+  const [doctorSelectorActivo, setDoctorSelectorActivo] = useState(false)
+
+  // Al cambiar de doctor, auto-seleccionar el primer turno disponible de ese doctor
+  const handleDoctorChange = (newDoctorId: string) => {
+    setDoctorOverride(newDoctorId)
+    const doctor = doctoresDisponibles?.find(d => d.id === newDoctorId)
+    setTurnoOverride(doctor?.turnos[0] as 'AM' | 'PM' | undefined)
+  }
 
   const createCitaMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -84,7 +106,10 @@ export default function AccionesConsulta({
       return
     }
 
-    if (!doctorId) {
+    // Usar el doctor override si fue seleccionado, sino el de la ficha
+    const doctorEfectivo = doctorOverride ?? doctorId
+
+    if (!doctorEfectivo) {
       toast.error('No se pudo identificar al doctor asignado a esta ficha')
       return
     }
@@ -107,9 +132,9 @@ export default function AccionesConsulta({
     }
 
     createCitaMutation.mutate({
-      pacienteId: pacienteCi,
-      doctorId: doctorId,
       consultaId: consultaId,
+      doctorId: doctorEfectivo,
+      ...(turnoOverride && { turnoCodigo: turnoOverride }),
       fechaProgramada: appointmentDate.toISOString(),
       tipo: citaTipo,
       observaciones: citaObservaciones.trim() || undefined
@@ -172,11 +197,122 @@ export default function AccionesConsulta({
         title='Programar Cita de Retorno'
         isOpen={modalCita}
         onClose={() => setModalCita(false)}
+        maxWidth='xl'
       >
         <div className='space-y-4'>
           <div className='bg-sky-50 border border-sky-100 rounded-lg p-3 text-sm text-sky-800 mb-4'>
             Esta cita quedará vinculada automáticamente a la consulta: <br />
             <strong>{motivo}</strong>
+          </div>
+
+          {/* ── Selector de Doctor ── */}
+          <div className='flex flex-col gap-1.5'>
+            <div className='flex items-center justify-between'>
+              <label
+                className='block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1'
+                htmlFor='doctor'
+              >
+                Doctor Asignado
+              </label>
+              {(doctoresDisponibles?.length ?? 0) > 1 && (
+                <button
+                  type='button'
+                  onClick={() => {
+                    const next = !doctorSelectorActivo
+                    setDoctorSelectorActivo(next)
+                    if (!next) {
+                      setDoctorOverride(undefined)
+                      setTurnoOverride(undefined)
+                    }
+                  }}
+                  className='text-[10px] text-blue-600 hover:underline font-semibold cursor-pointer'
+                >
+                  {doctorSelectorActivo
+                    ? '↩ Usar doctor original'
+                    : '✎ Cambiar doctor'}
+                </button>
+              )}
+            </div>
+
+            {doctorSelectorActivo && doctoresDisponibles ? (
+              <div className='flex flex-col gap-2'>
+                {/* Selector de doctor */}
+                <select
+                  value={doctorOverride ?? doctorId ?? ''}
+                  onChange={e => handleDoctorChange(e.target.value)}
+                  className='w-full border border-blue-300 rounded-lg p-2 text-sm bg-blue-50 cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all'
+                >
+                  {doctoresDisponibles.map(d => (
+                    <option key={d.id} value={d.id}>
+                      {d.nombre}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Selector de turno del doctor seleccionado */}
+                {(() => {
+                  const doctorActual = doctoresDisponibles.find(
+                    d => d.id === (doctorOverride ?? doctorId)
+                  )
+                  if (!doctorActual || doctorActual.turnos.length === 0)
+                    return null
+                  if (doctorActual.turnos.length === 1) {
+                    return (
+                      <p className='text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2'>
+                        Turno:{' '}
+                        <strong>
+                          {doctorActual.turnos[0] === 'AM'
+                            ? 'Mañana (AM)'
+                            : 'Tarde (PM)'}
+                        </strong>
+                      </p>
+                    )
+                  }
+                  return (
+                    <div className='flex flex-col gap-1'>
+                      <label
+                        className='block text-[11px] font-semibold text-gray-500 uppercase tracking-wide'
+                        htmlFor='turno'
+                      >
+                        Turno
+                      </label>
+                      <select
+                        value={turnoOverride ?? doctorActual.turnos[0]}
+                        onChange={e =>
+                          setTurnoOverride(e.target.value as 'AM' | 'PM')
+                        }
+                        className='w-full border border-blue-200 rounded-lg p-2 text-sm bg-blue-50 cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all'
+                      >
+                        {doctorActual.turnos.map(t => (
+                          <option key={t} value={t}>
+                            {t === 'AM' ? 'Mañana (AM)' : 'Tarde (PM)'}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )
+                })()}
+              </div>
+            ) : (
+              <div className='text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-lg p-2.5 flex flex-col gap-1'>
+                <div className='flex items-center gap-1.5'>
+                  <span>👨‍⚕️</span>
+                  <span className='font-medium'>
+                    {doctorDefaultNombre ?? 'Doctor asignado a la ficha'}
+                  </span>
+                </div>
+                {turnoDefaultCodigo && (
+                  <div className='text-xs text-gray-500 pl-6'>
+                    Turno asignado:{' '}
+                    <strong>
+                      {turnoDefaultCodigo === 'AM'
+                        ? 'Mañana (AM)'
+                        : 'Tarde (PM)'}
+                    </strong>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className='flex flex-col gap-1.5'>

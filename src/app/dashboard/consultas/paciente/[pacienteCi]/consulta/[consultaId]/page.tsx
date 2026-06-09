@@ -1,6 +1,7 @@
 import AuthService from '@/lib/services/auth-service'
 import { redirect } from 'next/navigation'
 import { ConsultasService } from '@/services/consultas'
+import { DoctoresService } from '@/services/doctores'
 import Link from 'next/link'
 import {
   IconChevronLeft,
@@ -45,6 +46,25 @@ export default async function DetalleConsultaPacientePage({
   }
 
   const esSeguimiento = !!consulta.consulta_padre_id
+
+  // Extraer doctor y especialidad de la ficha origen para el selector de cita
+  const doctorDefaultId =
+    consulta.ficha_origen?.disponibilidades?.doctores_especialidades?.doctores
+      ?.doctor_id
+  const especialidadId =
+    consulta.ficha_origen?.disponibilidades?.doctores_especialidades
+      ?.especialidad_id
+  const turnoDefaultCodigo =
+    consulta.ficha_origen?.disponibilidades?.turno_codigo
+
+  // Obtener doctores de esa especialidad con sus turnos activos
+  const doctoresDisponibles = especialidadId
+    ? await DoctoresService.getDoctoresConTurnosPorEspecialidad(especialidadId)
+    : []
+
+  const doctorDefaultNombre = doctoresDisponibles.find(
+    d => d.id === doctorDefaultId
+  )?.nombre
 
   const estadoBadge =
     consulta.estado_calculado === 'ACTIVA' ? (
@@ -145,14 +165,14 @@ export default async function DetalleConsultaPacientePage({
               consultaId={consulta.id}
               motivo={consulta.motivo_consulta}
               pacienteCi={consulta.paciente_ci}
-              doctorId={
-                consulta.ficha_origen.disponibilidades?.doctores_especialidades
-                  ?.doctores?.doctor_id
-              }
+              doctorId={doctorDefaultId}
               estadoFicha={consulta.ficha_origen.estado}
               esSeguimiento={esSeguimiento}
               esAbsorbida={consulta.es_absorbida}
               isFromPatientePath={true}
+              doctorDefaultNombre={doctorDefaultNombre}
+              turnoDefaultCodigo={turnoDefaultCodigo}
+              doctoresDisponibles={doctoresDisponibles}
             />
           </div>
         </div>

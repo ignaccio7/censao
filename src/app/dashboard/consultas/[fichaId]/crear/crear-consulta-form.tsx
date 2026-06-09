@@ -28,6 +28,15 @@ interface CrearConsultaFormProps {
   ordenTurno: number | null
   consultaPadreId?: string
   motivoPadre?: string
+  // Datos del doctor/especialidad para el selector de cita de retorno
+  doctorDefaultId?: string
+  doctorDefaultNombre?: string
+  turnoDefaultCodigo?: 'AM' | 'PM' | string
+  doctoresDisponibles?: {
+    id: string
+    nombre: string
+    turnos: ('AM' | 'PM')[]
+  }[]
 }
 
 export default function CrearConsultaForm({
@@ -37,7 +46,11 @@ export default function CrearConsultaForm({
   especialidadNombre,
   ordenTurno,
   consultaPadreId,
-  motivoPadre
+  motivoPadre,
+  doctorDefaultId,
+  doctorDefaultNombre,
+  turnoDefaultCodigo,
+  doctoresDisponibles
 }: CrearConsultaFormProps) {
   const router = useRouter()
   const { createConsulta } = useConsultas()
@@ -52,6 +65,18 @@ export default function CrearConsultaForm({
   const [citaTipo, setCitaTipo] = useState<'CONTROL' | 'CONSULTA'>('CONTROL')
   const [citaObservaciones, setCitaObservaciones] = useState('')
   const [citaFecha, setCitaFecha] = useState<Date | undefined>()
+
+  // ── Selector de doctor para la cita de retorno ──
+  const [doctorOverride, setDoctorOverride] = useState<string | undefined>()
+  const [turnoOverride, setTurnoOverride] = useState<'AM' | 'PM' | undefined>()
+  const [doctorSelectorActivo, setDoctorSelectorActivo] = useState(false)
+
+  // Al cambiar de doctor, auto-seleccionar el primer turno disponible de ese doctor
+  const handleDoctorChange = (newDoctorId: string) => {
+    setDoctorOverride(newDoctorId)
+    const doctor = doctoresDisponibles?.find(d => d.id === newDoctorId)
+    setTurnoOverride(doctor?.turnos[0] as 'AM' | 'PM' | undefined)
+  }
 
   // ── Handlers ──
   const handleRequiereRetornoChange = (value: boolean) => {
@@ -117,6 +142,9 @@ export default function CrearConsultaForm({
         payload.cita = {
           fechaProgramada: appointmentDate.toISOString(),
           tipo: citaTipo,
+          // Solo enviar doctorId/turnoCodigo si el usuario cambió activamente el doctor
+          ...(doctorOverride && { doctorId: doctorOverride }),
+          ...(turnoOverride && { turnoCodigo: turnoOverride }),
           ...(citaObservaciones.trim() && {
             observaciones: citaObservaciones.trim()
           })
@@ -268,8 +296,8 @@ export default function CrearConsultaForm({
             {/* Botones de acción */}
             <div className='pt-4 border-t border-gray-200 space-y-3'>
               {requiereRetorno && showCitaForm && citaFecha && (
-                <div className='bg-blue-50 border border-blue-100 rounded-md px-3 py-2 text-step--2 text-blue-700'>
-                  📅 Cita de retorno programada para el{' '}
+                <div className='bg-blue-50 border border-blue-100 rounded-md px-3 py-2 text-step--2 text-blue-700 flex flex-row gap-1 items-center'>
+                  <IconCalendar /> Cita de retorno programada para el{' '}
                   {citaFecha.toLocaleDateString('es-BO', {
                     weekday: 'short',
                     day: '2-digit',
@@ -315,6 +343,116 @@ export default function CrearConsultaForm({
                 <h2 className='font-semibold text-gray-800 text-step-0'>
                   Programar Cita de Retorno
                 </h2>
+              </div>
+
+              {/* ── Selector de Doctor ── */}
+              <div className='flex flex-col gap-1.5 mb-4'>
+                <div className='flex items-center justify-between'>
+                  <label
+                    className='block text-[11px] font-semibold text-gray-500 uppercase tracking-wide'
+                    htmlFor='doctor'
+                  >
+                    Doctor Asignado
+                  </label>
+                  {(doctoresDisponibles?.length ?? 0) > 1 && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        const next = !doctorSelectorActivo
+                        setDoctorSelectorActivo(next)
+                        if (!next) {
+                          setDoctorOverride(undefined)
+                          setTurnoOverride(undefined)
+                        }
+                      }}
+                      className='text-[10px] text-blue-600 hover:underline font-semibold cursor-pointer'
+                    >
+                      {doctorSelectorActivo
+                        ? '↩ Usar doctor original'
+                        : '✎ Cambiar doctor'}
+                    </button>
+                  )}
+                </div>
+
+                {doctorSelectorActivo && doctoresDisponibles ? (
+                  <div className='flex flex-col gap-2'>
+                    {/* Selector de doctor */}
+                    <select
+                      value={doctorOverride ?? doctorDefaultId ?? ''}
+                      onChange={e => handleDoctorChange(e.target.value)}
+                      className='w-full border border-blue-300 rounded p-1.5 text-step--2 bg-blue-50 outline-none focus:border-blue-500 cursor-pointer'
+                    >
+                      {doctoresDisponibles.map(d => (
+                        <option key={d.id} value={d.id}>
+                          {d.nombre}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Selector de turno del doctor seleccionado */}
+                    {(() => {
+                      const doctorActual = doctoresDisponibles.find(
+                        d => d.id === (doctorOverride ?? doctorDefaultId)
+                      )
+                      if (!doctorActual || doctorActual.turnos.length === 0)
+                        return null
+                      if (doctorActual.turnos.length === 1) {
+                        return (
+                          <p className='text-[10px] text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1'>
+                            Turno:{' '}
+                            <strong>
+                              {doctorActual.turnos[0] === 'AM'
+                                ? 'Mañana (AM)'
+                                : 'Tarde (PM)'}
+                            </strong>
+                          </p>
+                        )
+                      }
+                      return (
+                        <div className='flex flex-col gap-1'>
+                          <label
+                            className='block text-[10px] font-semibold text-gray-500 uppercase tracking-wide'
+                            htmlFor='turno'
+                          >
+                            Turno
+                          </label>
+                          <select
+                            value={turnoOverride ?? doctorActual.turnos[0]}
+                            onChange={e =>
+                              setTurnoOverride(e.target.value as 'AM' | 'PM')
+                            }
+                            className='w-full border border-blue-200 rounded p-1.5 text-step--2 bg-blue-50 outline-none focus:border-blue-500 cursor-pointer'
+                          >
+                            {doctorActual.turnos.map(t => (
+                              <option key={t} value={t}>
+                                {t === 'AM' ? 'Mañana (AM)' : 'Tarde (PM)'}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )
+                    })()}
+                  </div>
+                ) : (
+                  <div className='text-step--2 text-gray-700 bg-gray-50 border border-gray-200 rounded p-2 flex flex-col gap-1'>
+                    <div className='flex items-center gap-1.5'>
+                      <span>👨‍⚕️</span>
+                      <span className='font-medium'>
+                        {doctorDefaultNombre ?? 'Doctor asignado a la ficha'}
+                      </span>
+                    </div>
+                    {turnoDefaultCodigo && (
+                      <div className='text-[11px] text-gray-500 pl-6'>
+                        Turno asignado:{' '}
+                        <strong>
+                          {turnoDefaultCodigo === 'AM'
+                            ? 'Mañana (AM)'
+                            : 'Tarde (PM)'}
+                        </strong>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Tipo de cita */}
@@ -399,8 +537,8 @@ export default function CrearConsultaForm({
               </div>
 
               {citaFecha && (
-                <div className='bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2 text-step--2 text-emerald-700'>
-                  ✅ Cita programada para el{' '}
+                <div className='bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2 text-step--2 text-emerald-700 flex flex-row gap-1 items-center'>
+                  <IconCheck /> Cita programada para el{' '}
                   <strong>
                     {citaFecha.toLocaleDateString('es-BO', {
                       weekday: 'long',
