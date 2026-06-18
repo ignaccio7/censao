@@ -4,43 +4,64 @@ import {
   IconUser,
   IconUserPlus
 } from '@/app/components/icons/icons'
-import { useFichas } from '@/app/services/fichas'
+import { useFichas, buscarPacientesPorCi } from '@/app/services/fichas'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { FichaRegisterFormData, fichaRegisterSchema } from '../schemas'
 import { toast } from 'sonner'
 import useModal from '@/hooks/useModal'
+import { useState } from 'react'
+import InputAutocomplete from '@/app/components/ui/inputAutocomplete'
+import type { AutocompleteItem } from '@/app/components/ui/inputAutocomplete'
 
 export default function FormRegister() {
   const { createFicha } = useFichas()
-
   const { closeModal } = useModal()
 
+  // Valor controlado del campo CI para el autocomplete
+  const [ciValue, setCiValue] = useState('')
+
   const {
-    register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
+    setValue,
+    watch
   } = useForm<FichaRegisterFormData>({
     resolver: zodResolver(fichaRegisterSchema)
   })
+
+  const nombreValue = watch('nombre') ?? ''
+
+  // Cuando el usuario selecciona un paciente del autocomplete
+  const handleSelectPaciente = (item: AutocompleteItem) => {
+    setCiValue(item.value)
+    setValue('cedula', item.value, { shouldValidate: true })
+    setValue('nombre', item.label, { shouldValidate: true })
+  }
+
+  // Cuando el usuario escribe en el CI manualmente (sin seleccionar)
+  const handleCiChange = (val: string) => {
+    setCiValue(val)
+    setValue('cedula', val, { shouldValidate: false })
+    // Limpiar nombre si el usuario modifica el CI sin seleccionar
+    setValue('nombre', '', { shouldValidate: false })
+  }
 
   const onSubmit = async (data: any) => {
     try {
       const result = await createFicha.mutateAsync(data)
 
       if (result.success) {
-        // Notificación de éxito
         toast.success(result.message)
-        reset() // Limpiar formulario
+        reset()
+        setCiValue('')
         closeModal()
       } else {
         toast.error(result.message)
       }
     } catch (error: any) {
-      // Manejar errores de validación o servidor
       if (error.response?.data?.errors) {
-        // Errores de validación específicos
         const validationErrors = error.response.data.errors
         Object.keys(validationErrors).forEach(field => {
           toast.error(`${field}: ${validationErrors[field].join(', ')}`)
@@ -50,9 +71,6 @@ export default function FormRegister() {
       }
       closeModal()
     }
-    // finally {
-    //   closeModal()
-    // }
   }
 
   return (
@@ -65,34 +83,26 @@ export default function FormRegister() {
         className='my-2 md:my-4 grid grid-cols-1 md:grid-cols-2 gap-4'
         onSubmit={handleSubmit(onSubmit)}
       >
-        {/* Cédula */}
-        <label
-          htmlFor='cedula'
-          className='text-step-0 w-full flex flex-col gap-1'
-        >
-          <span className='font-semibold flex gap-1 items-center'>
-            <IconCredential />
-            Cédula
-          </span>
-          <input
-            {...register('cedula')}
-            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors text-step-1 ${
-              errors.cedula
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
-            }`}
-            type='text'
+        {/* Cédula — Autocomplete */}
+        <div className='text-step-0 w-full flex flex-col gap-1'>
+          <InputAutocomplete
             id='cedula'
+            value={ciValue}
+            onChange={handleCiChange}
+            onSelect={handleSelectPaciente}
+            fetchOptions={buscarPacientesPorCi}
             placeholder='1054876541'
+            error={errors.cedula?.message}
+            label={
+              <span className='font-semibold flex gap-1 items-center'>
+                <IconCredential />
+                Cédula
+              </span>
+            }
           />
-          {errors.cedula && (
-            <span className='text-red-500 text-sm'>
-              {errors.cedula.message}
-            </span>
-          )}
-        </label>
+        </div>
 
-        {/* Nombre */}
+        {/* Nombre — Read-only, se rellena al seleccionar CI */}
         <label
           htmlFor='nombre'
           className='text-step-0 w-full flex flex-col gap-1'
@@ -102,15 +112,16 @@ export default function FormRegister() {
             Nombre Completo
           </span>
           <input
-            {...register('nombre')}
-            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors text-step-1 ${
+            readOnly
+            value={nombreValue}
+            className={`p-2 border rounded-md focus:outline-none focus:ring-1 transition-colors text-step-1 bg-gray-50 cursor-not-allowed select-none ${
               errors.nombre
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                 : 'border-transparent focus:border-primary-600 focus:ring-primary-600'
             }`}
             type='text'
             id='nombre'
-            placeholder='Juan Perez Garcia'
+            placeholder='Se rellena al seleccionar una cédula'
           />
           {errors.nombre && (
             <span className='text-red-500 text-sm'>

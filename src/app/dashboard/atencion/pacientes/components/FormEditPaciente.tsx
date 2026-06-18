@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -38,6 +39,7 @@ interface FormEditPacienteProps {
   direccion: string | null
   sexo: string | null
   grupoSanguineo: string | null
+  fechaNacimiento: string | null
 }
 
 export default function FormEditPaciente(props: FormEditPacienteProps) {
@@ -57,10 +59,26 @@ export default function FormEditPaciente(props: FormEditPacienteProps) {
       telefono: props.telefono || '',
       correo: props.correo || '',
       direccion: props.direccion || '',
+      fecha_nacimiento: props.fechaNacimiento || '',
       sexo: (props.sexo as 'M' | 'F' | 'O') || undefined,
       grupo_sanguineo: props.grupoSanguineo || ''
     }
   })
+
+  useEffect(() => {
+    form.reset({
+      ci: props.ci,
+      nombres: props.nombres,
+      paterno: props.paterno,
+      materno: props.materno || '',
+      telefono: props.telefono || '',
+      correo: props.correo || '',
+      direccion: props.direccion || '',
+      fecha_nacimiento: props.fechaNacimiento || '',
+      sexo: (props.sexo as 'M' | 'F' | 'O') || undefined,
+      grupo_sanguineo: props.grupoSanguineo || ''
+    })
+  }, [props, form])
 
   const onSubmit = (data: EditarPacienteFormData) => {
     updatePaciente.mutate(
@@ -126,14 +144,18 @@ export default function FormEditPaciente(props: FormEditPacienteProps) {
           placeholder='Ej. correo@ejemplo.com'
           form={form}
         />
-        <div className='md:col-span-2'>
-          <FieldInput
-            id='direccion'
-            label='Dirección'
-            placeholder='Ej. Zona Sur, Calle 1'
-            form={form}
-          />
-        </div>
+        <FieldInput
+          id='fecha_nacimiento'
+          label='Fecha de Nacimiento'
+          type='date'
+          form={form}
+        />
+        <FieldInput
+          id='direccion'
+          label='Dirección'
+          placeholder='Ej. Zona Sur, Calle 1'
+          form={form}
+        />
         <FieldSelect
           id='sexo'
           label='Sexo'

@@ -105,6 +105,7 @@ export async function PATCH(
       telefono,
       correo,
       direccion,
+      fecha_nacimiento,
       sexo,
       grupo_sanguineo
     } = body
@@ -135,6 +136,9 @@ export async function PATCH(
         await tx.pacientes.update({
           where: { paciente_id: targetCi },
           data: {
+            fecha_nacimiento: fecha_nacimiento
+              ? new Date(fecha_nacimiento)
+              : null,
             grupo_sanguineo,
             sexo,
             actualizado_por: userId,
@@ -158,6 +162,9 @@ export async function PATCH(
         await tx.pacientes.update({
           where: { paciente_id: uuid },
           data: {
+            fecha_nacimiento: fecha_nacimiento
+              ? new Date(fecha_nacimiento)
+              : null,
             grupo_sanguineo,
             sexo,
             actualizado_por: userId,

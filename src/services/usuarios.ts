@@ -31,7 +31,22 @@ interface UsersResponse {
   eliminado_en: Date | null
   eliminado_por: string | null
   usuarios_roles: { roles: { nombre: string } }[]
-  personas: { nombres: string; paterno: string; materno: string }
+  personas: {
+    nombres: string
+    paterno: string | null
+    materno: string | null
+    correo?: string | null
+    telefono?: string | null
+    direccion?: string | null
+    pacientes?: {
+      fecha_nacimiento: Date | null
+      sexo: string | null
+      grupo_sanguineo: string | null
+    } | null
+    doctores?: {
+      matricula: string | null
+    } | null
+  }
 }
 
 export class UserssService {
@@ -106,7 +121,22 @@ export class UserssService {
           select: {
             nombres: true,
             paterno: true,
-            materno: true
+            materno: true,
+            correo: true,
+            telefono: true,
+            direccion: true,
+            pacientes: {
+              select: {
+                fecha_nacimiento: true,
+                sexo: true,
+                grupo_sanguineo: true
+              }
+            },
+            doctores: {
+              select: {
+                matricula: true
+              }
+            }
           }
         }
       },

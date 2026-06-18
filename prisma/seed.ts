@@ -1299,7 +1299,7 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         nombre: 'API Recordatorio de Citas',
         tipo: 'backend',
         ruta: '/api/notificaciones/recordatorio-citas',
-        metodos: ['POST'],
+        metodos: ['GET'],
         descripcion: 'API para enviar recordatorios de citas',
         modulo: 'atencion'
       }

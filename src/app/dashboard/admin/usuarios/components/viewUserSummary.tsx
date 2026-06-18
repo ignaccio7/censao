@@ -124,6 +124,40 @@ export default function ViewUserSummary({ usuario }: ViewUserSummaryProps) {
             <div className='col-span-2'>
               <InfoRow label='Dirección' value={usuario.personas?.direccion} />
             </div>
+
+            {/* Campos condicionales para Pacientes */}
+            {usuario.personas?.pacientes?.fecha_nacimiento && (
+              <InfoRow
+                label='Fecha de Nacimiento'
+                value={new Date(
+                  usuario.personas.pacientes.fecha_nacimiento
+                ).toLocaleDateString('es-BO', {
+                  timeZone: 'UTC',
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                })}
+              />
+            )}
+            {usuario.personas?.pacientes?.sexo && (
+              <InfoRow label='Sexo' value={usuario.personas.pacientes.sexo} />
+            )}
+            {usuario.personas?.pacientes?.grupo_sanguineo && (
+              <InfoRow
+                label='Grupo Sanguíneo'
+                value={usuario.personas.pacientes.grupo_sanguineo}
+              />
+            )}
+
+            {/* Campos condicionales para Doctores */}
+            {usuario.personas?.doctores?.matricula && (
+              <div className='col-span-2'>
+                <InfoRow
+                  label='Matrícula Médica'
+                  value={usuario.personas.doctores.matricula}
+                />
+              </div>
+            )}
           </Section>
 
           <Section

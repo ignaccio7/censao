@@ -496,7 +496,7 @@ const { modal, openModal, closeModal } = useModal() // hook wrapper
 ```typescript
 // 1. Schema Zod en schemas/index.ts (co-locado con la feature)
 const fichaSchema = z.object({
-  cedula: z.string().min(7).max(10).regex(/^\d+$/),
+  cedula: z.string().min(4).max(10).regex(/^\d+$/),
   nombre: z.string().min(3).max(100),
   especialidad: z.uuid(),
   doctor: z.string().min(1)

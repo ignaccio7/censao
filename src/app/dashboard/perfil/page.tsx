@@ -16,6 +16,7 @@ export default async function Page() {
   const usuario = await prisma.usuarios.findUnique({
     where: { usuario_id: session.user.id },
     select: {
+      persona_ci: true,
       username: true,
       personas: {
         select: {
@@ -34,6 +35,18 @@ export default async function Page() {
     redirect('/dashboard')
   }
 
+  // Buscar fecha de nacimiento en pacientes (solo existe si el usuario es PACIENTE)
+  const paciente = usuario.persona_ci
+    ? await prisma.pacientes.findUnique({
+        where: { paciente_id: usuario.persona_ci },
+        select: { fecha_nacimiento: true }
+      })
+    : null
+
+  const fechaNacimiento = paciente?.fecha_nacimiento
+    ? paciente.fecha_nacimiento.toISOString().split('T')[0]
+    : null
+
   const { ci, nombres, paterno, materno, correo, direccion } = usuario.personas
 
   return (
@@ -51,6 +64,7 @@ export default async function Page() {
             materno={materno ?? undefined}
             correo={correo ?? undefined}
             direccion={direccion ?? undefined}
+            fechaNacimiento={fechaNacimiento}
           />
         </div>
       </div>

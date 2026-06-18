@@ -19,6 +19,7 @@ interface FormProfileDataProps {
   materno?: string
   correo?: string
   direccion?: string
+  fechaNacimiento?: string | null
 }
 
 export default function FormProfileData({
@@ -27,7 +28,8 @@ export default function FormProfileData({
   paterno,
   materno,
   correo: initialCorreo,
-  direccion: initialDireccion
+  direccion: initialDireccion,
+  fechaNacimiento
 }: FormProfileDataProps) {
   const [editMode, setEditMode] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -116,7 +118,25 @@ export default function FormProfileData({
       key: 'materno',
       label: dictionaryProfile.materno ?? 'Apellido materno',
       value: materno ?? '—'
-    }
+    },
+    // Fecha de nacimiento: solo se muestra si el usuario tiene perfil de paciente
+    ...(fechaNacimiento
+      ? [
+          {
+            key: 'fecha_nacimiento',
+            label: 'Fecha de nacimiento',
+            value: new Date(fechaNacimiento + 'T00:00:00').toLocaleDateString(
+              'es-BO',
+              {
+                timeZone: 'America/La_Paz',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              }
+            )
+          }
+        ]
+      : [])
   ]
 
   // ── Vista de solo lectura ─────────────────────────────────────────────────

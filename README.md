@@ -50,10 +50,6 @@ Un doctor solo atiende una especialidad por turno. La búsqueda de disponibilida
 verificar
 aqui asi es la cosa digamos el doctorx tiene especialidad doctorgeneral y odontologia en el turno am podria atender doctorgeneral y en elturno pm atender odontologia pero no podria atender 2 especialidades en el mismo turno por lo que la disponibilidad registrada deberia arrojar solo el turno especifico que se esta registrando
 
-arreglar esta vista para que solo liste los doctores en ese turno
-http://localhost:3000/dashboard/estado-doctores
-no asignar a otros que no sean de ese turno ya que deberia ser dinamico por turno eso
-
 cuando tengo citas con el pacientex dias despues y saco ficha dias antes y si me hago atender sea vacuna o seguimiento esas citas quedan como absorvidas eso esta bien pero que pasa si viene el mismo dia de cita pero presencial eso como lo resolveriamos osea como admision genera fichas programadas pero ya tendra ficha presencial volvera a generar gichas para ese paciente aunque tenga la presencial eso tomar en cuenta
 
 si programo 2 citas de diferentes vacunas para el mismo dia como se estan generando estas citas y como generan su ficha eso ver

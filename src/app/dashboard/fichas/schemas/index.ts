@@ -6,7 +6,7 @@ export const fichaRegisterSchema = z.object({
     .string()
     .min(1, 'La cédula es requerida')
     .regex(/^\d+$/, 'La cédula debe contener solo números')
-    .min(7, 'La cédula debe tener al menos 7 dígitos')
+    .min(4, 'La cédula debe tener al menos 4 dígitos')
     .max(10, 'La cédula no puede tener más de 10 dígitos'),
 
   nombre: z
@@ -45,7 +45,7 @@ export const fichaUpdateSchema = z.object({
     .string()
     .min(1, 'La cédula es requerida')
     .regex(/^\d+$/, 'La cédula debe contener solo números')
-    .min(7, 'La cédula debe tener al menos 7 dígitos')
+    .min(4, 'La cédula debe tener al menos 4 dígitos')
     .max(10, 'La cédula no puede tener más de 10 dígitos')
     .optional(),
   nombre: z

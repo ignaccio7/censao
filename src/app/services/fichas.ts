@@ -110,3 +110,24 @@ export function useFichaDetalle(fichaId: string | null) {
     enabled: !!fichaId
   })
 }
+
+// ─── Autocomplete de CI ───────────────────────────────────────────────────────
+
+export interface AutocompleteItem {
+  value: string // CI del paciente
+  label: string // Nombre completo del paciente
+}
+
+/**
+ * Busca pacientes por CI (prefijo). Uso directo en fetchOptions de InputAutocomplete.
+ * No es un hook de TanStack Query, sino una función async normal.
+ */
+export async function buscarPacientesPorCi(
+  ci: string
+): Promise<AutocompleteItem[]> {
+  if (!ci || ci.length < 2) return []
+  const response = await apiClient.get(
+    `/fichas/buscar-paciente?ci=${encodeURIComponent(ci)}`
+  )
+  return response.data.data as AutocompleteItem[]
+}

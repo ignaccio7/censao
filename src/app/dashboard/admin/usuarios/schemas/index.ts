@@ -70,18 +70,30 @@ export const stepCredencialesSchema = z.object({
 // })
 
 // ─── Paso 3: Rol y tipo de cuenta ─────────────────────────────────────────
-export const stepRolSchema = z.object({
-  rol_id: z.string().min(1, 'Seleccione un rol'),
-  // Campos de Doctor (condicionales)
-  matricula: z.string().optional().or(z.literal('')),
-  // Campos de Paciente (condicionales)
-  fecha_nacimiento: z.string().optional().or(z.literal('')),
-  sexo: z.enum(['M', 'F', 'O']).optional().or(z.literal('')),
-  grupo_sanguineo: z
-    .enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
-    .optional()
-    .or(z.literal(''))
-})
+export const stepRolSchema = z
+  .object({
+    rol_id: z.string().min(1, 'Seleccione un rol'),
+    // Campos de Doctor (condicionales)
+    matricula: z.string().optional().or(z.literal('')),
+    // Campos de Paciente (condicionales)
+    fecha_nacimiento: z.string().optional().or(z.literal('')),
+    sexo: z.enum(['M', 'F', 'O']).optional().or(z.literal('')),
+    grupo_sanguineo: z
+      .enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
+      .optional()
+      .or(z.literal(''))
+  })
+  .refine(
+    data => {
+      if (!data.fecha_nacimiento) return true
+      const fecha = new Date(data.fecha_nacimiento)
+      return !isNaN(fecha.getTime()) && fecha <= new Date()
+    },
+    {
+      message: 'La fecha de nacimiento no puede ser futura',
+      path: ['fecha_nacimiento']
+    }
+  )
 
 // ─── Schema completo (para el submit final) ────────────────────────────────
 export const createUsuarioSchema = stepPersonaSchema
@@ -153,6 +165,17 @@ export const updateUsuarioSchema = z
       return d.password === d.confirmar_password
     },
     { message: 'Las contraseñas no coinciden', path: ['confirmar_password'] }
+  )
+  .refine(
+    d => {
+      if (!d.fecha_nacimiento) return true
+      const fecha = new Date(d.fecha_nacimiento)
+      return !isNaN(fecha.getTime()) && fecha <= new Date()
+    },
+    {
+      message: 'La fecha de nacimiento no puede ser futura',
+      path: ['fecha_nacimiento']
+    }
   )
 
 export type UpdateUsuarioFormData = z.infer<typeof updateUsuarioSchema>

@@ -105,7 +105,12 @@ export default function PacientesTableClient({
                 correo: paciente.personas.correo,
                 direccion: paciente.personas.direccion,
                 sexo: paciente.sexo,
-                grupoSanguineo: paciente.grupo_sanguineo
+                grupoSanguineo: paciente.grupo_sanguineo,
+                fechaNacimiento: paciente.fecha_nacimiento
+                  ? new Date(paciente.fecha_nacimiento)
+                      .toISOString()
+                      .split('T')[0]
+                  : null
               })
               setModalType('edit')
               openModal()

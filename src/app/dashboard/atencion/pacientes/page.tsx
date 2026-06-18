@@ -66,7 +66,7 @@ export default async function PacientesPage({
   return (
     <main className='pb-8'>
       <Title subtitle='Gestiona los pacientes que has registrado en el centro de salud. Puedes editar sus datos, eliminarlos o revisar su historial de atenciones.'>
-        Pacientes Registrados
+        Pacientes Registradosasdasd
       </Title>
 
       <section className='filters w-full flex gap-2 items-center justify-between flex-wrap-reverse mb-4'>

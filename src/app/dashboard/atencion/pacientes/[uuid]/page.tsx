@@ -56,6 +56,7 @@ export default function PacienteDetallePage() {
   // const { create } = useProfileRoutes()
 
   const { data: paciente, isLoading, isError } = usePaciente(uuid)
+  console.log(paciente)
 
   if (isLoading) {
     return (

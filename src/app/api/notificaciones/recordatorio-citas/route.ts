@@ -26,12 +26,15 @@ import { StateCita } from '@/lib/constants'
  *   - Almacenamiento: UTC (fecha_envio = new Date())
  *   - Display en mensaje: America/La_Paz (UTC-4, Bolivia)
  */
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   // ── 1. Autenticación dual: cron secret o sesión RBAC ─────────────────────
   const authHeader = req.headers.get('authorization') ?? ''
   const cronSecret = process.env.CRON_SECRET
 
   let operadoPor = 'cron'
+
+  console.log(authHeader)
+  console.log(cronSecret)
 
   if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
     // Llamada autenticada como cron job de Vercel — no necesita sesión
@@ -40,7 +43,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Llamada manual — validar sesión RBAC (DOCTOR_FICHAS o ADMINISTRADOR)
     const validation = await AuthService.validateApiPermission(
       '/api/notificaciones/recordatorio-citas',
-      'POST'
+      'GET'
     )
     if (!validation.success) {
       return NextResponse.json(
