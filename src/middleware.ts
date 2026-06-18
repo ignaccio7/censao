@@ -12,8 +12,8 @@ export default async function middleware(req: NextRequest) {
   console.log(req.cookies.getAll())
   const token = await getToken({
     req,
-    secret
-    // secureCookie: true
+    secret,
+    secureCookie: true
   })
   const { pathname } = req.nextUrl
 
