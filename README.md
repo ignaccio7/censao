@@ -10,6 +10,7 @@ npx auth secret
 npx prisma migrate reset
 npx prisma migrate dev --name init
 npx prisma db seed
+npx prisma migrate dev --create-only --name auditoria_triggers
 
 api -> https://nextjs.org/docs/app/api-reference/file-conventions/route
 

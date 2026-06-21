@@ -16,14 +16,14 @@ model auditoria_log {
   registro_antiguo Json
   registro_nuevo   Json
   fecha_cambio     DateTime  @db.Timestamp(0)
-  usuario_id       String    @db.Uuid
+  usuario_id       String?   @db.Uuid
   creado_en        DateTime  @default(now()) @db.Timestamptz(0)
   creado_por       String?
   actualizado_en   DateTime  @default(now()) @db.Timestamptz(0)
   actualizado_por  String?
   eliminado_en     DateTime? @db.Timestamptz(0)
   eliminado_por    String?
-  usuarios         usuarios  @relation(fields: [usuario_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "auditoria_log_usuario_id_foreign")
+  usuarios         usuarios? @relation(fields: [usuario_id], references: [usuario_id], onDelete: SetNull, onUpdate: NoAction, map: "auditoria_log_usuario_id_foreign")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

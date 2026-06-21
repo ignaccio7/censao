@@ -1302,6 +1302,36 @@ const USUARIO_ADMIN: UsuarioCompleto = {
         metodos: ['GET'],
         descripcion: 'API para enviar recordatorios de citas',
         modulo: 'atencion'
+      },
+      // ************ RESPALDOS
+      // -> Inicio
+      {
+        nombre: 'Gestión de Respaldos',
+        tipo: 'frontend',
+        ruta: '/dashboard/admin/respaldos',
+        metodos: ['read', 'create'],
+        icono: 'database',
+        descripcion: 'Generar y restaurar respaldos de la base de datos',
+        modulo: 'administracion'
+      },
+      // -> API Generar
+      {
+        nombre: 'API Generar Respaldo',
+        tipo: 'backend',
+        ruta: '/api/admin/respaldos/generar',
+        metodos: ['POST'],
+        descripcion:
+          'API para generar y descargar un respaldo completo de la BD',
+        modulo: 'administracion'
+      },
+      // -> API Restaurar
+      {
+        nombre: 'API Restaurar Respaldo',
+        tipo: 'backend',
+        ruta: '/api/admin/respaldos/restaurar',
+        metodos: ['POST'],
+        descripcion: 'API para restaurar la BD desde un archivo de respaldo',
+        modulo: 'administracion'
       }
     ]
   }

@@ -22,7 +22,8 @@ import {
   IconEmail,
   IconNotification,
   IconHospital,
-  IconClock
+  IconClock,
+  IconDatabase
 } from '@/app/components/icons/icons'
 
 const Icons: Record<string, React.FC<{ className?: string; size?: string }>> = {
@@ -49,7 +50,8 @@ const Icons: Record<string, React.FC<{ className?: string; size?: string }>> = {
   email: IconEmail,
   notification: IconNotification,
   clock: IconClock,
-  sistema: IconMonitor
+  sistema: IconMonitor,
+  database: IconDatabase
 }
 
 export default Icons
