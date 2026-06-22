@@ -38,9 +38,10 @@ export const stepPersonaSchema = z.object({
     .optional(),
   telefono: z
     .string()
-    .max(20, 'El teléfono no puede exceder 20 caracteres')
-    .optional()
-    .or(z.literal('')),
+    .length(8, 'El teléfono debe tener 8 caracteres')
+    .regex(/^[1-9]\d{7}$/, 'Ingrese un teléfono válido')
+    .or(z.literal(''))
+    .optional(),
   direccion: z
     .string()
     .max(255, 'La dirección no puede exceder 255 caracteres')
@@ -143,7 +144,13 @@ export const updateUsuarioSchema = z
     paterno: z.string().max(50).optional().or(z.literal('')),
     materno: z.string().max(50).optional().or(z.literal('')),
     correo: z.string().email().max(255),
-    telefono: z.string().max(20).optional().or(z.literal('')),
+    // puro numeros minimo 8 digitos
+    telefono: z
+      .string()
+      .length(8, 'El teléfono debe tener al menos 8 caracteres')
+      .regex(/^[1-9]\d{7}$/, 'Ingrese un teléfono válido')
+      .optional()
+      .or(z.literal('')),
     direccion: z.string().max(255).optional().or(z.literal('')),
     // Contraseña opcional en edición
     password: z.string().min(8).max(100).optional().or(z.literal('')),

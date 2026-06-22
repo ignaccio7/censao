@@ -31,8 +31,8 @@ export const editarPacienteSchema = z
       .or(z.literal('')),
     telefono: z
       .string()
-      .min(7, 'Mínimo 7 dígitos')
-      .max(15)
+      .length(8, 'El teléfono debe tener 8 caracteres')
+      .regex(/^[1-9]\d{7}$/, 'Ingrese un teléfono válido')
       .optional()
       .or(z.literal('')),
     correo: z.string().email('Correo inválido').optional().or(z.literal('')),
@@ -90,7 +90,12 @@ export const crearPacienteSchema = z
       .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜćĆšŠ\s']*$/, 'Formato de apellido inválido')
       .optional()
       .or(z.literal('')),
-    telefono: z.string().max(20).optional().or(z.literal('')),
+    telefono: z
+      .string()
+      .length(8, 'El teléfono debe tener 8 caracteres')
+      .regex(/^[1-9]\d{7}$/, 'Ingrese un teléfono válido')
+      .optional()
+      .or(z.literal('')),
     correo: z.string().email('Correo inválido').optional().or(z.literal('')),
     direccion: z.string().max(200).optional().or(z.literal('')),
     fecha_nacimiento: z.string().optional().or(z.literal('')),

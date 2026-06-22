@@ -144,12 +144,12 @@ El tamaño funcional real de tu sistema "Censao" es de 208 Puntos.
 **2. Conversión a Esfuerzo (Horas)**
 Utilizando la métrica industrial promedio para tecnologías modernas (Next.js, TypeScript, Node) donde 1 Punto = 10 horas de desarrollo (incluyendo diseño, BD, backend, frontend y pruebas):
 $$Esfuerzo = 208 \text{ FP} \times 10 \text{ hrs/FP} = \mathbf{2,080 \text{ Horas de Trabajo}}$$
-_Si una persona trabaja 8 hrs al día (160 hrs al mes), este proyecto equivale a aproximadamente **13 meses de trabajo continuo** para un solo desarrollador._
+_Si una persona trabaja 8 hrs al día (200 hrs al mes), este proyecto equivale a aproximadamente **10 meses de trabajo continuo** para un solo desarrollador._
 
 **3. Valoración Económica**
-Si el costo promedio por hora de un Ingeniero de Software Junior/Mid-level en tu región fuera de, por ejemplo, **$15 USD/hora**:
-$$Presupuesto = 2,080 \text{ horas} \times \$15 = \mathbf{\$31,200 \text{ USD}}$$
+Si el costo promedio por hora de un Ingeniero de Software Junior en Bolivia tomando como ejemplo los 3300Bs de salario basico, Entonces, 25 dias x 8 horas serian 200 horas **$16 Bs/hora**:
+$$Presupuesto = 2,080 \text{ horas} \times 16\text{ Bs}  = \mathbf{33,280 \text{ Bs}}$$
 
 ### Conclusión para tu Documento de Grado:
 
-Mediante la métrica de Puntos de Función evaluando los 6 módulos bajo la metodología Cascada, se demuestra que el proyecto **"Censao" tiene un tamaño de 208 Puntos de Función**. Esto representa un esfuerzo ingenieril de **2,080 horas**, valuadas comercialmente en más de **$30,000 USD**. Este análisis justifica la magnitud del aporte tecnológico y la donación que se realiza al Centro de Salud Alto Obrajes.
+Mediante la métrica de Puntos de Función evaluando los 6 módulos bajo la metodología Cascada, se demuestra que el proyecto **"Censao" tiene un tamaño de 208 Puntos de Función**. Esto representa un esfuerzo ingenieril de **2,080 horas**, valuadas comercialmente en más de **30,000 Bs**. Este análisis justifica la magnitud del aporte tecnológico y la donación que se realiza al Centro de Salud Alto Obrajes.
