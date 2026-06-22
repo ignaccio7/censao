@@ -25,7 +25,15 @@ export async function POST() {
     // Serializar con JSON.stringify estándar.
     // Las fechas de Prisma son objetos Date → toISOString() automático en JSON.stringify.
     // Se preservan en UTC tal cual están en PostgreSQL.
-    const jsonString = JSON.stringify(backup, null, 2)
+    console.log(backup)
+    // const backupData = structuredClone(backup)
+
+    // const jsonString = JSON.stringify(backupData, null, 2)
+    const jsonString = JSON.stringify(
+      backup,
+      (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+      2
+    )
 
     // Nombre legible en hora boliviana para el Content-Disposition
     const fechaBO = new Date()
