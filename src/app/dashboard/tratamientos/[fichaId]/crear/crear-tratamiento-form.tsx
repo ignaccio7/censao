@@ -577,8 +577,8 @@ export default function CrearTratamientoForm({
                                     mode='single'
                                     selected={citaFecha}
                                     onSelect={setCitaFecha}
-                                    fromYear={new Date().getFullYear() - 1} // Desde hace 5 años
-                                    toYear={new Date().getFullYear() + 10} // Hasta 5 años en el futuro
+                                    fromYear={new Date().getFullYear()}
+                                    toYear={new Date().getFullYear() + 15}
                                     disabled={[
                                       { dayOfWeek: [0, 6] },
                                       {

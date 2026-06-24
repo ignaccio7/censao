@@ -19,7 +19,10 @@ export default async function Page({
 
   // Server Component: fetch vacunas con esquema_dosis directamente con Prisma
   const vacunas = await prisma.vacunas.findMany({
-    where: { eliminado_en: null },
+    where: {
+      eliminado_en: null,
+      activo: true
+    },
     select: {
       id: true,
       nombre: true,
