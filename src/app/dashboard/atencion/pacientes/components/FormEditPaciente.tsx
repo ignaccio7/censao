@@ -113,6 +113,7 @@ export default function FormEditPaciente(props: FormEditPacienteProps) {
           placeholder='Ej. 12345678'
           form={form}
           required
+          disabled
         />
         <FieldInput
           id='nombres'

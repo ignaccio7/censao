@@ -306,7 +306,7 @@ const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
   },
   datosEspecificos: {
     tipo: 'doctor',
-    matricula: 'MED-002-2025'
+    matricula: 'MED-001-2026'
   },
   rol: {
     nombre: 'DOCTOR_FICHAS',
@@ -664,7 +664,7 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
   },
   datosEspecificos: {
     tipo: 'doctor',
-    matricula: 'MED-003-2025'
+    matricula: 'MED-002-2026'
   },
   rol: {
     nombre: 'DOCTOR_GENERAL',
@@ -918,7 +918,7 @@ const USUARIO_ODONTOLOGO: UsuarioCompleto = {
   },
   datosEspecificos: {
     tipo: 'doctor',
-    matricula: 'ODO-001-2025'
+    matricula: 'ODO-001-2026'
   },
   rol: {
     nombre: 'DOCTOR_GENERAL', // Mismo rol que DOCTOR_GENERAL
@@ -945,7 +945,7 @@ const USUARIO_ODONTOLOGO_2: UsuarioCompleto = {
   },
   datosEspecificos: {
     tipo: 'doctor',
-    matricula: 'ODO-002-2025'
+    matricula: 'ODO-002-2026'
   },
   rol: {
     nombre: 'DOCTOR_GENERAL', // Mismo rol que DOCTOR_GENERAL
@@ -958,8 +958,8 @@ const USUARIO_ODONTOLOGO_2: UsuarioCompleto = {
 const USUARIO_ADMIN: UsuarioCompleto = {
   persona: {
     ci: '123123123',
-    nombres: 'Casto',
-    paterno: 'Navia',
+    nombres: 'Admin',
+    paterno: 'Censao',
     materno: '',
     telefono: '77777777',
     correo: 'admin@censao.com',
@@ -972,7 +972,7 @@ const USUARIO_ADMIN: UsuarioCompleto = {
   },
   datosEspecificos: {
     tipo: 'doctor',
-    matricula: 'MED-001-2025'
+    matricula: 'ADM-001-2026'
   },
   rol: {
     nombre: 'ADMINISTRADOR',
