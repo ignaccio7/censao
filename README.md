@@ -57,15 +57,11 @@ si programo 2 citas de diferentes vacunas para el mismo dia como se estan genera
 
 npx playwright test --ui
 
-
-
-
 k6
 linux
 nirg@nirg-ASUS-TUF-Gaming-A15-FA507RE-FA507RE:~/Escritorio/PC/PRUEBAS/censao$ docker run --rm -v $(pwd):/scripts --network host grafana/k6 run /scripts/test.js
 windows
 PS C:\Users\nirg2\Downloads\proygrado\carga> docker run --rm -v "C:\Users\nirg2\Downloads\proygrado\carga:/scripts" grafana/k6 run /scripts/test-fichas.js
 
-
 nextcoonfig
-  allowedDevOrigins: ['192.168.100.90']
+allowedDevOrigins: ['192.168.100.90']

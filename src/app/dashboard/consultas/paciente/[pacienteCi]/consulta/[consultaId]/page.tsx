@@ -136,7 +136,26 @@ export default async function DetalleConsultaPacientePage({
               <p className='font-semibold text-gray-800 text-step-1'>
                 {consulta.paciente_nombre}
               </p>
-              <p className='text-gray-500'>CI: {consulta.paciente_ci}</p>
+              <p className='text-gray-500 text-step-1'>
+                CI: {consulta.paciente_ci}
+              </p>
+              {consulta.paciente_fecha_nacimiento && (
+                <p className='text-gray-500 text-step-1'>
+                  {new Date(
+                    consulta.paciente_fecha_nacimiento
+                  ).toLocaleDateString('es-BO', {
+                    timeZone: 'UTC',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  })}
+                </p>
+              )}
+              {consulta.paciente_nro_historia_clinica && (
+                <p className='text-gray-500 text-xs'>
+                  HC: {consulta.paciente_nro_historia_clinica}
+                </p>
+              )}
             </div>
             <div>
               <p className='text-step-1 text-gray-400 font-semibold uppercase mb-1'>

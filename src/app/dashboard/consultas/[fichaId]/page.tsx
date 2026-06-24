@@ -35,7 +35,12 @@ export default async function ResumenClinicoPage({
     where: { id: fichaId, eliminado_en: null },
     include: {
       pacientes: {
-        include: {
+        select: {
+          paciente_id: true,
+          nro_historia_clinica: true,
+          fecha_nacimiento: true,
+          sexo: true,
+          grupo_sanguineo: true,
           personas: true
         }
       },

@@ -7,6 +7,8 @@ import {
 interface PacienteCardProps {
   paciente: {
     paciente_id: string
+    nro_historia_clinica?: string | null
+    fecha_nacimiento?: Date | string | null
     personas: {
       nombres: string
       paterno: string | null
@@ -21,7 +23,13 @@ interface PacienteCardProps {
 }
 
 export default function PacienteCard({ paciente }: PacienteCardProps) {
-  const { personas, sexo, grupo_sanguineo } = paciente
+  const {
+    personas,
+    sexo,
+    grupo_sanguineo,
+    fecha_nacimiento,
+    nro_historia_clinica
+  } = paciente
 
   return (
     <div className='bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden'>
@@ -99,6 +107,31 @@ export default function PacienteCard({ paciente }: PacienteCardProps) {
               {grupo_sanguineo || 'N/R'}
             </p>
           </div>
+          {fecha_nacimiento && (
+            <div>
+              <p className='text-xs text-gray-400 font-semibold uppercase'>
+                Fecha Nacimiento
+              </p>
+              <p className='font-medium text-gray-800'>
+                {new Date(fecha_nacimiento).toLocaleDateString('es-BO', {
+                  timeZone: 'UTC',
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                })}
+              </p>
+            </div>
+          )}
+          {nro_historia_clinica && (
+            <div>
+              <p className='text-xs text-gray-400 font-semibold uppercase'>
+                Nro. Historia Clínica
+              </p>
+              <p className='font-medium text-gray-800'>
+                {nro_historia_clinica}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

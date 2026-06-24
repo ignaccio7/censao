@@ -44,7 +44,8 @@ export const editarPacienteSchema = z
       .or(z.literal('')),
     fecha_nacimiento: z.string().optional().or(z.literal('')),
     sexo: z.enum(['M', 'F', 'O']).optional().or(z.literal('')),
-    grupo_sanguineo: z.string().max(5).optional().or(z.literal(''))
+    grupo_sanguineo: z.string().max(5).optional().or(z.literal('')),
+    nro_historia_clinica: z.string().max(50).optional().or(z.literal(''))
   })
   .refine(
     data => {
@@ -103,7 +104,8 @@ export const crearPacienteSchema = z
     grupo_sanguineo: z
       .enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
       .optional()
-      .or(z.literal(''))
+      .or(z.literal('')),
+    nro_historia_clinica: z.string().max(50).optional().or(z.literal(''))
   })
   .refine(
     data => {

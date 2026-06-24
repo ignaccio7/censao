@@ -40,6 +40,7 @@ interface FormEditPacienteProps {
   sexo: string | null
   grupoSanguineo: string | null
   fechaNacimiento: string | null
+  nroHistoriaClinica: string | null
 }
 
 export default function FormEditPaciente(props: FormEditPacienteProps) {
@@ -61,7 +62,8 @@ export default function FormEditPaciente(props: FormEditPacienteProps) {
       direccion: props.direccion || '',
       fecha_nacimiento: props.fechaNacimiento || '',
       sexo: (props.sexo as 'M' | 'F' | 'O') || undefined,
-      grupo_sanguineo: props.grupoSanguineo || ''
+      grupo_sanguineo: props.grupoSanguineo || '',
+      nro_historia_clinica: props.nroHistoriaClinica || ''
     }
   })
 
@@ -76,7 +78,8 @@ export default function FormEditPaciente(props: FormEditPacienteProps) {
       direccion: props.direccion || '',
       fecha_nacimiento: props.fechaNacimiento || '',
       sexo: (props.sexo as 'M' | 'F' | 'O') || undefined,
-      grupo_sanguineo: props.grupoSanguineo || ''
+      grupo_sanguineo: props.grupoSanguineo || '',
+      nro_historia_clinica: props.nroHistoriaClinica || ''
     })
   }, [props, form])
 
@@ -86,8 +89,8 @@ export default function FormEditPaciente(props: FormEditPacienteProps) {
       {
         onSuccess: () => {
           toast.success('Paciente actualizado exitosamente')
-          closeModal()
           router.refresh()
+          closeModal()
         },
         onError: (error: any) => {
           toast.error(
@@ -167,6 +170,13 @@ export default function FormEditPaciente(props: FormEditPacienteProps) {
           label='Grupo Sanguíneo'
           options={GRUPO_SANGUINEO_OPTIONS}
           form={form}
+        />
+        <FieldInput
+          id='nro_historia_clinica'
+          label='Nro. Historia Clínica'
+          placeholder='Ej: HC-00123'
+          form={form}
+          className='md:col-span-2'
         />
 
         {/* Submit Button */}

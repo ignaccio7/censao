@@ -149,6 +149,10 @@ export default function StepResumen({ form, rolNombre }: StepResumenProps) {
               value={values.sexo ? SEXO_MAP[values.sexo] : undefined}
             />
             <InfoRow label='Grupo sanguíneo' value={values.grupo_sanguineo} />
+            <InfoRow
+              label='Nro. Historia Clínica'
+              value={values.nro_historia_clinica}
+            />
           </>
         )}
       </Section>

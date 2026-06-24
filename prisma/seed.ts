@@ -286,6 +286,8 @@ const USUARIO_PACIENTE_2: UsuarioCompleto = {
   }
 }
 
+console.log(USUARIO_PACIENTE_2)
+
 // 👩‍⚕️ DOCTOR ESPECIALIZADO EN FICHAS
 const USUARIO_DOCTOR_FICHAS: UsuarioCompleto = {
   persona: {
@@ -789,15 +791,16 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
       //   descripcion: 'Seguimiento de tratamientos médicos',
       //   modulo: 'tratamientos'
       // },
-      {
-        nombre: 'Notificaciones',
-        tipo: 'frontend',
-        ruta: '/dashboard/tratamientos/notificaciones',
-        metodos: ['read', 'create'],
-        icono: 'send',
-        descripcion: 'Gestionar notificaciones a pacientes',
-        modulo: 'tratamientos'
-      },
+      // FRONTEND - Notificaciones
+      // {
+      //   nombre: 'Notificaciones',
+      //   tipo: 'frontend',
+      //   ruta: '/dashboard/tratamientos/notificaciones',
+      //   metodos: ['read', 'create'],
+      //   icono: 'send',
+      //   descripcion: 'Gestionar notificaciones a pacientes',
+      //   modulo: 'tratamientos'
+      // },
 
       // BACKEND - APIs
       // fichas
@@ -844,22 +847,22 @@ const USUARIO_DOCTOR_GENERAL: UsuarioCompleto = {
         modulo: 'administracion'
       },
       // notificaciones medicas
-      {
-        nombre: 'API Notificaciones Médicas',
-        tipo: 'backend',
-        ruta: '/api/notificaciones/medicas',
-        metodos: ['POST'],
-        descripcion: 'API para enviar notificaciones médicas',
-        modulo: 'atencion'
-      },
-      {
-        nombre: 'API Notificaciones Específicas',
-        tipo: 'backend',
-        ruta: '/api/notificaciones/medicas/:uuid',
-        metodos: ['POST'],
-        descripcion: 'API para notificaciones a paciente específico',
-        modulo: 'atencion'
-      },
+      // {
+      //   nombre: 'API Notificaciones Médicas',
+      //   tipo: 'backend',
+      //   ruta: '/api/notificaciones/medicas',
+      //   metodos: ['POST'],
+      //   descripcion: 'API para enviar notificaciones médicas',
+      //   modulo: 'atencion'
+      // },
+      // {
+      //   nombre: 'API Notificaciones Específicas',
+      //   tipo: 'backend',
+      //   ruta: '/api/notificaciones/medicas/:uuid',
+      //   metodos: ['POST'],
+      //   descripcion: 'API para notificaciones a paciente específico',
+      //   modulo: 'atencion'
+      // },
       // consultas
       {
         nombre: 'API Consultas',
@@ -1342,7 +1345,7 @@ const USUARIO_ADMIN: UsuarioCompleto = {
 // ========================================
 const USUARIOS_A_CREAR: UsuarioCompleto[] = [
   USUARIO_PACIENTE_1,
-  USUARIO_PACIENTE_2,
+  // USUARIO_PACIENTE_2,
   USUARIO_DOCTOR_FICHAS,
   USUARIO_DOCTOR_GENERAL,
   USUARIO_ENFERMERIA,

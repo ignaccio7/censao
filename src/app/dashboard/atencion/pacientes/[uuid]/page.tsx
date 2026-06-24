@@ -307,6 +307,38 @@ export default function PacienteDetallePage() {
               </p>
             </div>
           </div>
+          <div className='flex items-start gap-3'>
+            <div className='bg-gray-100 p-2 rounded-lg text-gray-500'>📅</div>
+            <div>
+              <p className='text-xs text-gray-400 font-semibold uppercase'>
+                Fecha de Nacimiento
+              </p>
+              <p className='font-medium text-base'>
+                {paciente.fecha_nacimiento
+                  ? new Date(paciente.fecha_nacimiento).toLocaleDateString(
+                      'es-BO',
+                      {
+                        timeZone: 'UTC',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      }
+                    )
+                  : 'No registrada'}
+              </p>
+            </div>
+          </div>
+          <div className='flex items-start gap-3'>
+            <div className='bg-gray-100 p-2 rounded-lg text-gray-500'>📋</div>
+            <div>
+              <p className='text-xs text-gray-400 font-semibold uppercase'>
+                Nro. Historia Clínica
+              </p>
+              <p className='font-medium text-base'>
+                {paciente.nro_historia_clinica || 'No registrado'}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

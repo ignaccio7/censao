@@ -40,7 +40,8 @@ const createUsuarioSchema = z.object({
   grupo_sanguineo: z
     .enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
     .optional()
-    .or(z.literal(''))
+    .or(z.literal('')),
+  nro_historia_clinica: z.string().max(50).optional().or(z.literal(''))
 })
 
 // ─── GET /api/admin/usuarios ──────────────────────────────────────────────────
@@ -168,7 +169,8 @@ export async function POST(req: NextRequest) {
       matricula,
       fecha_nacimiento,
       sexo,
-      grupo_sanguineo
+      grupo_sanguineo,
+      nro_historia_clinica
     } = parsed.data
 
     // Verificar que el rol existe
@@ -273,6 +275,7 @@ export async function POST(req: NextRequest) {
               : null,
             sexo: sexo || null,
             grupo_sanguineo: grupo_sanguineo || null,
+            nro_historia_clinica: nro_historia_clinica || null,
             creado_por: idUser ?? 'sistema'
           }
         })

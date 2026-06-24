@@ -44,7 +44,8 @@ export default function FormCrearPaciente() {
       direccion: '',
       fecha_nacimiento: '',
       sexo: undefined,
-      grupo_sanguineo: undefined
+      grupo_sanguineo: undefined,
+      nro_historia_clinica: ''
     },
     mode: 'onTouched'
   })
@@ -173,6 +174,14 @@ export default function FormCrearPaciente() {
             id='grupo_sanguineo'
             form={form}
             options={GRUPO_SANGUINEO_OPTIONS}
+          />
+          <FieldInput
+            label='Nro. Historia Clínica'
+            id='nro_historia_clinica'
+            type='text'
+            form={form}
+            placeholder='Ej: HC-00123'
+            className='md:col-span-3'
           />
         </div>
 

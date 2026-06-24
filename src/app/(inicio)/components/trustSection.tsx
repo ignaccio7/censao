@@ -1,24 +1,24 @@
 // oxlint-disable sort-keys
 
 const stats = [
-  { number: '15+', label: 'Años de experiencia' },
-  { number: '50,000+', label: 'Pacientes atendidos' },
-  { number: '98%', label: 'Satisfacción del paciente' },
-  { number: '24/7', label: 'Atención de emergencias' }
+  { number: '10+', label: 'Años de experiencia' },
+  { number: '1,000+', label: 'Pacientes atendidos' },
+  { number: '100%', label: 'Satisfacción del paciente' }
+  // { number: '24/7', label: 'Atención de emergencias' }
 ]
 
-const testimonials = [
-  {
-    name: 'María González',
-    text: 'Excelente atención y profesionalismo. Me siento segura vacunándome aquí.',
-    role: 'Paciente'
-  },
-  {
-    name: 'Dr. Carlos Ruiz',
-    text: 'Un centro de salud comprometido con la prevención y el bienestar comunitario.',
-    role: 'Médico colaborador'
-  }
-]
+// const testimonials = [
+//   {
+//     name: 'María González',
+//     text: 'Excelente atención y profesionalismo. Me siento segura vacunándome aquí.',
+//     role: 'Paciente'
+//   },
+//   {
+//     name: 'Dr. Carlos Ruiz',
+//     text: 'Un centro de salud comprometido con la prevención y el bienestar comunitario.',
+//     role: 'Médico colaborador'
+//   }
+// ]
 
 export default function TrustSection() {
   return (
@@ -35,7 +35,7 @@ export default function TrustSection() {
         </div>
 
         {/* Statistics */}
-        <div className='grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16'>
+        <div className='grid grid-cols-2 lg:grid-cols-3 gap-6 mb-16'>
           {stats.map((stat, index) => (
             <div key={index} className='text-center'>
               <div className='text-4xl lg:text-5xl font-bold text-primary-600 mb-2'>
@@ -49,7 +49,7 @@ export default function TrustSection() {
         </div>
 
         {/* Testimonials */}
-        <div className='grid md:grid-cols-2 gap-6'>
+        {/* <div className='grid md:grid-cols-2 gap-6'>
           {testimonials.map((testimonial, index) => (
             <div key={index} className='bg-card'>
               <div className='p-6'>
@@ -72,7 +72,7 @@ export default function TrustSection() {
               </div>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </section>
   )

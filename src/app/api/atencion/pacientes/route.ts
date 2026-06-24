@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
       direccion,
       fecha_nacimiento,
       sexo,
-      grupo_sanguineo
+      grupo_sanguineo,
+      nro_historia_clinica
     } = validData
 
     // Verificar que no exista
@@ -164,6 +165,7 @@ export async function POST(request: NextRequest) {
             : null,
           sexo: sexo || null,
           grupo_sanguineo: grupo_sanguineo || null,
+          nro_historia_clinica: nro_historia_clinica || null,
           creado_por: userId
         }
       })

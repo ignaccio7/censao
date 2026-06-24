@@ -51,18 +51,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href='/examenes'
-                  className='hover:text-primary-foreground transition-colors'
-                >
-                  Exámenes Preventivos
-                </Link>
-              </li>
-              <li>
-                <Link
                   href='/emergencias'
                   className='hover:text-primary-foreground transition-colors'
                 >
-                  Atención de Emergencias
+                  Atención general
                 </Link>
               </li>
             </ul>
@@ -95,30 +87,25 @@ export default function Footer() {
                   Horarios
                 </Link>
               </li>
-              <li>
-                <Link
-                  href='/seguros'
-                  className='hover:text-primary-foreground transition-colors'
-                >
-                  Seguros Médicos
-                </Link>
-              </li>
             </ul>
           </div>
 
           <div>
             <h3 className='font-semibold mb-4'>Contacto</h3>
             <div className='space-y-2 text-primary-foreground/80'>
-              <p>📍 Av. Salud 123, Ciudad</p>
-              <p>📞 (555) 123-4567</p>
-              <p>✉️ info@centrodesalud.com</p>
-              <p>🕒 Lun-Vie: 8:00-18:00</p>
+              <p>📍 Av. Maestro, Alto Obrajes</p>
+              {/* <p>📞 (555) 123-4567</p> */}
+              {/* <p>✉️ info@centrodesalud.com</p> */}
+              <p>
+                🕒 Lunes - Viernes
+                {/* : 8:00-18:00 */}
+              </p>
             </div>
           </div>
         </div>
 
         <div className='border-t border-primary-foreground/20 mt-8 pt-8 text-center text-primary-foreground/80'>
-          <p>&copy; 2025 Centro de Salud. Todos los derechos reservados.</p>
+          <p>&copy; 2026 Centro de Salud. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

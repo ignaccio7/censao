@@ -110,7 +110,8 @@ export default function PacientesTableClient({
                   ? new Date(paciente.fecha_nacimiento)
                       .toISOString()
                       .split('T')[0]
-                  : null
+                  : null,
+                nroHistoriaClinica: paciente.nro_historia_clinica || null
               })
               setModalType('edit')
               openModal()

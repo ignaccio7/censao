@@ -12,20 +12,12 @@ export default function HeroSection() {
               <span className='text-primary font-semibold'>
                 Campañas de Vacunación
               </span>{' '}
-              y mantén a tu familia protegida
+              y mantén a tu familia protegida.
             </p>
             <p className='text-lg text-muted-foreground leading-relaxed'>
               Nuestro centro de salud ofrece las vacunas más actualizadas con
               personal médico especializado. Tu bienestar es nuestra prioridad.
             </p>
-            <div className='flex flex-col sm:flex-row gap-4'>
-              <button className='text-lg px-8 py-3 bg-primary-600 text-white rounded-lg'>
-                Ver Campañas Activas
-              </button>
-              <button className='text-lg px-8 py-3 bg-transparent shadow-xl '>
-                Agendar Cita
-              </button>
-            </div>
           </div>
 
           <div className='relative'>
@@ -35,7 +27,7 @@ export default function HeroSection() {
               className='rounded-lg shadow-2xl w-full h-auto'
             />
             <div className='absolute -bottom-6 -left-6 bg-primary-700 text-white p-4 rounded-lg shadow-lg'>
-              <div className='text-2xl font-bold'>+10,000</div>
+              <div className='text-2xl font-bold'>+1,000</div>
               <div className='text-sm'>Vacunas aplicadas</div>
             </div>
           </div>

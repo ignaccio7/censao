@@ -9,6 +9,8 @@ export type PacienteItem = {
   paciente_id: string
   sexo: string | null
   grupo_sanguineo: string | null
+  fecha_nacimiento: Date | null
+  nro_historia_clinica: string | null
   personas: {
     ci: string
     nombres: string
@@ -74,8 +76,11 @@ export function usePacientes(params?: {
       )
       return response.data
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['atencion-pacientes'] })
+      queryClient.invalidateQueries({
+        queryKey: ['atencion-paciente', variables.pacienteId]
+      })
     }
   })
 

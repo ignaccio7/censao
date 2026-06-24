@@ -42,6 +42,7 @@ interface UsersResponse {
       fecha_nacimiento: Date | null
       sexo: string | null
       grupo_sanguineo: string | null
+      nro_historia_clinica: string | null
     } | null
     doctores?: {
       matricula: string | null
@@ -129,7 +130,8 @@ export class UserssService {
               select: {
                 fecha_nacimiento: true,
                 sexo: true,
-                grupo_sanguineo: true
+                grupo_sanguineo: true,
+                nro_historia_clinica: true
               }
             },
             doctores: {

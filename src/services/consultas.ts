@@ -150,7 +150,12 @@ export class ConsultasService {
         ficha_origen: {
           include: {
             pacientes: {
-              include: {
+              select: {
+                paciente_id: true,
+                nro_historia_clinica: true,
+                fecha_nacimiento: true,
+                sexo: true,
+                grupo_sanguineo: true,
                 personas: true
               }
             },
@@ -239,6 +244,10 @@ export class ConsultasService {
       paciente_nombre:
         `${pacientePersona.nombres} ${pacientePersona.paterno} ${pacientePersona.materno || ''}`.trim(),
       paciente_ci: consulta.ficha_origen.paciente_id,
+      paciente_fecha_nacimiento:
+        consulta.ficha_origen.pacientes.fecha_nacimiento ?? null,
+      paciente_nro_historia_clinica:
+        consulta.ficha_origen.pacientes.nro_historia_clinica ?? null,
       doctor_nombre: doctorPersona
         ? `${doctorPersona.nombres} ${doctorPersona.paterno}`.trim()
         : null,

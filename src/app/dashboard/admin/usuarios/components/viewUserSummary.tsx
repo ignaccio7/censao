@@ -148,6 +148,14 @@ export default function ViewUserSummary({ usuario }: ViewUserSummaryProps) {
                 value={usuario.personas.pacientes.grupo_sanguineo}
               />
             )}
+            {usuario.personas?.pacientes?.nro_historia_clinica && (
+              <div className='col-span-2'>
+                <InfoRow
+                  label='Nro. Historia Clínica'
+                  value={usuario.personas.pacientes.nro_historia_clinica}
+                />
+              </div>
+            )}
 
             {/* Campos condicionales para Doctores */}
             {usuario.personas?.doctores?.matricula && (

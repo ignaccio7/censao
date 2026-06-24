@@ -52,6 +52,7 @@ export default function StepRol({ form, roles }: StepRolProps) {
       form.setValue('fecha_nacimiento', '')
       form.setValue('sexo', undefined)
       form.setValue('grupo_sanguineo', undefined)
+      form.setValue('nro_historia_clinica', '')
     }
   }, [rolSeleccionado, esDoctor, esPaciente, form])
 
@@ -196,6 +197,15 @@ export default function StepRol({ form, roles }: StepRolProps) {
                 })}
               </div>
             </label>
+
+            {/* Nro. Historia Clínica */}
+            <FieldInput
+              id='nro_historia_clinica'
+              label='Nro. Historia Clínica'
+              placeholder='Ej: HC-00123'
+              form={form}
+              className='md:col-span-2'
+            />
           </div>
         </div>
       )}

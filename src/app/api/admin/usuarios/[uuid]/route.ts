@@ -21,7 +21,8 @@ const updateSchema = z
     grupo_sanguineo: z
       .enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
       .optional()
-      .or(z.literal(''))
+      .or(z.literal('')),
+    nro_historia_clinica: z.string().max(50).optional().or(z.literal(''))
   })
   .refine(
     data => {
@@ -103,7 +104,8 @@ export async function PATCH(
       matricula,
       fecha_nacimiento,
       sexo,
-      grupo_sanguineo
+      grupo_sanguineo,
+      nro_historia_clinica
     } = parsed.data
 
     const ci = usuario.persona_ci
@@ -177,6 +179,7 @@ export async function PATCH(
               : null,
             sexo: sexo || null,
             grupo_sanguineo: grupo_sanguineo || null,
+            nro_historia_clinica: nro_historia_clinica || null,
             actualizado_por: idUser
           },
           create: {
@@ -186,6 +189,7 @@ export async function PATCH(
               : null,
             sexo: sexo || null,
             grupo_sanguineo: grupo_sanguineo || null,
+            nro_historia_clinica: nro_historia_clinica || null,
             creado_por: idUser
           }
         })

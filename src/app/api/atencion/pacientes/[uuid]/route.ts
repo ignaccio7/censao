@@ -107,7 +107,8 @@ export async function PATCH(
       direccion,
       fecha_nacimiento,
       sexo,
-      grupo_sanguineo
+      grupo_sanguineo,
+      nro_historia_clinica
     } = body
     console.log(body)
 
@@ -141,6 +142,7 @@ export async function PATCH(
               : null,
             grupo_sanguineo,
             sexo,
+            nro_historia_clinica: nro_historia_clinica || null,
             actualizado_por: userId,
             actualizado_en: new Date()
           }
@@ -167,6 +169,7 @@ export async function PATCH(
               : null,
             grupo_sanguineo,
             sexo,
+            nro_historia_clinica: nro_historia_clinica || null,
             actualizado_por: userId,
             actualizado_en: new Date()
           }

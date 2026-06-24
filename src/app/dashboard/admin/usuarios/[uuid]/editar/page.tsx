@@ -59,6 +59,7 @@ export default async function EditarUsuarioPage({ params }: Props) {
       : ''
     extra.sexo = paciente?.sexo ?? ''
     extra.grupo_sanguineo = paciente?.grupo_sanguineo ?? ''
+    extra.nro_historia_clinica = paciente?.nro_historia_clinica ?? ''
   }
 
   const roles = await prisma.roles.findMany({
@@ -84,6 +85,7 @@ export default async function EditarUsuarioPage({ params }: Props) {
     fecha_nacimiento: '',
     sexo: '' as any,
     grupo_sanguineo: '' as any,
+    nro_historia_clinica: '',
     ...extra
   }
 

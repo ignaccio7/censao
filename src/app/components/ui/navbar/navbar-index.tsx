@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { IconSearch } from '../../icons/icons'
+// import { IconSearch } from '../../icons/icons'
 import Logo from '../logo'
 
 export default function NavbarIndex() {
@@ -9,7 +9,7 @@ export default function NavbarIndex() {
         <Link href='/'>
           <Logo />
         </Link>
-        <search className='text-step-1'>
+        {/* <search className='text-step-1'>
           <form className='max-w-md mx-auto'>
             <div className='relative'>
               <div className='absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none'>
@@ -24,7 +24,7 @@ export default function NavbarIndex() {
               />
             </div>
           </form>
-        </search>
+        </search> */}
         <div className='user'>
           <Link href='/auth/ingresar'>Ingresar</Link>
         </div>
